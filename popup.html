@@ -1,13 +1,19 @@
 <!DOCTYPE html>
-<!-- BrowserGuard Popup -->
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>BrowserGuard</title>
 
     <link rel="stylesheet" href="popup.css">
+
 </head>
 
 <body>
@@ -20,6 +26,8 @@
             Real-Time Web Risk Detection
         </p>
 
+
+        <!-- Basic URL information -->
         <div class="card">
 
             <h2>URL Analysis</h2>
@@ -56,9 +64,44 @@
 
         </div>
 
+
+        <!-- Security indicators detected during URL analysis -->
+        <div class="card">
+
+            <h2>Security Indicators</h2>
+
+            <div class="analysis-row">
+                <span>HTTPS</span>
+                <span id="https-indicator">Loading...</span>
+            </div>
+
+            <div class="analysis-row">
+                <span>Long URL</span>
+                <span id="long-url">Loading...</span>
+            </div>
+
+            <div class="analysis-row">
+                <span>Many Subdomains</span>
+                <span id="many-subdomains">Loading...</span>
+            </div>
+
+            <div class="analysis-row">
+                <span>Contains @</span>
+                <span id="at-symbol">Loading...</span>
+            </div>
+
+            <div class="analysis-row">
+                <span>URL Encoding</span>
+                <span id="url-encoding">Loading...</span>
+            </div>
+
+        </div>
+
     </div>
+
 
     <script src="popup.js"></script>
 
 </body>
+
 </html>
