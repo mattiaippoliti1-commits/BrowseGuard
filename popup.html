@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- BrowserGuard Popup -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -21,11 +22,37 @@
 
         <div class="card">
 
-            <h2>Current URL</h2>
+            <h2>URL Analysis</h2>
 
-            <p id="url">
-                Loading...
-            </p>
+            <div class="analysis-row">
+                <span>Protocol</span>
+                <span id="protocol">Loading...</span>
+            </div>
+
+            <div class="analysis-row">
+                <span>Hostname</span>
+                <span id="hostname">Loading...</span>
+            </div>
+
+            <div class="analysis-row">
+                <span>URL Length</span>
+                <span id="url-length">Loading...</span>
+            </div>
+
+            <div class="analysis-row">
+                <span>Subdomains</span>
+                <span id="subdomains">Loading...</span>
+            </div>
+
+            <div class="analysis-row">
+                <span>IP Address</span>
+                <span id="ip-address">Loading...</span>
+            </div>
+
+            <div class="analysis-row">
+                <span>Punycode</span>
+                <span id="punycode">Loading...</span>
+            </div>
 
         </div>
 

@@ -1,6 +1,6 @@
 body {
     margin: 0;
-    min-width: 350px;
+    min-width: 380px;
 
     font-family: Arial, sans-serif;
 
@@ -36,11 +36,27 @@ h1 {
 h2 {
     margin-top: 0;
 
-    font-size: 16px;
+    font-size: 17px;
 }
 
-#url {
-    word-break: break-all;
+.analysis-row {
+    display: flex;
 
-    font-size: 13px;
+    justify-content: space-between;
+
+    padding: 8px 0;
+
+    border-bottom: 1px solid #eee;
+}
+
+.analysis-row span:first-child {
+    font-weight: bold;
+}
+
+.analysis-row span:last-child {
+    max-width: 200px;
+
+    text-align: right;
+
+    word-break: break-all;
 }
