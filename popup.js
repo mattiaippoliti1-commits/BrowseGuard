@@ -1,16 +1,46 @@
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", async function () {
 
-    const [tab] = await chrome.tabs.query({
-        active: true,
-        currentWindow: true
-    });
+    try {
 
-    const urlElement = document.getElementById("url");
+        const [tab] = await chrome.tabs.query({
+            active: true,
+            currentWindow: true
+        });
 
-    if (tab && tab.url) {
-        urlElement.textContent = tab.url;
-    } else {
-        urlElement.textContent = "Unable to retrieve URL";
+        if (!tab || !tab.url) {
+            return;
+        }
+
+        analyzeURL(tab.url);
+
+    } catch (error) {
+
+        console.error("Error retrieving tab:", error);
+
     }
 
 });
+
+
+function analyzeURL(urlString) {
+
+    try {
+
+        const url = new URL(urlString);
+
+        const protocol = url.protocol.replace(":", "");
+        const hostname = url.hostname;
+
+        document.getElementById("protocol").textContent =
+            protocol.toUpperCase();
+
+        document.getElementById("hostname").textContent =
+            hostname;
+
+    } catch (error) {
+
+        console.error("URL analysis failed:", error);
+
+    }
+
+}
