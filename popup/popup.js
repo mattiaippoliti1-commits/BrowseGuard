@@ -1,13 +1,22 @@
-// Temporary development theme switch.
-// Remove after the final BrowserGuard visual identity is selected.
-const UI_THEME = "lime";
+const themeStorageKey = "appearanceTheme";
+const appearanceThemes = {
+    dark: "dark",
+    light: "light"
+};
 
-document.documentElement.dataset.theme = UI_THEME;
+applyTheme(getSystemTheme());
+loadStoredThemePreference().then(function (theme) {
+    applyTheme(theme || getSystemTheme());
+}).catch(function () {
+    applyTheme(getSystemTheme());
+});
 
 // Wait until the popup HTML document is fully loaded
 document.addEventListener("DOMContentLoaded", async function () {
 
     try {
+
+        setupThemeToggle();
 
         // Ask Chrome for the currently active tab
         const [tab] = await chrome.tabs.query({
@@ -79,6 +88,135 @@ let selectedAssessmentDimension = null;
 let showAllThirdPartyDomains = false;
 let showAllTrackerDomains = false;
 let showAllFindings = false;
+
+
+function setupThemeToggle() {
+
+    const toggle = document.getElementById("theme-toggle");
+
+    if (!toggle) {
+        return;
+    }
+
+    updateThemeToggle();
+
+    toggle.addEventListener("click", function () {
+        const nextTheme =
+            getCurrentTheme() === appearanceThemes.dark ?
+                appearanceThemes.light :
+                appearanceThemes.dark;
+
+        applyTheme(nextTheme);
+        saveThemePreference(nextTheme);
+    });
+
+}
+
+
+function getSystemTheme() {
+
+    return window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches ?
+            appearanceThemes.dark :
+            appearanceThemes.light;
+
+}
+
+
+function getCurrentTheme() {
+
+    return document.documentElement.dataset.theme === appearanceThemes.light ?
+        appearanceThemes.light :
+        appearanceThemes.dark;
+
+}
+
+
+function applyTheme(theme) {
+
+    const normalizedTheme =
+        theme === appearanceThemes.light ?
+            appearanceThemes.light :
+            appearanceThemes.dark;
+
+    document.documentElement.dataset.theme = normalizedTheme;
+    updateThemeToggle();
+
+}
+
+
+function updateThemeToggle() {
+
+    const toggle = document.getElementById("theme-toggle");
+
+    if (!toggle) {
+        return;
+    }
+
+    const isDark = getCurrentTheme() === appearanceThemes.dark;
+    const label = isDark ?
+        "Switch to light mode" :
+        "Switch to dark mode";
+
+    toggle.setAttribute("aria-label", label);
+    toggle.title = label;
+
+}
+
+
+function loadStoredThemePreference() {
+
+    return new Promise(function (resolve, reject) {
+        if (
+            typeof chrome === "undefined" ||
+            !chrome.storage ||
+            !chrome.storage.local
+        ) {
+            resolve(null);
+            return;
+        }
+
+        chrome.storage.local.get(themeStorageKey, function (result) {
+            if (chrome.runtime.lastError) {
+                reject(chrome.runtime.lastError);
+                return;
+            }
+
+            const theme = result && result[themeStorageKey];
+            resolve(isValidAppearanceTheme(theme) ? theme : null);
+        });
+    });
+
+}
+
+
+function saveThemePreference(theme) {
+
+    if (!isValidAppearanceTheme(theme)) {
+        return;
+    }
+
+    if (
+        typeof chrome === "undefined" ||
+        !chrome.storage ||
+        !chrome.storage.local
+    ) {
+        return;
+    }
+
+    chrome.storage.local.set({
+        [themeStorageKey]: theme
+    });
+
+}
+
+
+function isValidAppearanceTheme(theme) {
+
+    return theme === appearanceThemes.dark ||
+        theme === appearanceThemes.light;
+
+}
 
 
 /**
