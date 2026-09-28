@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>BrowserGuard Web Security Test Page</title>
+
+</head>
+
+<body>
+
+    <h1>BrowserGuard Web Security Test Page</h1>
+
+    <p>
+        This page helps manually exercise iframe security and mixed-content
+        observations. Header checks require an HTTP server because static HTML
+        files cannot set response headers such as CSP or HSTS.
+    </p>
+
+    <iframe
+        src="https://example.com"
+        title="Third-party iframe without sandbox"
+    ></iframe>
+
+    <iframe
+        src="https://example.org"
+        sandbox="allow-scripts allow-forms"
+        title="Sandboxed third-party iframe"
+    ></iframe>
+
+    <iframe
+        src="http://example.net"
+        title="HTTP iframe for HTTPS mixed-content testing"
+    ></iframe>
+
+    <img
+        src="http://example.net/browserguard-mixed-content-test.png"
+        alt="HTTP resource for HTTPS mixed-content testing"
+    >
+
+</body>
+
+</html>

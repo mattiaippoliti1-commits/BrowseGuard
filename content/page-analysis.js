@@ -150,10 +150,16 @@ function analyzeIframes() {
 
     const iframes = document.querySelectorAll("iframe");
     let hiddenIframeCount = 0;
+    let thirdPartyIframeCount = 0;
+    let sandboxedIframeCount = 0;
+    let thirdPartyUnsandboxedIframeCount = 0;
+    let httpsPageHttpIframeCount = 0;
+    const sandboxTokenCounts = {};
 
     iframes.forEach(function (iframe) {
 
         const style = window.getComputedStyle(iframe);
+        const hasSandbox = iframe.hasAttribute("sandbox");
 
         // Hidden iframes are common in legitimate pages too, but can be useful signals.
         if (
@@ -166,12 +172,75 @@ function analyzeIframes() {
             hiddenIframeCount++;
         }
 
+        if (hasSandbox) {
+            sandboxedIframeCount++;
+            collectSandboxTokens(iframe, sandboxTokenCounts);
+        }
+
+        try {
+
+            const src = iframe.getAttribute("src");
+
+            if (!src) {
+                return;
+            }
+
+            const iframeURL = new URL(src, window.location.href);
+            const isThirdParty = hasDifferentHostname(iframeURL);
+
+            if (isThirdParty) {
+                thirdPartyIframeCount++;
+            }
+
+            if (isThirdParty && !hasSandbox) {
+                thirdPartyUnsandboxedIframeCount++;
+            }
+
+            if (
+                window.location.protocol === "https:" &&
+                iframeURL.protocol === "http:"
+            ) {
+                httpsPageHttpIframeCount++;
+            }
+
+        } catch (error) {
+
+            console.error("BrowserGuard: invalid iframe src", error);
+
+        }
+
     });
 
     return {
         iframeCount: iframes.length,
-        hiddenIframeCount: hiddenIframeCount
+        hiddenIframeCount: hiddenIframeCount,
+        thirdPartyIframeCount: thirdPartyIframeCount,
+        sandboxedIframeCount: sandboxedIframeCount,
+        thirdPartyUnsandboxedIframeCount: thirdPartyUnsandboxedIframeCount,
+        httpsPageHttpIframeCount: httpsPageHttpIframeCount,
+        sandboxTokenCounts: sandboxTokenCounts
     };
+
+}
+
+
+/**
+ * Count sandbox capability tokens that are explicitly re-enabled.
+ *
+ * @param {HTMLIFrameElement} iframe - Iframe to inspect.
+ * @param {object} tokenCounts - Mutable token counter.
+ */
+function collectSandboxTokens(iframe, tokenCounts) {
+
+    const sandboxValue = iframe.getAttribute("sandbox") || "";
+
+    sandboxValue.split(/\s+/).forEach(function (token) {
+        if (!token) {
+            return;
+        }
+
+        tokenCounts[token] = (tokenCounts[token] || 0) + 1;
+    });
 
 }
 

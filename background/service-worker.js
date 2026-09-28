@@ -7,18 +7,23 @@
 
 importScripts(
     "../data/tracker-data.js",
-    "../modules/trackers/tracker-matcher.js"
+    "../modules/trackers/tracker-matcher.js",
+    "../modules/security/web-security-analyzer.js"
 );
 
 const tabNetworkStates = new Map();
 const tabRuntimePrivacyStates = new Map();
+const tabWebSecurityStates = new Map();
 const networkStateStorageKey = "browserGuardNetworkStates";
 const runtimePrivacyStorageKey = "browserGuardRuntimePrivacyStates";
+const webSecurityStorageKey = "browserGuardWebSecurityStates";
 const networkStatesReady = restoreNetworkStates();
 const runtimePrivacyStatesReady = restoreRuntimePrivacyStates();
+const webSecurityStatesReady = restoreWebSecurityStates();
 const allStatesReady = Promise.all([
     networkStatesReady,
-    runtimePrivacyStatesReady
+    runtimePrivacyStatesReady,
+    webSecurityStatesReady
 ]);
 const trackerMatcher = BrowserGuardTrackerMatcher.createTrackerMatcher(
     BROWSERGUARD_TRACKER_DATA
@@ -52,10 +57,27 @@ chrome.webRequest.onBeforeRequest.addListener(
     }
 );
 
+chrome.webRequest.onHeadersReceived.addListener(
+    handleHeadersReceived,
+    {
+        urls: [
+            "http://*/*",
+            "https://*/*"
+        ],
+        types: [
+            "main_frame"
+        ]
+    },
+    [
+        "responseHeaders"
+    ]
+);
+
 chrome.tabs.onRemoved.addListener(async function (tabId) {
     await allStatesReady;
     tabNetworkStates.delete(tabId);
     tabRuntimePrivacyStates.delete(tabId);
+    tabWebSecurityStates.delete(tabId);
     await persistAllStates();
 });
 
@@ -81,6 +103,17 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
             sendResponse({
                 success: true,
                 data: getRuntimePrivacySnapshot(message.tabId)
+            });
+        });
+
+        return true;
+    }
+
+    if (message.type === "GET_WEB_SECURITY") {
+        allStatesReady.then(function () {
+            sendResponse({
+                success: true,
+                data: getWebSecuritySnapshot(message.tabId)
             });
         });
 
@@ -125,7 +158,8 @@ function persistAllStates() {
 
     return Promise.all([
         persistNetworkStates(),
-        persistRuntimePrivacyStates()
+        persistRuntimePrivacyStates(),
+        persistWebSecurityStates()
     ]);
 
 }
@@ -146,11 +180,108 @@ async function handleBeforeRequest(details) {
     if (details.type === "main_frame") {
         resetTabNetworkState(details.tabId, details.url);
         resetRuntimePrivacyState(details.tabId, details.url);
+        resetWebSecurityState(details.tabId, details.url);
     }
 
     const state = getOrCreateTabNetworkState(details.tabId, details.url);
     recordNetworkRequest(state, details);
+    const mixedContentRecorded =
+        recordMixedContentRequest(details.tabId, details.url, details.type);
+
     await persistNetworkStates();
+
+    if (mixedContentRecorded) {
+        await persistWebSecurityStates();
+    }
+
+}
+
+/**
+ * Observe the main document response headers and update Web Security state.
+ *
+ * @param {object} details - chrome.webRequest response details.
+ */
+async function handleHeadersReceived(details) {
+
+    if (!details || details.tabId < 0 || details.type !== "main_frame") {
+        return;
+    }
+
+    await allStatesReady;
+
+    const state = getOrCreateWebSecurityState(details.tabId, details.url);
+    const headersByName =
+        BrowserGuardWebSecurityAnalyzer.normalizeResponseHeaders(
+            details.responseHeaders || []
+        );
+
+    state.headers =
+        BrowserGuardWebSecurityAnalyzer.analyzeSecurityHeaders(headersByName);
+    state.https.enabled = getUrlProtocol(details.url) === "https:";
+
+    await persistWebSecurityStates();
+
+}
+
+/**
+ * Start a fresh Web Security state for a tab's current top-level document.
+ *
+ * @param {number} tabId - Chrome tab ID.
+ * @param {string} pageUrl - Main-frame URL.
+ */
+function resetWebSecurityState(tabId, pageUrl) {
+
+    tabWebSecurityStates.set(
+        tabId,
+        BrowserGuardWebSecurityAnalyzer.createEmptyWebSecurityState(pageUrl)
+    );
+
+}
+
+/**
+ * Return the existing Web Security state, or create one when an event arrives
+ * before the main-frame reset is available.
+ *
+ * @param {number} tabId - Chrome tab ID.
+ * @param {string} pageUrl - Page URL.
+ * @returns {object} Per-tab Web Security state.
+ */
+function getOrCreateWebSecurityState(tabId, pageUrl) {
+
+    if (!tabWebSecurityStates.has(tabId)) {
+        resetWebSecurityState(tabId, pageUrl || "");
+    }
+
+    return tabWebSecurityStates.get(tabId);
+
+}
+
+/**
+ * Record HTTP subresources loaded by an HTTPS page.
+ *
+ * @param {number} tabId - Chrome tab ID.
+ * @param {string} requestUrl - Request URL.
+ * @param {string} resourceType - Chrome resource type.
+ */
+function recordMixedContentRequest(tabId, requestUrl, resourceType) {
+
+    const state = tabWebSecurityStates.get(tabId);
+
+    if (!state || !state.https.enabled || getUrlProtocol(requestUrl) !== "http:") {
+        return false;
+    }
+
+    if (resourceType === "main_frame") {
+        return false;
+    }
+
+    state.mixedContent.requestCount++;
+    incrementCounter(
+        state.mixedContent.types,
+        normalizeResourceType(resourceType)
+    );
+
+    return true;
 
 }
 
@@ -453,6 +584,155 @@ function normalizeRuntimePrivacyState(state) {
     });
 
     return normalizedState;
+
+}
+
+/**
+ * Build a serializable Web Security snapshot for the popup.
+ *
+ * @param {number} tabId - Chrome tab ID.
+ * @returns {object} Web Security snapshot.
+ */
+function getWebSecuritySnapshot(tabId) {
+
+    const state = tabWebSecurityStates.get(tabId);
+
+    if (!state) {
+        return createEmptyWebSecuritySnapshot();
+    }
+
+    return {
+        pageUrl: state.pageUrl,
+        https: {
+            ...state.https
+        },
+        headers: {
+            csp: clonePlainObject(state.headers.csp),
+            hsts: clonePlainObject(state.headers.hsts),
+            contentTypeOptions: clonePlainObject(
+                state.headers.contentTypeOptions
+            ),
+            referrerPolicy: clonePlainObject(state.headers.referrerPolicy),
+            permissionsPolicy: clonePlainObject(state.headers.permissionsPolicy),
+            antiFraming: clonePlainObject(state.headers.antiFraming)
+        },
+        mixedContent: {
+            requestCount: state.mixedContent.requestCount,
+            types: {
+                ...state.mixedContent.types
+            }
+        }
+    };
+
+}
+
+/**
+ * @returns {object} Empty Web Security snapshot.
+ */
+function createEmptyWebSecuritySnapshot() {
+
+    return BrowserGuardWebSecurityAnalyzer.createEmptyWebSecurityState("");
+
+}
+
+/**
+ * Restore Web Security state after the MV3 service worker wakes up.
+ *
+ * @returns {Promise<void>}
+ */
+async function restoreWebSecurityStates() {
+
+    try {
+
+        const storedData = await chrome.storage.session.get(
+            webSecurityStorageKey
+        );
+
+        const serializedStates =
+            storedData[webSecurityStorageKey] || {};
+
+        Object.entries(serializedStates).forEach(function ([tabId, state]) {
+            tabWebSecurityStates.set(
+                Number(tabId),
+                normalizeWebSecurityState(state)
+            );
+        });
+
+    } catch (error) {
+
+        console.error("BrowserGuard: web security state restore failed", error);
+
+    }
+
+}
+
+/**
+ * Persist Web Security state for MV3 service worker suspension.
+ *
+ * @returns {Promise<void>}
+ */
+async function persistWebSecurityStates() {
+
+    const serializedStates = {};
+
+    tabWebSecurityStates.forEach(function (state, tabId) {
+        serializedStates[tabId] = state;
+    });
+
+    try {
+
+        await chrome.storage.session.set({
+            [webSecurityStorageKey]: serializedStates
+        });
+
+    } catch (error) {
+
+        console.error("BrowserGuard: web security state persist failed", error);
+
+    }
+
+}
+
+/**
+ * Fill fields added after earlier stored versions of Web Security state.
+ *
+ * @param {object} state - Restored state.
+ * @returns {object} Normalized state.
+ */
+function normalizeWebSecurityState(state) {
+
+    const normalizedState =
+        BrowserGuardWebSecurityAnalyzer.createEmptyWebSecurityState(
+            state.pageUrl || ""
+        );
+
+    return {
+        ...normalizedState,
+        ...state,
+        https: {
+            ...normalizedState.https,
+            ...(state.https || {})
+        },
+        headers: {
+            ...normalizedState.headers,
+            ...(state.headers || {})
+        },
+        mixedContent: {
+            ...normalizedState.mixedContent,
+            ...(state.mixedContent || {}),
+            types: state.mixedContent && state.mixedContent.types ?
+                state.mixedContent.types :
+                {}
+        }
+    };
+
+}
+
+function clonePlainObject(value) {
+
+    return {
+        ...(value || {})
+    };
 
 }
 
@@ -885,6 +1165,20 @@ function extractHostname(urlString) {
 
     try {
         return normalizeHostname(new URL(urlString).hostname);
+    } catch (error) {
+        return "";
+    }
+
+}
+
+/**
+ * @param {string} urlString - URL to parse.
+ * @returns {string} Parsed protocol or empty string.
+ */
+function getUrlProtocol(urlString) {
+
+    try {
+        return new URL(urlString).protocol;
     } catch (error) {
         return "";
     }

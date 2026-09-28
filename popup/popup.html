@@ -26,6 +26,38 @@
             Real-Time Web Risk Detection
         </p>
 
+        <!-- Temporary explainable assessment summary -->
+        <div class="card">
+
+            <h2>Assessment</h2>
+
+            <div class="analysis-row">
+                <span>Security</span>
+                <span id="assessment-security">Loading...</span>
+            </div>
+
+            <div class="analysis-row">
+                <span>Privacy</span>
+                <span id="assessment-privacy">Loading...</span>
+            </div>
+
+            <div class="analysis-row">
+                <span>Network</span>
+                <span id="assessment-network">Loading...</span>
+            </div>
+
+            <p
+                class="assessment-data-status"
+                id="assessment-data-status"
+            ></p>
+
+            <div
+                class="assessment-reasons"
+                id="assessment-reasons"
+            ></div>
+
+        </div>
+
 
         <!-- Basic URL information -->
         <div class="card">
@@ -161,6 +193,64 @@
         </div>
 
 
+        <!-- Web security headers and page configuration -->
+        <div class="card">
+
+            <h2>Web Security</h2>
+
+            <div class="analysis-row">
+                <span>HTTPS</span>
+                <span id="web-security-https">Loading...</span>
+            </div>
+
+            <div class="analysis-row">
+                <span>CSP</span>
+                <span id="web-security-csp">Loading...</span>
+            </div>
+
+            <div class="analysis-row">
+                <span>HSTS</span>
+                <span id="web-security-hsts">Loading...</span>
+            </div>
+
+            <div class="analysis-row">
+                <span>X-Content-Type-Options</span>
+                <span id="web-security-content-type">Loading...</span>
+            </div>
+
+            <div class="analysis-row">
+                <span>Referrer-Policy</span>
+                <span id="web-security-referrer">Loading...</span>
+            </div>
+
+            <div class="analysis-row">
+                <span>Permissions-Policy</span>
+                <span id="web-security-permissions">Loading...</span>
+            </div>
+
+            <div class="analysis-row">
+                <span>Anti-framing</span>
+                <span id="web-security-anti-framing">Loading...</span>
+            </div>
+
+            <div class="analysis-row">
+                <span>Mixed Content</span>
+                <span id="web-security-mixed-content">Loading...</span>
+            </div>
+
+            <div class="analysis-row">
+                <span>Iframe Security</span>
+                <span id="web-security-iframes">Loading...</span>
+            </div>
+
+            <div
+                class="web-security-observations"
+                id="web-security-observations"
+            ></div>
+
+        </div>
+
+
         <!-- Runtime privacy-sensitive API usage observed from page scripts -->
         <div class="card">
 
@@ -268,6 +358,7 @@
     </div>
 
 
+    <script src="../modules/assessment/assessment-engine.js"></script>
     <script src="popup.js"></script>
 
 </body>

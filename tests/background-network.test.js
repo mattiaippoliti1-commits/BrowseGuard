@@ -34,6 +34,11 @@ const context = vm.createContext({
                 addListener: function (listener) {
                     listeners.webRequest = listener;
                 }
+            },
+            onHeadersReceived: {
+                addListener: function (listener) {
+                    listeners.headersReceived = listener;
+                }
             }
         },
         tabs: {
