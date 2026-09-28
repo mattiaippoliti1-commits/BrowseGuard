@@ -14,11 +14,13 @@ document.addEventListener("DOMContentLoaded", async function () {
             updatePageAnalysis(null);
             updateNetworkActivity(null);
             updateRuntimePrivacy(null);
+            updateWebSecurity(null, null);
+            updateAssessment(null);
             return;
         }
 
         // Start the analysis of the current page URL
-        analyzeURL(tab.url);
+        const urlAnalysis = analyzeURL(tab.url);
 
         const networkActivity = await requestNetworkActivity(tab);
         updateNetworkActivity(networkActivity);
@@ -26,11 +28,24 @@ document.addEventListener("DOMContentLoaded", async function () {
         const runtimePrivacy = await requestRuntimePrivacy(tab);
         updateRuntimePrivacy(runtimePrivacy);
 
+        const webSecurity = await requestWebSecurity(tab);
+
         // Ask the content script to analyze the current page DOM
         const pageAnalysis = await requestPageAnalysis(tab);
 
         // Update the popup with page-level information
         updatePageAnalysis(pageAnalysis);
+        updateWebSecurity(webSecurity, pageAnalysis);
+
+        const assessment = BrowserGuardAssessmentEngine.assessBrowserState({
+            urlAnalysis: urlAnalysis,
+            pageAnalysis: pageAnalysis,
+            networkActivity: networkActivity,
+            runtimePrivacy: runtimePrivacy,
+            webSecurity: webSecurity
+        });
+
+        updateAssessment(assessment);
 
     } catch (error) {
 
@@ -40,6 +55,8 @@ document.addEventListener("DOMContentLoaded", async function () {
         updatePageAnalysis(null);
         updateNetworkActivity(null);
         updateRuntimePrivacy(null);
+        updateWebSecurity(null, null);
+        updateAssessment(null);
 
     }
 
@@ -152,12 +169,104 @@ function analyzeURL(urlString) {
         document.getElementById("url-encoding").textContent =
             hasURLEncoding ? "Detected" : "No";
 
+        return {
+            protocol: protocol,
+            hostname: hostname,
+            urlLength: urlLength,
+            subdomainCount: subdomainCount,
+            isIPAddress: isIPAddress,
+            hasPunycode: hasPunycode,
+            usesHTTPS: usesHTTPS,
+            isLongURL: isLongURL,
+            hasManySubdomains: hasManySubdomains,
+            hasAtSymbol: hasAtSymbol,
+            hasURLEncoding: hasURLEncoding
+        };
+
     } catch (error) {
 
         // Log errors caused by invalid or unsupported URLs
         console.error("URL analysis failed:", error);
+        return null;
 
     }
+
+}
+
+
+/**
+ * Update the temporary Assessment card.
+ *
+ * @param {object|null} assessment - Assessment Engine output.
+ */
+function updateAssessment(assessment) {
+
+    const unavailable = "Unavailable";
+    const dataStatus = document.getElementById("assessment-data-status");
+    const reasons = document.getElementById("assessment-reasons");
+
+    reasons.textContent = "";
+    dataStatus.textContent = "";
+
+    if (!assessment) {
+        document.getElementById("assessment-security").textContent = unavailable;
+        document.getElementById("assessment-privacy").textContent = unavailable;
+        document.getElementById("assessment-network").textContent = unavailable;
+        dataStatus.textContent = "Analysis incomplete.";
+        return;
+    }
+
+    document.getElementById("assessment-security").textContent =
+        assessment.security.summary;
+    document.getElementById("assessment-privacy").textContent =
+        assessment.privacy.summary;
+    document.getElementById("assessment-network").textContent =
+        assessment.network.summary;
+
+    if (assessment.dataStatus === "partial") {
+        dataStatus.textContent =
+            "Analysis incomplete: " + assessment.missingSources.join(", ");
+    }
+
+    renderAssessmentReasons(assessment);
+
+}
+
+
+/**
+ * Render a compact Why section using the strongest reasons per dimension.
+ *
+ * @param {object} assessment - Assessment Engine output.
+ */
+function renderAssessmentReasons(assessment) {
+
+    const container = document.getElementById("assessment-reasons");
+    const reasonGroups = [
+        ["Security", assessment.security.reasons],
+        ["Privacy", assessment.privacy.reasons],
+        ["Network", assessment.network.reasons]
+    ];
+
+    reasonGroups.forEach(function ([label, reasons]) {
+        if (!reasons || reasons.length === 0) {
+            return;
+        }
+
+        const title = document.createElement("h3");
+        title.textContent = label + " why";
+        container.appendChild(title);
+
+        const list = document.createElement("ul");
+        list.className = "assessment-reason-list";
+
+        reasons.slice(0, 3).forEach(function (reason) {
+            const item = document.createElement("li");
+            item.textContent = reason.message;
+            list.appendChild(item);
+        });
+
+        container.appendChild(list);
+    });
 
 }
 
@@ -336,6 +445,41 @@ async function requestRuntimePrivacy(tab) {
     } catch (error) {
 
         console.error("BrowserGuard: runtime privacy request failed", error);
+        return null;
+
+    }
+
+}
+
+
+/**
+ * Request Web Security data from the background service worker.
+ *
+ * @param {object} tab - Currently active browser tab.
+ * @returns {Promise<object|null>} Web Security snapshot.
+ */
+async function requestWebSecurity(tab) {
+
+    if (!tab || !tab.id || !canAnalyzeTabURL(tab.url)) {
+        return null;
+    }
+
+    try {
+
+        const response = await chrome.runtime.sendMessage({
+            type: "GET_WEB_SECURITY",
+            tabId: tab.id
+        });
+
+        if (!response || !response.success) {
+            return null;
+        }
+
+        return response.data;
+
+    } catch (error) {
+
+        console.error("BrowserGuard: web security request failed", error);
         return null;
 
     }
@@ -587,6 +731,215 @@ function updateRuntimePrivacy(runtimePrivacy) {
 
         list.appendChild(renderRuntimeCategory(label, category));
     });
+
+}
+
+
+/**
+ * Update the Web Security card.
+ *
+ * @param {object|null} webSecurity - Web Security snapshot.
+ * @param {object|null} pageAnalysis - Page Analysis snapshot with iframe data.
+ */
+function updateWebSecurity(webSecurity, pageAnalysis) {
+
+    const unavailable = "Unavailable";
+    const observations = document.getElementById("web-security-observations");
+    observations.textContent = "";
+
+    if (!webSecurity) {
+        [
+            "web-security-https",
+            "web-security-csp",
+            "web-security-hsts",
+            "web-security-content-type",
+            "web-security-referrer",
+            "web-security-permissions",
+            "web-security-anti-framing",
+            "web-security-mixed-content",
+            "web-security-iframes"
+        ].forEach(function (elementId) {
+            document.getElementById(elementId).textContent = unavailable;
+        });
+
+        return;
+    }
+
+    document.getElementById("web-security-https").textContent =
+        webSecurity.https.enabled ? "Enabled" : "Not observed";
+
+    document.getElementById("web-security-csp").textContent =
+        formatCspStatus(webSecurity.headers.csp);
+
+    document.getElementById("web-security-hsts").textContent =
+        formatHstsStatus(webSecurity.headers.hsts);
+
+    document.getElementById("web-security-content-type").textContent =
+        webSecurity.headers.contentTypeOptions.status;
+
+    document.getElementById("web-security-referrer").textContent =
+        webSecurity.headers.referrerPolicy.status;
+
+    document.getElementById("web-security-permissions").textContent =
+        formatPermissionsPolicyStatus(webSecurity.headers.permissionsPolicy);
+
+    document.getElementById("web-security-anti-framing").textContent =
+        webSecurity.headers.antiFraming.status;
+
+    document.getElementById("web-security-mixed-content").textContent =
+        formatMixedContentStatus(webSecurity.mixedContent);
+
+    document.getElementById("web-security-iframes").textContent =
+        formatIframeSecurityStatus(pageAnalysis);
+
+    renderWebSecurityObservations(webSecurity, pageAnalysis);
+
+}
+
+
+function formatCspStatus(csp) {
+
+    if (!csp) {
+        return "Unavailable";
+    }
+
+    const observationCount = csp.observations ? csp.observations.length : 0;
+
+    if (observationCount === 0) {
+        return csp.status;
+    }
+
+    return csp.status + " · " + observationCount + " observations";
+
+}
+
+
+function formatHstsStatus(hsts) {
+
+    if (!hsts || !hsts.present) {
+        return "Missing";
+    }
+
+    if (hsts.maxAge === null) {
+        return "Present";
+    }
+
+    return "Present · max-age " + hsts.maxAge;
+
+}
+
+
+function formatPermissionsPolicyStatus(permissionsPolicy) {
+
+    if (!permissionsPolicy || !permissionsPolicy.present) {
+        return "Not explicitly set";
+    }
+
+    const featureCount = permissionsPolicy.features ?
+        permissionsPolicy.features.length :
+        0;
+
+    return featureCount > 0 ?
+        "Present · " + featureCount + " features" :
+        "Present";
+
+}
+
+
+function formatMixedContentStatus(mixedContent) {
+
+    if (!mixedContent || mixedContent.requestCount === 0) {
+        return "None observed";
+    }
+
+    return "Observed · " + mixedContent.requestCount + " requests";
+
+}
+
+
+function formatIframeSecurityStatus(pageAnalysis) {
+
+    if (!pageAnalysis) {
+        return "Unavailable";
+    }
+
+    return pageAnalysis.thirdPartyIframeCount + " third-party · " +
+        pageAnalysis.sandboxedIframeCount + " sandboxed";
+
+}
+
+
+function renderWebSecurityObservations(webSecurity, pageAnalysis) {
+
+    const observations = document.getElementById("web-security-observations");
+    const items = [];
+
+    if (webSecurity.headers.csp.observations) {
+        webSecurity.headers.csp.observations.forEach(function (observation) {
+            items.push("CSP: " + observation);
+        });
+    }
+
+    if (webSecurity.headers.hsts.observations) {
+        webSecurity.headers.hsts.observations.forEach(function (observation) {
+            items.push("HSTS: " + observation);
+        });
+    }
+
+    if (
+        webSecurity.mixedContent &&
+        webSecurity.mixedContent.requestCount > 0
+    ) {
+        items.push(
+            "Mixed Content: " +
+            formatTypeCounts(webSecurity.mixedContent.types)
+        );
+    }
+
+    if (pageAnalysis && pageAnalysis.thirdPartyUnsandboxedIframeCount > 0) {
+        items.push(
+            "Iframes: " +
+            pageAnalysis.thirdPartyUnsandboxedIframeCount +
+            " third-party without sandbox"
+        );
+    }
+
+    if (pageAnalysis && pageAnalysis.httpsPageHttpIframeCount > 0) {
+        items.push(
+            "Iframes: " +
+            pageAnalysis.httpsPageHttpIframeCount +
+            " HTTP iframe on HTTPS page"
+        );
+    }
+
+    if (items.length === 0) {
+        return;
+    }
+
+    const list = document.createElement("ul");
+    list.className = "web-security-observation-list";
+
+    items.forEach(function (item) {
+        const listItem = document.createElement("li");
+        listItem.textContent = item;
+        list.appendChild(listItem);
+    });
+
+    observations.appendChild(list);
+
+}
+
+
+function formatTypeCounts(types) {
+
+    return Object.entries(types || {})
+        .sort(function (left, right) {
+            return right[1] - left[1] || left[0].localeCompare(right[0]);
+        })
+        .map(function ([type, count]) {
+            return type + ": " + count;
+        })
+        .join(" · ");
 
 }
 

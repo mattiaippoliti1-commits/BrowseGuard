@@ -18,6 +18,11 @@ analysis of web page security and network activity.
   trackers by matching hostnames against a local dataset.
 - Runtime Privacy: observes selected runtime API usage associated with browser
   fingerprinting indicators, without collecting fingerprint values.
+- Web Security Configuration: observes selected main document security headers,
+  mixed content, and iframe security configuration.
+- Assessment Engine: combines existing URL, DOM, network, runtime privacy, and
+  web security snapshots into separate Security, Privacy, and Network
+  assessments.
 
 ## Network Activity
 
@@ -152,6 +157,138 @@ Runtime monitor limitations:
 - BrowserGuard does not block, spoof, randomize, or modify fingerprint-related
   APIs.
 
+## Web Security Configuration
+
+Web Security Configuration analyzes the main document response and related page
+configuration. It is an observation module, not a vulnerability scanner and not
+a risk score.
+
+BrowserGuard currently checks:
+
+- HTTPS connection status
+- `Content-Security-Policy`
+- `Content-Security-Policy-Report-Only`
+- `Strict-Transport-Security`
+- `X-Content-Type-Options`
+- `Referrer-Policy`
+- `Permissions-Policy`
+- anti-framing configuration through CSP `frame-ancestors` and
+  `X-Frame-Options`
+- mixed content requests observed by the existing Network Activity collector
+- iframe security metrics from Page Analysis
+
+CSP parsing is intentionally lightweight. It reports technical observations such
+as wildcard sources, `'unsafe-inline'`, and `'unsafe-eval'`, but these
+observations do not automatically imply that the page is vulnerable.
+
+HSTS parsing extracts `max-age`, `includeSubDomains`, and `preload`. A `max-age`
+below 180 days is shown as a configuration observation. Lack of `preload` is not
+treated as a problem.
+
+Mixed content detection counts HTTP subresource requests observed from an HTTPS
+main page. It uses the request URL seen by `webRequest.onBeforeRequest`; redirect
+chains and final post-redirect URLs are not fully reconstructed in this version.
+
+Iframe security distinguishes total iframes, third-party iframes, sandboxed
+iframes, third-party iframes without sandbox, sandbox tokens, and HTTP iframes
+inside HTTPS pages. An unsandboxed iframe is reported as evidence only; it is
+not automatically labeled as a vulnerability.
+
+BrowserGuard deliberately does not store cookies, `Set-Cookie`, Authorization
+headers, response bodies, request bodies, POST data, or unrelated HTTP headers.
+Absence of a security header does not automatically mean that the site has a
+vulnerability.
+
+## Assessment Engine
+
+The Assessment Engine is implemented in
+`modules/assessment/assessment-engine.js`. It is a deterministic, UI-independent
+module with no DOM or Chrome API dependency. The popup passes the snapshots that
+BrowserGuard already collects and renders the returned summaries in a temporary
+Assessment card.
+
+Input snapshot:
+
+- `urlAnalysis`: structured URL indicators from the popup URL parser.
+- `pageAnalysis`: DOM/form/link/iframe metrics from the content script.
+- `networkActivity`: request counters, third-party domains, and tracker counts.
+- `runtimePrivacy`: selected fingerprinting-related runtime API indicators.
+- `webSecurity`: HTTPS, selected security headers, mixed content, and iframe
+  configuration.
+
+Output shape:
+
+- `dataStatus`: `complete` or `partial`.
+- `missingSources`: ordered list of unavailable input sources.
+- `security`, `privacy`, `network`: independent dimension objects with
+  `level`, `summary`, `reasons`, and `positiveSignals`.
+
+BrowserGuard intentionally does not calculate a global numeric score. The three
+dimensions are separate so that security hardening, privacy-related activity,
+and third-party network volume are not collapsed into one ambiguous number.
+
+Security levels:
+
+- `no-major-issues`
+- `observations`
+- `attention`
+
+Security combines strong, moderate, and weak observations. Strong observations
+such as an HTTP main page, mixed content, or insecure password forms produce
+`attention`. Two moderate observations or four weak observations also produce
+`attention`. A smaller number of observations produces `observations`.
+
+Privacy levels:
+
+- `low-activity`
+- `moderate-activity`
+- `elevated-activity`
+
+Tracker activity becomes moderate at 2 tracker domains or 10 tracker requests,
+and elevated at 5 tracker domains or 30 tracker requests. Runtime privacy
+activity is considered multiple when at least 3 monitored categories are
+observed. Moderate tracker activity combined with multiple runtime categories is
+treated as elevated privacy-related activity.
+
+Network levels:
+
+- `low-third-party-activity`
+- `moderate-third-party-activity`
+- `high-third-party-activity`
+
+Third-party network activity becomes moderate at a 25% third-party request
+ratio, 5 third-party domains, or 20 third-party requests. It becomes high at a
+50% third-party request ratio, 15 third-party domains, or at least 75
+third-party requests when the ratio is also at least 25%.
+
+The engine avoids double counting by keeping related URL heuristics in one
+reason, keeping tracker classification in Privacy, and keeping third-party
+volume in Network. Missing data is reported through `dataStatus` and
+`missingSources`; unavailable data is never treated as a positive signal.
+
+Each non-baseline assessment includes structured reasons such as:
+
+```json
+{
+  "id": "known-trackers",
+  "severity": "medium",
+  "message": "Known tracker activity was observed",
+  "evidence": {
+    "trackerDomainCount": 2,
+    "trackerRequests": 12,
+    "categories": ["Analytics"]
+  }
+}
+```
+
+Assessment limitations:
+
+- It is heuristic and observational, not a vulnerability scanner.
+- It does not certify that a site is safe or unsafe.
+- It uses only BrowserGuard's existing local snapshots.
+- Incomplete snapshots reduce confidence and are surfaced explicitly.
+- The popup card is temporary and intentionally compact.
+
 ## Project Structure
 
 ```text
@@ -167,6 +304,10 @@ browserguard/
 ├── data/
 │   └── tracker-data.js
 ├── modules/
+│   ├── assessment/
+│   │   └── assessment-engine.js
+│   ├── security/
+│   │   └── web-security-analyzer.js
 │   └── trackers/
 │       └── tracker-matcher.js
 ├── popup/
@@ -175,13 +316,18 @@ browserguard/
 │   └── popup.js
 ├── test-pages/
 │   ├── dom-analysis-test.html
-│   └── runtime-privacy-test.html
+│   ├── runtime-privacy-test.html
+│   └── web-security-test.html
 └── tests/
+    ├── assessment-engine.test.js
     ├── background-network.test.js
     ├── background-runtime.test.js
+    ├── background-web-security.test.js
     ├── manifest-paths.test.js
+    ├── page-analysis-iframe.test.js
     ├── runtime-monitor.test.js
-    └── tracker-matcher.test.js
+    ├── tracker-matcher.test.js
+    └── web-security-analyzer.test.js
 ```
 
 `background/` contains the Manifest V3 service worker. `content/` contains both
@@ -196,14 +342,20 @@ Run the local tests with:
 
 ```bash
 node tests/tracker-matcher.test.js
+node tests/assessment-engine.test.js
 node tests/background-network.test.js
 node tests/runtime-monitor.test.js
 node tests/background-runtime.test.js
+node tests/web-security-analyzer.test.js
+node tests/background-web-security.test.js
+node tests/page-analysis-iframe.test.js
 node tests/manifest-paths.test.js
 node --check background/service-worker.js
 node --check popup/popup.js
 node --check content/page-analysis.js
 node --check content/runtime-monitor.js
 node --check content/runtime-bridge.js
+node --check modules/security/web-security-analyzer.js
+node --check modules/assessment/assessment-engine.js
 python3 -m json.tool manifest.json
 ```

@@ -188,3 +188,39 @@ h3 {
 
     font-size: 12px;
 }
+
+.web-security-observations {
+    margin-top: 10px;
+}
+
+.web-security-observation-list {
+    margin: 8px 0 0;
+
+    padding-left: 18px;
+
+    color: #666;
+
+    font-size: 12px;
+}
+
+.assessment-data-status {
+    margin: 10px 0 0;
+
+    color: #666;
+
+    font-size: 12px;
+}
+
+.assessment-reasons {
+    margin-top: 8px;
+}
+
+.assessment-reason-list {
+    margin: 6px 0 0;
+
+    padding-left: 18px;
+
+    color: #666;
+
+    font-size: 12px;
+}
