@@ -8,6 +8,7 @@
 importScripts(
     "../data/tracker-data.js",
     "../modules/trackers/tracker-matcher.js",
+    "../modules/network/entity-resolver.js",
     "../modules/security/web-security-analyzer.js"
 );
 
@@ -27,6 +28,12 @@ const allStatesReady = Promise.all([
 ]);
 const trackerMatcher = BrowserGuardTrackerMatcher.createTrackerMatcher(
     BROWSERGUARD_TRACKER_DATA
+);
+const entityResolver = BrowserGuardEntityResolver.createEntityResolver(
+    BROWSERGUARD_TRACKER_DATA,
+    {
+        getRegistrableDomain: getRegistrableDomain
+    }
 );
 
 const COMMON_COMPOUND_PUBLIC_SUFFIXES = new Set([
@@ -788,9 +795,15 @@ function createNetworkState(pageUrl) {
         totalRequests: 0,
         firstPartyRequests: 0,
         thirdPartyRequests: 0,
+        sameEntityThirdPartyRequests: 0,
+        externalThirdPartyRequests: 0,
+        unknownThirdPartyRequests: 0,
         trackerRequests: 0,
         resourceTypes: {},
         thirdPartyDomains: {},
+        sameEntityThirdPartyDomains: {},
+        externalThirdPartyDomains: {},
+        unknownThirdPartyDomains: {},
         trackerDomains: {}
     };
 
@@ -822,7 +835,16 @@ function recordNetworkRequest(state, details) {
     }
 
     state.thirdPartyRequests++;
-    recordThirdPartyDomain(state, requestHostname, resourceType);
+    const entityRelationship =
+        entityResolver.resolveRelationship(state.pageHostname, requestHostname);
+
+    recordThirdPartyRelationship(state, entityRelationship.relationship);
+    recordThirdPartyDomain(
+        state,
+        requestHostname,
+        resourceType,
+        entityRelationship
+    );
 
     const trackerMatch = trackerMatcher.findTrackerMatch(requestHostname);
 
@@ -839,11 +861,13 @@ function recordNetworkRequest(state, details) {
  * @param {string} hostname - Request hostname.
  * @param {string} resourceType - Chrome resource type.
  */
-function recordThirdPartyDomain(state, hostname, resourceType) {
+function recordThirdPartyDomain(state, hostname, resourceType, entityRelationship) {
 
     if (!state.thirdPartyDomains[hostname]) {
         state.thirdPartyDomains[hostname] = {
             hostname: hostname,
+            entityRelationship: entityRelationship.relationship,
+            entity: entityRelationship.requestEntity,
             requestCount: 0,
             types: {}
         };
@@ -853,6 +877,90 @@ function recordThirdPartyDomain(state, hostname, resourceType) {
 
     domain.requestCount++;
     incrementCounter(domain.types, resourceType);
+
+    recordThirdPartyRelationshipDomain(
+        state,
+        hostname,
+        resourceType,
+        entityRelationship
+    );
+
+}
+
+/**
+ * Increment entity-aware third-party counters without changing raw third-party
+ * request counts.
+ *
+ * @param {object} state - Per-tab network state.
+ * @param {string} relationship - Entity relationship classification.
+ */
+function recordThirdPartyRelationship(state, relationship) {
+
+    if (relationship === "same-entity-third-party") {
+        state.sameEntityThirdPartyRequests++;
+        return;
+    }
+
+    if (relationship === "external-third-party") {
+        state.externalThirdPartyRequests++;
+        return;
+    }
+
+    state.unknownThirdPartyRequests++;
+
+}
+
+/**
+ * Add request counts to the relationship-specific domain bucket.
+ *
+ * @param {object} state - Per-tab network state.
+ * @param {string} hostname - Request hostname.
+ * @param {string} resourceType - Chrome resource type.
+ * @param {object} entityRelationship - Entity relationship details.
+ */
+function recordThirdPartyRelationshipDomain(
+    state,
+    hostname,
+    resourceType,
+    entityRelationship
+) {
+
+    const bucket = getRelationshipDomainBucket(
+        state,
+        entityRelationship.relationship
+    );
+
+    if (!bucket[hostname]) {
+        bucket[hostname] = {
+            hostname: hostname,
+            entityRelationship: entityRelationship.relationship,
+            entity: entityRelationship.requestEntity,
+            requestCount: 0,
+            types: {}
+        };
+    }
+
+    bucket[hostname].requestCount++;
+    incrementCounter(bucket[hostname].types, resourceType);
+
+}
+
+/**
+ * @param {object} state - Per-tab network state.
+ * @param {string} relationship - Entity relationship details.
+ * @returns {object} Mutable relationship-specific domain bucket.
+ */
+function getRelationshipDomainBucket(state, relationship) {
+
+    if (relationship === "same-entity-third-party") {
+        return state.sameEntityThirdPartyDomains;
+    }
+
+    if (relationship === "external-third-party") {
+        return state.externalThirdPartyDomains;
+    }
+
+    return state.unknownThirdPartyDomains;
 
 }
 
@@ -974,6 +1082,17 @@ function getNetworkActivitySnapshot(tabId) {
             return right.requestCount - left.requestCount ||
                 left.matchedDomain.localeCompare(right.matchedDomain);
         });
+    const sameEntityThirdPartyDomains =
+        sortDomainBucket(state.sameEntityThirdPartyDomains);
+    const externalThirdPartyDomains =
+        sortDomainBucket(state.externalThirdPartyDomains);
+    const unknownThirdPartyDomains =
+        sortDomainBucket(state.unknownThirdPartyDomains);
+    const assessmentThirdPartyRequests =
+        (state.externalThirdPartyRequests || 0) +
+        (state.unknownThirdPartyRequests || 0);
+    const assessmentThirdPartyDomainCount =
+        externalThirdPartyDomains.length + unknownThirdPartyDomains.length;
 
     return {
         pageUrl: state.pageUrl,
@@ -982,13 +1101,23 @@ function getNetworkActivitySnapshot(tabId) {
         trackerDataset: {
             source: BROWSERGUARD_TRACKER_DATA.source,
             license: BROWSERGUARD_TRACKER_DATA.license,
-            reviewedAt: BROWSERGUARD_TRACKER_DATA.reviewedAt,
+            reviewedAt: BROWSERGUARD_TRACKER_DATA.reviewedAt ||
+                BROWSERGUARD_TRACKER_DATA.generatedAt,
+            generatedAt: BROWSERGUARD_TRACKER_DATA.generatedAt,
             entryCount: trackerMatcher.size
         },
         totalRequests: state.totalRequests,
         firstPartyRequests: state.firstPartyRequests,
         thirdPartyRequests: state.thirdPartyRequests,
         thirdPartyDomainCount: thirdPartyDomains.length,
+        sameEntityThirdPartyRequests: state.sameEntityThirdPartyRequests || 0,
+        externalThirdPartyRequests: state.externalThirdPartyRequests || 0,
+        unknownThirdPartyRequests: state.unknownThirdPartyRequests || 0,
+        sameEntityThirdPartyDomainCount: sameEntityThirdPartyDomains.length,
+        externalThirdPartyDomainCount: externalThirdPartyDomains.length,
+        unknownThirdPartyDomainCount: unknownThirdPartyDomains.length,
+        assessmentThirdPartyRequests: assessmentThirdPartyRequests,
+        assessmentThirdPartyDomainCount: assessmentThirdPartyDomainCount,
         trackerRequests: state.trackerRequests || 0,
         trackerDomainCount: trackerDomains.length,
         resourceTypes: {
@@ -997,12 +1126,17 @@ function getNetworkActivitySnapshot(tabId) {
         thirdPartyDomains: thirdPartyDomains.map(function (domain) {
             return {
                 hostname: domain.hostname,
+                entityRelationship: domain.entityRelationship,
+                entity: domain.entity,
                 requestCount: domain.requestCount,
                 types: {
                     ...domain.types
                 }
             };
         }),
+        sameEntityThirdPartyDomains: mapDomainBucket(sameEntityThirdPartyDomains),
+        externalThirdPartyDomains: mapDomainBucket(externalThirdPartyDomains),
+        unknownThirdPartyDomains: mapDomainBucket(unknownThirdPartyDomains),
         trackerDomains: trackerDomains.map(function (tracker) {
             return {
                 hostname: tracker.hostname,
@@ -1019,6 +1153,40 @@ function getNetworkActivitySnapshot(tabId) {
 }
 
 /**
+ * @param {object} bucket - Map-like domain bucket.
+ * @returns {Array<object>} Sorted domain entries.
+ */
+function sortDomainBucket(bucket) {
+
+    return Object.values(bucket || {})
+        .sort(function (left, right) {
+            return right.requestCount - left.requestCount ||
+                left.hostname.localeCompare(right.hostname);
+        });
+
+}
+
+/**
+ * @param {Array<object>} domains - Sorted domain entries.
+ * @returns {Array<object>} Serializable domain summaries.
+ */
+function mapDomainBucket(domains) {
+
+    return domains.map(function (domain) {
+        return {
+            hostname: domain.hostname,
+            entityRelationship: domain.entityRelationship,
+            entity: domain.entity,
+            requestCount: domain.requestCount,
+            types: {
+                ...domain.types
+            }
+        };
+    });
+
+}
+
+/**
  * @returns {object} Empty snapshot used when no requests were observed yet.
  */
 function createEmptyNetworkSnapshot() {
@@ -1030,17 +1198,30 @@ function createEmptyNetworkSnapshot() {
         trackerDataset: {
             source: BROWSERGUARD_TRACKER_DATA.source,
             license: BROWSERGUARD_TRACKER_DATA.license,
-            reviewedAt: BROWSERGUARD_TRACKER_DATA.reviewedAt,
+            reviewedAt: BROWSERGUARD_TRACKER_DATA.reviewedAt ||
+                BROWSERGUARD_TRACKER_DATA.generatedAt,
+            generatedAt: BROWSERGUARD_TRACKER_DATA.generatedAt,
             entryCount: trackerMatcher.size
         },
         totalRequests: 0,
         firstPartyRequests: 0,
         thirdPartyRequests: 0,
         thirdPartyDomainCount: 0,
+        sameEntityThirdPartyRequests: 0,
+        externalThirdPartyRequests: 0,
+        unknownThirdPartyRequests: 0,
+        sameEntityThirdPartyDomainCount: 0,
+        externalThirdPartyDomainCount: 0,
+        unknownThirdPartyDomainCount: 0,
+        assessmentThirdPartyRequests: 0,
+        assessmentThirdPartyDomainCount: 0,
         trackerRequests: 0,
         trackerDomainCount: 0,
         resourceTypes: {},
         thirdPartyDomains: [],
+        sameEntityThirdPartyDomains: [],
+        externalThirdPartyDomains: [],
+        unknownThirdPartyDomains: [],
         trackerDomains: []
     };
 
@@ -1091,9 +1272,15 @@ function normalizeNetworkState(state) {
         totalRequests: state.totalRequests || 0,
         firstPartyRequests: state.firstPartyRequests || 0,
         thirdPartyRequests: state.thirdPartyRequests || 0,
+        sameEntityThirdPartyRequests: state.sameEntityThirdPartyRequests || 0,
+        externalThirdPartyRequests: state.externalThirdPartyRequests || 0,
+        unknownThirdPartyRequests: state.unknownThirdPartyRequests || 0,
         trackerRequests: state.trackerRequests || 0,
         resourceTypes: state.resourceTypes || {},
         thirdPartyDomains: state.thirdPartyDomains || {},
+        sameEntityThirdPartyDomains: state.sameEntityThirdPartyDomains || {},
+        externalThirdPartyDomains: state.externalThirdPartyDomains || {},
+        unknownThirdPartyDomains: state.unknownThirdPartyDomains || {},
         trackerDomains: state.trackerDomains || {}
     };
 

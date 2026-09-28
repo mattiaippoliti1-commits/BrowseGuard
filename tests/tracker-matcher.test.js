@@ -52,10 +52,10 @@ assert.strictEqual(
 );
 
 assert.deepStrictEqual(
-    matcher.findTrackerMatch("ssl.google-analytics.com"),
+    matcher.findTrackerMatch("ad.doubleclick.net"),
     {
-        matchedDomain: "google-analytics.com",
-        category: "Analytics"
+        matchedDomain: "doubleclick.net",
+        category: "Advertising"
     },
     "known tracker subdomain should match"
 );

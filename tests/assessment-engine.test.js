@@ -387,6 +387,26 @@ assessment = assessBrowserState(snapshot);
 assert.strictEqual(assessment.network.level, "moderate-third-party-activity");
 
 snapshot = completeCleanSnapshot();
+snapshot.networkActivity.totalRequests = 34;
+snapshot.networkActivity.firstPartyRequests = 14;
+snapshot.networkActivity.thirdPartyRequests = 20;
+snapshot.networkActivity.thirdPartyDomainCount = 4;
+snapshot.networkActivity.sameEntityThirdPartyRequests = 18;
+snapshot.networkActivity.externalThirdPartyRequests = 2;
+snapshot.networkActivity.unknownThirdPartyRequests = 0;
+snapshot.networkActivity.sameEntityThirdPartyDomainCount = 2;
+snapshot.networkActivity.externalThirdPartyDomainCount = 2;
+snapshot.networkActivity.unknownThirdPartyDomainCount = 0;
+snapshot.networkActivity.assessmentThirdPartyRequests = 2;
+snapshot.networkActivity.assessmentThirdPartyDomainCount = 2;
+assessment = assessBrowserState(snapshot);
+assert.strictEqual(assessment.network.level, "low-third-party-activity");
+assert.ok(assessment.network.reasons.some(function (reason) {
+    return reason.evidence.thirdPartyRequests === 20 &&
+        reason.evidence.assessmentThirdPartyRequests === 2;
+}));
+
+snapshot = completeCleanSnapshot();
 snapshot.networkActivity.totalRequests = 0;
 snapshot.networkActivity.thirdPartyRequests = 0;
 snapshot.networkActivity.thirdPartyDomainCount = 0;

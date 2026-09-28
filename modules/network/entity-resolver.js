@@ -15,13 +15,14 @@ function createEntityResolver(entityData, options) {
             defaultRegistrableDomain;
 
     (entityData.entityDomains || []).forEach(function (entry) {
-        const domain = normalizeHostname(entry.domain);
+        const normalizedEntry = normalizeEntityEntry(entry);
+        const domain = normalizeHostname(normalizedEntry.domain);
 
-        if (!domain || !entry.entity) {
+        if (!domain || !normalizedEntry.entity) {
             return;
         }
 
-        entityByDomain.set(domain, entry.entity);
+        entityByDomain.set(domain, normalizedEntry.entity);
     });
 
     return {
@@ -38,6 +39,19 @@ function createEntityResolver(entityData, options) {
         },
         size: entityByDomain.size
     };
+
+}
+
+function normalizeEntityEntry(entry) {
+
+    if (Array.isArray(entry)) {
+        return {
+            domain: entry[0],
+            entity: entry[1]
+        };
+    }
+
+    return entry || {};
 
 }
 
@@ -140,6 +154,7 @@ if (typeof module !== "undefined" && module.exports) {
         createEntityResolver: createEntityResolver,
         resolveRelationship: resolveRelationship,
         getEntityForHostname: getEntityForHostname,
+        normalizeEntityEntry: normalizeEntityEntry,
         normalizeHostname: normalizeHostname
     };
 } else {
@@ -147,6 +162,7 @@ if (typeof module !== "undefined" && module.exports) {
         createEntityResolver: createEntityResolver,
         resolveRelationship: resolveRelationship,
         getEntityForHostname: getEntityForHostname,
+        normalizeEntityEntry: normalizeEntityEntry,
         normalizeHostname: normalizeHostname
     };
 }
