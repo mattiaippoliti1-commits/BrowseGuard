@@ -12,11 +12,15 @@ document.addEventListener("DOMContentLoaded", async function () {
         // Stop if the active tab or its URL cannot be retrieved
         if (!tab || !tab.url) {
             updatePageAnalysis(null);
+            updateNetworkActivity(null);
             return;
         }
 
         // Start the analysis of the current page URL
         analyzeURL(tab.url);
+
+        const networkActivity = await requestNetworkActivity(tab);
+        updateNetworkActivity(networkActivity);
 
         // Ask the content script to analyze the current page DOM
         const pageAnalysis = await requestPageAnalysis(tab);
@@ -30,10 +34,15 @@ document.addEventListener("DOMContentLoaded", async function () {
         console.error("Error retrieving tab:", error);
 
         updatePageAnalysis(null);
+        updateNetworkActivity(null);
 
     }
 
 });
+
+const visibleThirdPartyDomainLimit = 5;
+let currentNetworkActivity = null;
+let showAllThirdPartyDomains = false;
 
 
 /**
@@ -258,6 +267,41 @@ function sendPageAnalysisMessage(tabId) {
 
 
 /**
+ * Request network activity data from the background service worker.
+ *
+ * @param {object} tab - Currently active browser tab.
+ * @returns {Promise<object|null>} Network activity snapshot.
+ */
+async function requestNetworkActivity(tab) {
+
+    if (!tab || !tab.id || !canAnalyzeTabURL(tab.url)) {
+        return null;
+    }
+
+    try {
+
+        const response = await chrome.runtime.sendMessage({
+            type: "GET_NETWORK_ACTIVITY",
+            tabId: tab.id
+        });
+
+        if (!response || !response.success) {
+            return null;
+        }
+
+        return response.data;
+
+    } catch (error) {
+
+        console.error("BrowserGuard: network activity request failed", error);
+        return null;
+
+    }
+
+}
+
+
+/**
  * Send a lightweight ping to check whether the content script listener is ready.
  *
  * @param {number} tabId - ID of the tab that should receive the message.
@@ -418,6 +462,190 @@ function updatePageAnalysis(analysis) {
         document.getElementById(elementId).textContent =
             analysis[propertyName];
     });
+
+}
+
+
+/**
+ * Update the Network Activity card in the popup.
+ *
+ * @param {object|null} activity - Network activity snapshot from background.js.
+ */
+function updateNetworkActivity(activity) {
+
+    currentNetworkActivity = activity;
+    showAllThirdPartyDomains = false;
+
+    const unavailable = "Unavailable";
+    const summaryFields = [
+        ["network-total-requests", "totalRequests"],
+        ["network-first-party-requests", "firstPartyRequests"],
+        ["network-third-party-requests", "thirdPartyRequests"],
+        ["network-third-party-domains", "thirdPartyDomainCount"]
+    ];
+
+    if (!activity) {
+        summaryFields.forEach(function ([elementId]) {
+            document.getElementById(elementId).textContent = unavailable;
+        });
+
+        renderNetworkResourceTypes(null);
+        renderThirdPartyDomains([]);
+        return;
+    }
+
+    summaryFields.forEach(function ([elementId, propertyName]) {
+        document.getElementById(elementId).textContent =
+            activity[propertyName];
+    });
+
+    renderNetworkResourceTypes(activity.resourceTypes);
+    renderThirdPartyDomains(activity.thirdPartyDomains || []);
+
+}
+
+
+/**
+ * Render aggregate request counts by Chrome resource type.
+ *
+ * @param {object|null} resourceTypes - Resource type counters.
+ */
+function renderNetworkResourceTypes(resourceTypes) {
+
+    const container = document.getElementById("network-resource-types");
+    container.textContent = "";
+
+    if (!resourceTypes || Object.keys(resourceTypes).length === 0) {
+        return;
+    }
+
+    const orderedTypes = Object.entries(resourceTypes)
+        .sort(function (left, right) {
+            return right[1] - left[1] || left[0].localeCompare(right[0]);
+        });
+
+    orderedTypes.forEach(function ([type, count]) {
+        const pill = document.createElement("span");
+        pill.className = "network-type-pill";
+        pill.textContent = formatResourceType(type) + ": " + count;
+        container.appendChild(pill);
+    });
+
+}
+
+
+/**
+ * Render the third-party domain list with a compact Show more control.
+ *
+ * @param {Array<object>} domains - Third-party domain summaries.
+ */
+function renderThirdPartyDomains(domains) {
+
+    const list = document.getElementById("network-domain-list");
+    const showMoreButton = document.getElementById("network-show-more");
+
+    list.textContent = "";
+
+    if (!domains || domains.length === 0) {
+        const emptyState = document.createElement("p");
+        emptyState.className = "empty-state";
+        emptyState.textContent = "No third-party domains observed yet.";
+        list.appendChild(emptyState);
+        showMoreButton.hidden = true;
+        return;
+    }
+
+    const visibleDomains = showAllThirdPartyDomains ?
+        domains :
+        domains.slice(0, visibleThirdPartyDomainLimit);
+
+    visibleDomains.forEach(function (domain) {
+        const item = document.createElement("div");
+        item.className = "network-domain-item";
+
+        const hostname = document.createElement("span");
+        hostname.className = "network-domain-hostname";
+        hostname.textContent = domain.hostname;
+
+        const details = document.createElement("span");
+        details.className = "network-domain-details";
+        details.textContent = formatDomainRequestSummary(domain);
+
+        item.appendChild(hostname);
+        item.appendChild(details);
+        list.appendChild(item);
+    });
+
+    showMoreButton.hidden = domains.length <= visibleThirdPartyDomainLimit;
+    showMoreButton.textContent = showAllThirdPartyDomains ?
+        "Show less" :
+        "Show more";
+
+}
+
+
+document.addEventListener("click", function (event) {
+
+    if (event.target.id !== "network-show-more" || !currentNetworkActivity) {
+        return;
+    }
+
+    showAllThirdPartyDomains = !showAllThirdPartyDomains;
+    renderThirdPartyDomains(currentNetworkActivity.thirdPartyDomains || []);
+
+});
+
+
+/**
+ * @param {object} domain - Third-party domain summary.
+ * @returns {string} Human-readable count and resource type summary.
+ */
+function formatDomainRequestSummary(domain) {
+
+    const requestLabel =
+        domain.requestCount === 1 ? "request" : "requests";
+
+    const typeSummary = Object.entries(domain.types || {})
+        .sort(function (left, right) {
+            return right[1] - left[1] || left[0].localeCompare(right[0]);
+        })
+        .slice(0, 3)
+        .map(function ([type, count]) {
+            return count + " " + formatResourceType(type);
+        });
+
+    const parts = [
+        domain.requestCount + " " + requestLabel
+    ];
+
+    if (typeSummary.length > 0) {
+        parts.push(typeSummary.join(" · "));
+    }
+
+    return parts.join(" · ");
+
+}
+
+
+/**
+ * @param {string} type - Normalized resource type.
+ * @returns {string} Short display label.
+ */
+function formatResourceType(type) {
+
+    const labels = {
+        main_frame: "document",
+        script: "scripts",
+        stylesheet: "stylesheets",
+        image: "images",
+        font: "fonts",
+        xhr: "XHR/fetch",
+        media: "media",
+        iframe: "iframes",
+        other: "other"
+    };
+
+    return labels[type] || type;
 
 }
 

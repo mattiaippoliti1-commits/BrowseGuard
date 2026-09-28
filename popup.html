@@ -160,6 +160,54 @@
 
         </div>
 
+
+        <!-- Network information collected by the background service worker -->
+        <div class="card">
+
+            <h2>Network Activity</h2>
+
+            <div class="analysis-row">
+                <span>Total Requests</span>
+                <span id="network-total-requests">Loading...</span>
+            </div>
+
+            <div class="analysis-row">
+                <span>First-party Requests</span>
+                <span id="network-first-party-requests">Loading...</span>
+            </div>
+
+            <div class="analysis-row">
+                <span>Third-party Requests</span>
+                <span id="network-third-party-requests">Loading...</span>
+            </div>
+
+            <div class="analysis-row">
+                <span>Third-party Domains</span>
+                <span id="network-third-party-domains">Loading...</span>
+            </div>
+
+            <div class="network-types" id="network-resource-types"></div>
+
+            <h3>Top Third-party Domains</h3>
+
+            <div
+                class="network-domain-list"
+                id="network-domain-list"
+            >
+                <p class="empty-state">Loading...</p>
+            </div>
+
+            <button
+                class="show-more-button"
+                id="network-show-more"
+                type="button"
+                hidden
+            >
+                Show more
+            </button>
+
+        </div>
+
     </div>
 
 
