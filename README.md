@@ -14,8 +14,8 @@ analysis of web page security and network activity.
 - Network Activity: uses a Manifest V3 background service worker and
   `chrome.webRequest.onBeforeRequest` to observe requests per tab without
   blocking or modifying them.
-- Tracker Detection: classifies some third-party network requests as known
-  trackers by matching hostnames against a local dataset.
+- Tracker Detection: identifies tracking-associated domains by matching
+  hostnames against a local Tracker Radar-derived dataset.
 - Runtime Privacy: observes selected runtime API usage associated with browser
   fingerprinting indicators, without collecting fingerprint values.
 - Web Security Configuration: observes selected main document security headers,
@@ -47,12 +47,16 @@ incorrectly.
 Tracker Detection is separate from Network Activity:
 
 - Network Activity observes requests.
-- Tracker Detection classifies some third-party requests using a knowledge
-  base.
+- Tracker Detection identifies request hostnames whose parent domain appears in
+  the local Tracker Radar-derived dataset.
 
-A third-party domain is not automatically a tracker. BrowserGuard only labels a
-domain as a `Known Tracker` when the request hostname matches an entry in the
-local tracker dataset.
+A third-party domain is not automatically a tracker or malicious. BrowserGuard
+labels a domain as tracking-associated when its Tracker Radar domain-level
+metadata contains tracking-related categories used by BrowserGuard.
+
+A tracking-associated domain match does not prove that the individual request is
+performing tracking. No tracking-associated domain match does not imply the
+absence of tracking.
 
 The matching runs locally inside the extension. BrowserGuard does not send
 visited URLs, hostnames, request data, history, cookies, request bodies,
@@ -89,18 +93,21 @@ additional Chrome permissions.
 
 Tracker Radar categories are normalized into user-facing BrowserGuard
 categories. BrowserGuard does not infer tracker category from a domain name.
+The classification is domain-level and may be derived from evidence about
+specific resources or observed uses of that domain in Tracker Radar.
 
 ## Domain Matching
 
-Tracker matching is domain-bound:
+Tracking-associated domain matching is domain-bound:
 
 - `example.com` matches `example.com`;
 - `tracker.example.com` matches `example.com`;
 - `notexample.com` does not match `example.com`;
 - `example.com.evil.test` does not match `example.com`.
 
-The matcher uses suffix lookup over hostname labels and a `Map` of known tracker
-domains. It avoids substring matching such as `hostname.includes(domain)`.
+The matcher uses suffix lookup over hostname labels and a `Map` of
+tracking-associated domains. It avoids substring matching such as
+`hostname.includes(domain)`.
 
 ## Entity-aware Third-party Classification
 
@@ -126,15 +133,16 @@ Third-party does not imply tracker or malicious.
 
 The Network Assessment uses external plus unknown third-party activity for
 escalation, while the raw UI counters still show all third-party requests.
-Tracker Detection remains independent: a same-entity third-party can still be a
-known tracker if it appears in Tracker Radar.
+Tracking evidence remains independent: a same-entity third-party can still be
+tracking-associated if it appears in Tracker Radar.
 
 ## Limitations
 
-- BrowserGuard detects only trackers present in the local dataset.
+- BrowserGuard detects only tracking-associated domains present in the local
+  dataset.
 - No match does not prove that a page has no tracking.
-- A known tracker does not imply malware, phishing, or that the website is
-  unsafe.
+- A tracking-associated domain does not imply malware, phishing, or that the
+  website is unsafe.
 - Third-party does not mean tracker.
 - Same-entity does not imply safe or privacy-preserving.
 - Entity resolution depends on Tracker Radar metadata coverage.
@@ -288,10 +296,11 @@ Privacy levels:
 - `moderate-activity`
 - `elevated-activity`
 
-Tracker activity becomes moderate at 2 tracker domains or 10 tracker requests,
-and elevated at 5 tracker domains, or at 30 tracker requests when at least 2
-tracker domains are involved. Tracker categories such as Analytics,
-Advertising, and Social are descriptive evidence only; they are not weighted.
+Tracking-associated domain activity becomes moderate at 2 matched domains or
+10 associated requests, and elevated at 5 matched domains, or at 30 associated
+requests when at least 2 matched domains are involved. Tracker Radar categories
+such as Analytics, Advertising, and Social are descriptive evidence only; they
+are not weighted.
 Runtime privacy activity is considered multiple when at least 3 monitored
 categories are observed. WebGL hardware information alone does not create a
 significant escalation, but WebGL hardware information combined with Canvas or
@@ -330,7 +339,7 @@ Each non-baseline assessment includes structured reasons such as:
 {
   "id": "known-trackers",
   "severity": "medium",
-  "message": "Known tracker activity was observed",
+  "message": "Activity from tracking-associated domains was observed",
   "evidence": {
     "trackerDomainCount": 2,
     "trackerRequests": 12,
