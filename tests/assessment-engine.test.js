@@ -155,6 +155,12 @@ snapshot.webSecurity.headers.antiFraming.status =
     "No explicit anti-framing policy detected";
 assessment = assessBrowserState(snapshot);
 assert.strictEqual(assessment.security.level, "observations");
+assert.strictEqual(
+    assessment.security.reasons.find(function (reason) {
+        return reason.id === "anti-framing-missing";
+    }).severity,
+    "info"
+);
 
 snapshot = completeCleanSnapshot();
 snapshot.urlAnalysis.usesHTTPS = false;
@@ -194,6 +200,7 @@ snapshot.webSecurity.headers.hsts.present = false;
 snapshot.webSecurity.headers.hsts.status = "Missing";
 snapshot.webSecurity.headers.antiFraming.status =
     "No explicit anti-framing policy detected";
+snapshot.webSecurity.headers.contentTypeOptions.status = "missing";
 assessment = assessBrowserState(snapshot);
 assert.strictEqual(assessment.security.level, "attention");
 
@@ -220,11 +227,47 @@ assessment = assessBrowserState(snapshot);
 assert.strictEqual(assessment.privacy.level, "elevated-activity");
 
 snapshot = completeCleanSnapshot();
+snapshot.networkActivity.trackerDomainCount = 1;
+snapshot.networkActivity.trackerRequests =
+    ASSESSMENT_THRESHOLDS.privacy.elevatedTrackerRequests;
+assessment = assessBrowserState(snapshot);
+assert.strictEqual(assessment.privacy.level, "moderate-activity");
+
+snapshot = completeCleanSnapshot();
+snapshot.networkActivity.trackerDomainCount =
+    ASSESSMENT_THRESHOLDS.privacy.elevatedTrackerRequestMinimumDomains;
+snapshot.networkActivity.trackerRequests =
+    ASSESSMENT_THRESHOLDS.privacy.elevatedTrackerRequests;
+assessment = assessBrowserState(snapshot);
+assert.strictEqual(assessment.privacy.level, "elevated-activity");
+
+snapshot = completeCleanSnapshot();
 snapshot.runtimePrivacy.categories.canvas = detectedRuntimeCategory([
     "toDataURL:"
 ]);
 assessment = assessBrowserState(snapshot);
 assert.strictEqual(assessment.privacy.level, "low-activity");
+
+snapshot = completeCleanSnapshot();
+snapshot.runtimePrivacy.categories.webgl = detectedRuntimeCategory([
+    "getParameter:UNMASKED_RENDERER_WEBGL"
+]);
+assessment = assessBrowserState(snapshot);
+assert.strictEqual(assessment.privacy.level, "low-activity");
+
+snapshot = completeCleanSnapshot();
+snapshot.runtimePrivacy.categories.canvas = detectedRuntimeCategory([
+    "toDataURL:"
+]);
+snapshot.runtimePrivacy.categories.webgl = detectedRuntimeCategory([
+    "getParameter:UNMASKED_RENDERER_WEBGL"
+]);
+assessment = assessBrowserState(snapshot);
+assert.strictEqual(assessment.privacy.level, "moderate-activity");
+assert.ok(assessment.privacy.reasons.some(function (reason) {
+    return reason.id === "multiple-runtime-privacy-indicators" &&
+        reason.evidence.combinedRuntimeIndicators;
+}));
 
 snapshot = completeCleanSnapshot();
 snapshot.runtimePrivacy.categories.screen = detectedRuntimeCategory([
@@ -276,7 +319,14 @@ snapshot.networkActivity.totalRequests = 6;
 snapshot.networkActivity.thirdPartyRequests = 3;
 snapshot.networkActivity.thirdPartyDomainCount = 6;
 assessment = assessBrowserState(snapshot);
-assert.strictEqual(assessment.network.level, "high-third-party-activity");
+assert.strictEqual(assessment.network.level, "moderate-third-party-activity");
+
+snapshot = completeCleanSnapshot();
+snapshot.networkActivity.totalRequests = 5;
+snapshot.networkActivity.thirdPartyRequests = 4;
+snapshot.networkActivity.thirdPartyDomainCount = 4;
+assessment = assessBrowserState(snapshot);
+assert.strictEqual(assessment.network.level, "moderate-third-party-activity");
 
 snapshot = completeCleanSnapshot();
 snapshot.networkActivity.totalRequests = 1000;
@@ -298,6 +348,17 @@ assessment = assessBrowserState(snapshot);
 assert.strictEqual(assessment.dataStatus, "partial");
 assert.deepStrictEqual(assessment.missingSources, ["runtimePrivacy"]);
 assert.strictEqual(assessment.privacy.summary, "Analysis incomplete");
+assert.ok(assessment.privacy.reasons.some(function (reason) {
+    return reason.id === "privacy-data-incomplete";
+}));
+
+snapshot = completeCleanSnapshot();
+delete snapshot.networkActivity;
+assessment = assessBrowserState(snapshot);
+assert.strictEqual(assessment.dataStatus, "partial");
+assert.ok(assessment.privacy.reasons.some(function (reason) {
+    return reason.id === "privacy-data-incomplete";
+}));
 
 snapshot = completeCleanSnapshot();
 delete snapshot.networkActivity;
