@@ -5,11 +5,21 @@
  * It does not block, modify, classify reputation, or assign risk to traffic.
  */
 
-importScripts("tracker-data.js", "tracker-matcher.js");
+importScripts(
+    "../data/tracker-data.js",
+    "../modules/trackers/tracker-matcher.js"
+);
 
 const tabNetworkStates = new Map();
+const tabRuntimePrivacyStates = new Map();
 const networkStateStorageKey = "browserGuardNetworkStates";
+const runtimePrivacyStorageKey = "browserGuardRuntimePrivacyStates";
 const networkStatesReady = restoreNetworkStates();
+const runtimePrivacyStatesReady = restoreRuntimePrivacyStates();
+const allStatesReady = Promise.all([
+    networkStatesReady,
+    runtimePrivacyStatesReady
+]);
 const trackerMatcher = BrowserGuardTrackerMatcher.createTrackerMatcher(
     BROWSERGUARD_TRACKER_DATA
 );
@@ -43,27 +53,82 @@ chrome.webRequest.onBeforeRequest.addListener(
 );
 
 chrome.tabs.onRemoved.addListener(async function (tabId) {
-    await networkStatesReady;
+    await allStatesReady;
     tabNetworkStates.delete(tabId);
-    await persistNetworkStates();
+    tabRuntimePrivacyStates.delete(tabId);
+    await persistAllStates();
 });
 
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 
-    if (!message || message.type !== "GET_NETWORK_ACTIVITY") {
+    if (!message || !message.type) {
         return false;
     }
 
-    networkStatesReady.then(function () {
-        sendResponse({
-            success: true,
-            data: getNetworkActivitySnapshot(message.tabId)
+    if (message.type === "GET_NETWORK_ACTIVITY") {
+        allStatesReady.then(function () {
+            sendResponse({
+                success: true,
+                data: getNetworkActivitySnapshot(message.tabId)
+            });
         });
-    });
 
-    return true;
+        return true;
+    }
+
+    if (message.type === "GET_RUNTIME_PRIVACY") {
+        allStatesReady.then(function () {
+            sendResponse({
+                success: true,
+                data: getRuntimePrivacySnapshot(message.tabId)
+            });
+        });
+
+        return true;
+    }
+
+    if (message.type === "RUNTIME_PRIVACY_EVENT") {
+        allStatesReady.then(async function () {
+            const tabId = sender.tab && sender.tab.id;
+            const pageUrl = sender.tab && sender.tab.url;
+
+            if (typeof tabId !== "number" || tabId < 0) {
+                sendResponse({
+                    success: false
+                });
+                return;
+            }
+
+            const recorded = recordRuntimePrivacyEvent(
+                tabId,
+                pageUrl,
+                message.event
+            );
+
+            if (recorded) {
+                await persistRuntimePrivacyStates();
+            }
+
+            sendResponse({
+                success: recorded
+            });
+        });
+
+        return true;
+    }
+
+    return false;
 
 });
+
+function persistAllStates() {
+
+    return Promise.all([
+        persistNetworkStates(),
+        persistRuntimePrivacyStates()
+    ]);
+
+}
 
 /**
  * Observe one Chrome network request and update the matching tab state.
@@ -76,10 +141,11 @@ async function handleBeforeRequest(details) {
         return;
     }
 
-    await networkStatesReady;
+    await allStatesReady;
 
     if (details.type === "main_frame") {
         resetTabNetworkState(details.tabId, details.url);
+        resetRuntimePrivacyState(details.tabId, details.url);
     }
 
     const state = getOrCreateTabNetworkState(details.tabId, details.url);
@@ -87,6 +153,313 @@ async function handleBeforeRequest(details) {
     await persistNetworkStates();
 
 }
+
+/**
+ * Start a fresh runtime privacy state for a tab's current document.
+ *
+ * @param {number} tabId - Chrome tab ID.
+ * @param {string} pageUrl - Main-frame URL.
+ */
+function resetRuntimePrivacyState(tabId, pageUrl) {
+
+    tabRuntimePrivacyStates.set(tabId, createRuntimePrivacyState(pageUrl));
+
+}
+
+/**
+ * Return an existing runtime privacy state, or create one if a document_start
+ * runtime event arrives before the main-frame webRequest reset is available.
+ *
+ * @param {number} tabId - Chrome tab ID.
+ * @param {string} pageUrl - Page URL.
+ * @returns {object} Per-tab runtime privacy state.
+ */
+function getOrCreateRuntimePrivacyState(tabId, pageUrl) {
+
+    if (!tabRuntimePrivacyStates.has(tabId)) {
+        tabRuntimePrivacyStates.set(
+            tabId,
+            createRuntimePrivacyState(pageUrl || "")
+        );
+    }
+
+    return tabRuntimePrivacyStates.get(tabId);
+
+}
+
+/**
+ * @param {string} pageUrl - Current page URL.
+ * @returns {object} Empty runtime privacy state.
+ */
+function createRuntimePrivacyState(pageUrl) {
+
+    return {
+        pageUrl: pageUrl || "",
+        categories: {
+            canvas: createRuntimePrivacyCategory(),
+            webgl: createRuntimePrivacyCategory(),
+            audio: createRuntimePrivacyCategory(),
+            navigator: createRuntimePrivacyCategory(),
+            screen: createRuntimePrivacyCategory()
+        }
+    };
+
+}
+
+/**
+ * @returns {object} Empty category aggregate.
+ */
+function createRuntimePrivacyCategory() {
+
+    return {
+        detected: false,
+        eventCount: 0,
+        apis: {},
+        details: {}
+    };
+
+}
+
+/**
+ * Validate and aggregate a runtime privacy event from the content script bridge.
+ *
+ * @param {number} tabId - Chrome tab ID.
+ * @param {string} pageUrl - Current tab URL.
+ * @param {object} event - Sanitized event from runtime-bridge.js.
+ * @returns {boolean} True when the event was accepted.
+ */
+function recordRuntimePrivacyEvent(tabId, pageUrl, event) {
+
+    if (!isValidRuntimePrivacyEvent(event)) {
+        return false;
+    }
+
+    const state = getOrCreateRuntimePrivacyState(tabId, pageUrl);
+    const category = state.categories[event.category];
+    const eventKey = event.api + ":" + (event.detail || "");
+
+    category.detected = true;
+    category.eventCount++;
+    incrementCounter(category.apis, event.api);
+    incrementCounter(category.details, eventKey);
+
+    return true;
+
+}
+
+/**
+ * @param {object} event - Runtime privacy event candidate.
+ * @returns {boolean} True for schema-approved events only.
+ */
+function isValidRuntimePrivacyEvent(event) {
+
+    const allowedEvents = {
+        canvas: new Set([
+            "toDataURL",
+            "toBlob",
+            "getImageData"
+        ]),
+        webgl: new Set([
+            "getParameter",
+            "getExtension"
+        ]),
+        audio: new Set([
+            "AudioContext",
+            "OfflineAudioContext"
+        ]),
+        navigator: new Set([
+            "hardwareConcurrency",
+            "deviceMemory",
+            "languages",
+            "platform",
+            "userAgent",
+            "maxTouchPoints"
+        ]),
+        screen: new Set([
+            "width",
+            "height",
+            "availWidth",
+            "availHeight",
+            "colorDepth",
+            "pixelDepth"
+        ])
+    };
+
+    if (!event || typeof event !== "object") {
+        return false;
+    }
+
+    if (!allowedEvents[event.category]) {
+        return false;
+    }
+
+    return allowedEvents[event.category].has(event.api);
+
+}
+
+/**
+ * Build a serializable runtime privacy snapshot for the popup.
+ *
+ * @param {number} tabId - Chrome tab ID.
+ * @returns {object} Runtime privacy snapshot.
+ */
+function getRuntimePrivacySnapshot(tabId) {
+
+    const state = tabRuntimePrivacyStates.get(tabId);
+
+    if (!state) {
+        return createEmptyRuntimePrivacySnapshot();
+    }
+
+    const categories = {};
+
+    Object.entries(state.categories).forEach(function ([name, category]) {
+        categories[name] = {
+            detected: category.detected,
+            eventCount: category.eventCount,
+            apis: Object.keys(category.apis).sort(),
+            details: Object.keys(category.details).sort()
+        };
+    });
+
+    const detectedCategoryCount = Object.values(categories)
+        .filter(function (category) {
+            return category.detected;
+        }).length;
+
+    return {
+        pageUrl: state.pageUrl,
+        categories: categories,
+        detectedCategoryCount: detectedCategoryCount,
+        multipleIndicators: detectedCategoryCount >= 3
+    };
+
+}
+
+/**
+ * @returns {object} Empty runtime privacy snapshot.
+ */
+function createEmptyRuntimePrivacySnapshot() {
+
+    return {
+        pageUrl: "",
+        categories: {
+            canvas: snapshotEmptyRuntimePrivacyCategory(),
+            webgl: snapshotEmptyRuntimePrivacyCategory(),
+            audio: snapshotEmptyRuntimePrivacyCategory(),
+            navigator: snapshotEmptyRuntimePrivacyCategory(),
+            screen: snapshotEmptyRuntimePrivacyCategory()
+        },
+        detectedCategoryCount: 0,
+        multipleIndicators: false
+    };
+
+}
+
+function snapshotEmptyRuntimePrivacyCategory() {
+
+    return {
+        detected: false,
+        eventCount: 0,
+        apis: [],
+        details: []
+    };
+
+}
+
+/**
+ * Restore runtime privacy state after the MV3 service worker wakes up.
+ *
+ * @returns {Promise<void>}
+ */
+async function restoreRuntimePrivacyStates() {
+
+    try {
+
+        const storedData = await chrome.storage.session.get(
+            runtimePrivacyStorageKey
+        );
+
+        const serializedStates =
+            storedData[runtimePrivacyStorageKey] || {};
+
+        Object.entries(serializedStates).forEach(function ([tabId, state]) {
+            tabRuntimePrivacyStates.set(
+                Number(tabId),
+                normalizeRuntimePrivacyState(state)
+            );
+        });
+
+    } catch (error) {
+
+        console.error(
+            "BrowserGuard: runtime privacy state restore failed",
+            error
+        );
+
+    }
+
+}
+
+/**
+ * Persist runtime privacy state for MV3 service worker suspension.
+ *
+ * @returns {Promise<void>}
+ */
+async function persistRuntimePrivacyStates() {
+
+    const serializedStates = {};
+
+    tabRuntimePrivacyStates.forEach(function (state, tabId) {
+        serializedStates[tabId] = state;
+    });
+
+    try {
+
+        await chrome.storage.session.set({
+            [runtimePrivacyStorageKey]: serializedStates
+        });
+
+    } catch (error) {
+
+        console.error(
+            "BrowserGuard: runtime privacy state persist failed",
+            error
+        );
+
+    }
+
+}
+
+/**
+ * Fill fields added after earlier stored versions of the runtime privacy state.
+ *
+ * @param {object} state - Restored state.
+ * @returns {object} Normalized state.
+ */
+function normalizeRuntimePrivacyState(state) {
+
+    const normalizedState = createRuntimePrivacyState(state.pageUrl || "");
+
+    Object.keys(normalizedState.categories).forEach(function (categoryName) {
+        if (state.categories && state.categories[categoryName]) {
+            normalizedState.categories[categoryName] = {
+                ...createRuntimePrivacyCategory(),
+                ...state.categories[categoryName],
+                apis: state.categories[categoryName].apis || {},
+                details: state.categories[categoryName].details || {}
+            };
+        }
+    });
+
+    return normalizedState;
+
+}
+
+/*
+ * The runtime privacy functions above intentionally live beside the network
+ * collector because both modules share the same per-tab lifecycle events.
+ */
 
 /**
  * Start a fresh state for a tab's current top-level document.

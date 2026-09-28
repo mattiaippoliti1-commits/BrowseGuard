@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (!tab || !tab.url) {
             updatePageAnalysis(null);
             updateNetworkActivity(null);
+            updateRuntimePrivacy(null);
             return;
         }
 
@@ -21,6 +22,9 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         const networkActivity = await requestNetworkActivity(tab);
         updateNetworkActivity(networkActivity);
+
+        const runtimePrivacy = await requestRuntimePrivacy(tab);
+        updateRuntimePrivacy(runtimePrivacy);
 
         // Ask the content script to analyze the current page DOM
         const pageAnalysis = await requestPageAnalysis(tab);
@@ -35,6 +39,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         updatePageAnalysis(null);
         updateNetworkActivity(null);
+        updateRuntimePrivacy(null);
 
     }
 
@@ -304,6 +309,41 @@ async function requestNetworkActivity(tab) {
 
 
 /**
+ * Request runtime privacy data from the background service worker.
+ *
+ * @param {object} tab - Currently active browser tab.
+ * @returns {Promise<object|null>} Runtime privacy snapshot.
+ */
+async function requestRuntimePrivacy(tab) {
+
+    if (!tab || !tab.id || !canAnalyzeTabURL(tab.url)) {
+        return null;
+    }
+
+    try {
+
+        const response = await chrome.runtime.sendMessage({
+            type: "GET_RUNTIME_PRIVACY",
+            tabId: tab.id
+        });
+
+        if (!response || !response.success) {
+            return null;
+        }
+
+        return response.data;
+
+    } catch (error) {
+
+        console.error("BrowserGuard: runtime privacy request failed", error);
+        return null;
+
+    }
+
+}
+
+
+/**
  * Send a lightweight ping to check whether the content script listener is ready.
  *
  * @param {number} tabId - ID of the tab that should receive the message.
@@ -346,7 +386,7 @@ async function injectContentScript(tabId) {
                 tabId: tabId
             },
             files: [
-                "content.js"
+                "content/page-analysis.js"
             ]
         });
 
@@ -471,7 +511,7 @@ function updatePageAnalysis(analysis) {
 /**
  * Update the Network Activity card in the popup.
  *
- * @param {object|null} activity - Network activity snapshot from background.js.
+ * @param {object|null} activity - Network activity snapshot from service worker.
  */
 function updateNetworkActivity(activity) {
 
@@ -510,9 +550,153 @@ function updateNetworkActivity(activity) {
 
 
 /**
+ * Update the Runtime Privacy card.
+ *
+ * @param {object|null} runtimePrivacy - Runtime privacy snapshot.
+ */
+function updateRuntimePrivacy(runtimePrivacy) {
+
+    const note = document.getElementById("runtime-indicator-note");
+    const list = document.getElementById("runtime-category-list");
+
+    list.textContent = "";
+    note.hidden = true;
+
+    if (!runtimePrivacy) {
+        const emptyState = document.createElement("p");
+        emptyState.className = "empty-state";
+        emptyState.textContent = "Runtime privacy data unavailable.";
+        list.appendChild(emptyState);
+        return;
+    }
+
+    note.hidden = !runtimePrivacy.multipleIndicators;
+
+    const categoryDefinitions = [
+        ["canvas", "Canvas"],
+        ["webgl", "WebGL"],
+        ["audio", "Audio"],
+        ["navigator", "Device Information"],
+        ["screen", "Screen Information"]
+    ];
+
+    categoryDefinitions.forEach(function ([categoryKey, label]) {
+        const category =
+            runtimePrivacy.categories[categoryKey] ||
+            createEmptyRuntimeCategory();
+
+        list.appendChild(renderRuntimeCategory(label, category));
+    });
+
+}
+
+
+/**
+ * @returns {object} Empty category used as a UI fallback.
+ */
+function createEmptyRuntimeCategory() {
+
+    return {
+        detected: false,
+        eventCount: 0,
+        apis: [],
+        details: []
+    };
+
+}
+
+
+/**
+ * Render one Runtime Privacy category.
+ *
+ * @param {string} label - UI category label.
+ * @param {object} category - Runtime category snapshot.
+ * @returns {HTMLElement} Rendered category element.
+ */
+function renderRuntimeCategory(label, category) {
+
+    const item = document.createElement("div");
+    item.className = "runtime-category-item";
+
+    const header = document.createElement("div");
+    header.className = "runtime-category-header";
+
+    const title = document.createElement("span");
+    title.className = "runtime-category-title";
+    title.textContent = label;
+
+    const status = document.createElement("span");
+    status.className = "runtime-category-status";
+    status.textContent = formatRuntimeCategoryStatus(category);
+
+    header.appendChild(title);
+    header.appendChild(status);
+    item.appendChild(header);
+
+    const observedDetails = formatRuntimeObservedDetails(category);
+
+    if (observedDetails.length > 0) {
+        const detailList = document.createElement("ul");
+        detailList.className = "runtime-detail-list";
+
+        observedDetails.forEach(function (detail) {
+            const detailItem = document.createElement("li");
+            detailItem.textContent = detail;
+            detailList.appendChild(detailItem);
+        });
+
+        item.appendChild(detailList);
+    }
+
+    return item;
+
+}
+
+
+/**
+ * @param {object} category - Runtime category snapshot.
+ * @returns {string} Descriptive category status.
+ */
+function formatRuntimeCategoryStatus(category) {
+
+    if (!category.detected) {
+        return "Not observed";
+    }
+
+    if (category.eventCount === 1) {
+        return "1 event";
+    }
+
+    return category.eventCount + " events";
+
+}
+
+
+/**
+ * @param {object} category - Runtime category snapshot.
+ * @returns {Array<string>} API/property names to show, without values.
+ */
+function formatRuntimeObservedDetails(category) {
+
+    if (!category.detected) {
+        return [];
+    }
+
+    const details = category.details && category.details.length > 0 ?
+        category.details :
+        category.apis;
+
+    return details.map(function (detail) {
+        return detail.replace(/:$/, "").replace(":", " · ");
+    });
+
+}
+
+
+/**
  * Update the Privacy / Trackers card in the popup.
  *
- * @param {object|null} activity - Network activity snapshot from background.js.
+ * @param {object|null} activity - Network activity snapshot from service worker.
  */
 function updateTrackerDetection(activity) {
 

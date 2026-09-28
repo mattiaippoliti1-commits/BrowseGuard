@@ -1,9 +1,9 @@
 const assert = require("assert");
 
-const trackerData = require("../tracker-data");
+const trackerData = require("../data/tracker-data");
 const {
     createTrackerMatcher
-} = require("../tracker-matcher");
+} = require("../modules/trackers/tracker-matcher");
 
 const matcher = createTrackerMatcher({
     trackers: [

@@ -8,11 +8,11 @@
     "description": "Real-Time Phishing and Web Risk Detection",
 
     "action": {
-        "default_popup": "popup.html"
+        "default_popup": "popup/popup.html"
     },
 
     "background": {
-        "service_worker": "background.js"
+        "service_worker": "background/service-worker.js"
     },
 
     "permissions": [
@@ -34,7 +34,28 @@
                 "https://*/*"
             ],
             "js": [
-                "content.js"
+                "content/runtime-bridge.js"
+            ],
+            "run_at": "document_start"
+        },
+        {
+            "matches": [
+                "http://*/*",
+                "https://*/*"
+            ],
+            "js": [
+                "content/runtime-monitor.js"
+            ],
+            "run_at": "document_start",
+            "world": "MAIN"
+        },
+        {
+            "matches": [
+                "http://*/*",
+                "https://*/*"
+            ],
+            "js": [
+                "content/page-analysis.js"
             ],
             "run_at": "document_idle"
         }
