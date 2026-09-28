@@ -375,7 +375,6 @@ h3 {
 }
 
 .assessment-card strong::before,
-.finding-item::before,
 .runtime-category-status::before {
     flex: 0 0 auto;
     width: 8px;
@@ -386,21 +385,17 @@ h3 {
 }
 
 .assessment-card.is-good strong::before,
-.finding-item.is-positive::before,
 .runtime-category-status.is-idle::before {
     background: var(--status-good);
 }
 
 .assessment-card.is-observation strong::before,
 .assessment-card.is-moderate strong::before,
-.finding-item.is-low::before,
-.finding-item.is-medium::before,
 .runtime-category-status.is-active::before {
     background: var(--status-observation);
 }
 
-.assessment-card.is-danger strong::before,
-.finding-item.is-high::before {
+.assessment-card.is-danger strong::before {
     background: var(--status-danger);
 }
 
@@ -476,13 +471,29 @@ h3 {
 }
 
 .finding-item {
+    --finding-accent: var(--status-info);
+
     display: flex;
     align-items: flex-start;
     gap: var(--space-2);
     padding: 7px var(--space-2);
     border: 1px solid var(--border-soft);
+    border-left: 3px solid var(--finding-accent);
     border-radius: var(--radius-md);
     background: var(--surface-inset);
+}
+
+.finding-item.is-low,
+.finding-item.is-medium {
+    --finding-accent: var(--status-observation);
+}
+
+.finding-item.is-high {
+    --finding-accent: var(--status-danger);
+}
+
+.finding-item.is-info {
+    --finding-accent: var(--status-info);
 }
 
 .finding-text {
