@@ -227,6 +227,7 @@ function updateAssessment(assessment) {
     showAllFindings = false;
     reasons.textContent = "";
     dataStatus.textContent = "";
+    renderPositiveSignals(null);
 
     if (!assessment) {
         updateAssessmentCard("security", null, unavailable);
@@ -258,6 +259,7 @@ function updateAssessment(assessment) {
     }
 
     renderAssessmentReasons(assessment);
+    renderPositiveSignals(assessment);
 
 }
 
@@ -270,7 +272,7 @@ function updateAssessment(assessment) {
 function renderAssessmentReasons(assessment) {
 
     const container = document.getElementById("assessment-reasons");
-    const findings = collectFindings(assessment);
+    const findings = collectReasonFindings(assessment);
     const visibleFindings = showAllFindings ?
         findings :
         findings.slice(0, visibleFindingLimit);
@@ -327,14 +329,14 @@ function renderAssessmentReasons(assessment) {
 }
 
 
-function collectFindings(assessment) {
+function collectReasonFindings(assessment) {
 
     return [
         ["Security", assessment.security],
         ["Privacy", assessment.privacy],
         ["Network", assessment.network]
     ].flatMap(function ([dimension, result]) {
-        const reasons = (result.reasons || []).map(function (reason) {
+        return (result.reasons || []).map(function (reason) {
             return {
                 dimension: dimension,
                 message: reason.message,
@@ -342,18 +344,82 @@ function collectFindings(assessment) {
                 type: "reason"
             };
         });
-
-        const positives = (result.positiveSignals || []).map(function (signal) {
-            return {
-                dimension: dimension,
-                message: signal.message,
-                severity: "positive",
-                type: "positive"
-            };
-        });
-
-        return reasons.concat(positives);
     });
+
+}
+
+
+function renderPositiveSignals(assessment) {
+
+    const section = document.getElementById("positive-signals-card");
+    const container = document.getElementById("positive-signals");
+
+    if (!section || !container) {
+        return;
+    }
+
+    container.textContent = "";
+
+    if (!assessment) {
+        section.hidden = true;
+        return;
+    }
+
+    const signals = collectPositiveSignals(assessment);
+
+    if (signals.length === 0) {
+        section.hidden = true;
+        return;
+    }
+
+    signals.forEach(function (signal) {
+        const chip = document.createElement("span");
+        chip.className = "positive-signal-chip";
+        chip.textContent = formatPositiveSignalLabel(signal);
+        container.appendChild(chip);
+    });
+
+    section.hidden = false;
+
+}
+
+
+function collectPositiveSignals(assessment) {
+
+    return [
+        assessment.security,
+        assessment.privacy,
+        assessment.network
+    ].flatMap(function (result) {
+        return result.positiveSignals || [];
+    });
+
+}
+
+
+function formatPositiveSignalLabel(signal) {
+
+    const labelsById = {
+        "https-enabled": "HTTPS",
+        "hsts-present": "HSTS",
+        "csp-present": "CSP",
+        "content-type-nosniff": "XCTO nosniff",
+        "anti-framing-present": "Anti-framing",
+        "no-mixed-content-observed": "No mixed content"
+    };
+
+    const labelsByMessage = {
+        "HTTPS connection observed": "HTTPS",
+        "HSTS header present": "HSTS",
+        "CSP header present": "CSP",
+        "X-Content-Type-Options nosniff present": "XCTO nosniff",
+        "Explicit anti-framing policy observed": "Anti-framing",
+        "No mixed content observed": "No mixed content"
+    };
+
+    return labelsById[signal.id] ||
+        labelsByMessage[signal.message] ||
+        signal.message;
 
 }
 

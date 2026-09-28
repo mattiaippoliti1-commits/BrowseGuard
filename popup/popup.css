@@ -9,7 +9,7 @@
     --brand-secondary: #3578ff;
     --brand-soft: rgba(0, 194, 255, 0.12);
     --text-primary: #f4f8fc;
-    --text-secondary: #9fb1c5;
+    --text-secondary: #b2c2d4;
     --text-muted: #70859b;
     --status-good: #28d17c;
     --status-observation: #f2b84b;
@@ -65,6 +65,7 @@ body::-webkit-scrollbar-thumb {
 .app-header,
 .assessment-panel,
 .card,
+.positive-signals-card,
 .technical-details {
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
@@ -205,7 +206,8 @@ h3 {
 }
 
 .assessment-panel,
-.card {
+.card,
+.positive-signals-card {
     padding: var(--space-4);
 }
 
@@ -225,6 +227,7 @@ h3 {
 
 .assessment-card {
     min-width: 0;
+    min-height: 94px;
     padding: var(--space-3);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
@@ -232,37 +235,21 @@ h3 {
 }
 
 .assessment-card-top {
+    min-height: 22px;
     gap: 6px;
     margin-bottom: var(--space-3);
 }
 
 .assessment-icon {
-    position: relative;
+    flex: 0 0 20px;
     width: 18px;
     height: 18px;
-    border: 1px solid currentColor;
     color: var(--brand-primary);
-}
-
-.shield-icon {
-    border-radius: 9px 9px 11px 11px;
-}
-
-.privacy-icon {
-    border-radius: 999px 999px 4px 4px;
-}
-
-.privacy-icon::after,
-.network-icon::after {
-    position: absolute;
-    content: "";
-    inset: 5px;
-    border-radius: 999px;
-    background: currentColor;
-}
-
-.network-icon {
-    border-radius: 999px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.8;
 }
 
 .assessment-card strong {
@@ -320,14 +307,14 @@ h3 {
 .finding-list {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
+    gap: 6px;
 }
 
 .finding-item {
     display: flex;
     align-items: flex-start;
     gap: var(--space-2);
-    padding: var(--space-2);
+    padding: 7px var(--space-2);
     border: 1px solid var(--border-soft);
     border-radius: var(--radius-md);
     background: rgba(7, 17, 31, 0.42);
@@ -349,6 +336,54 @@ h3 {
 .finding-message {
     display: block;
     margin-top: 1px;
+}
+
+.positive-signals-card {
+    background: rgba(17, 31, 49, 0.58);
+    box-shadow: none;
+}
+
+.positive-signal-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.positive-signal-chip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 100%;
+    padding: 5px 9px 5px 29px;
+    border: 1px solid rgba(40, 209, 124, 0.28);
+    border-radius: 999px;
+    color: var(--text-secondary);
+    background: rgba(40, 209, 124, 0.07);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.positive-signal-chip::before {
+    position: absolute;
+    left: 9px;
+    width: 14px;
+    height: 14px;
+    border-radius: 999px;
+    background: var(--status-good);
+    box-shadow: inset 0 0 0 1px rgba(7, 17, 31, 0.22);
+    content: "";
+}
+
+.positive-signal-chip::after {
+    position: absolute;
+    left: 13px;
+    width: 5px;
+    height: 8px;
+    border-right: 2px solid var(--bg-primary);
+    border-bottom: 2px solid var(--bg-primary);
+    content: "";
+    transform: rotate(45deg) translateY(-1px);
 }
 
 .quick-stats {
