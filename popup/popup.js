@@ -1,3 +1,9 @@
+// Temporary development theme switch.
+// Remove after the final BrowserGuard visual identity is selected.
+const UI_THEME = "lime";
+
+document.documentElement.dataset.theme = UI_THEME;
+
 // Wait until the popup HTML document is fully loaded
 document.addEventListener("DOMContentLoaded", async function () {
 
@@ -69,6 +75,7 @@ const visibleTrackerDomainLimit = 5;
 const visibleFindingLimit = 5;
 let currentNetworkActivity = null;
 let currentAssessment = null;
+let selectedAssessmentDimension = null;
 let showAllThirdPartyDomains = false;
 let showAllTrackerDomains = false;
 let showAllFindings = false;
@@ -224,9 +231,11 @@ function updateAssessment(assessment) {
     const reasons = document.getElementById("assessment-reasons");
 
     currentAssessment = assessment;
+    selectedAssessmentDimension = null;
     showAllFindings = false;
     reasons.textContent = "";
     dataStatus.textContent = "";
+    renderAssessmentContextPanel();
     renderPositiveSignals(null);
 
     if (!assessment) {
@@ -292,25 +301,7 @@ function renderAssessmentReasons(assessment) {
     list.className = "finding-list";
 
     visibleFindings.forEach(function (finding) {
-        const item = document.createElement("div");
-        item.className =
-            "finding-item " + getFindingClassName(finding);
-
-        const text = document.createElement("span");
-        text.className = "finding-text";
-
-        const label = document.createElement("span");
-        label.className = "finding-label";
-        label.textContent = finding.dimension;
-
-        const message = document.createElement("span");
-        message.className = "finding-message";
-        message.textContent = finding.message;
-
-        text.appendChild(label);
-        text.appendChild(message);
-        item.appendChild(text);
-        list.appendChild(item);
+        list.appendChild(renderFindingItem(finding, true));
     });
 
     container.appendChild(list);
@@ -325,6 +316,121 @@ function renderAssessmentReasons(assessment) {
             "Show all findings (" + hiddenFindingCount + " more)";
         container.appendChild(button);
     }
+
+}
+
+
+function renderAssessmentContextPanel() {
+
+    const panel = document.getElementById("assessment-context-panel");
+
+    if (!panel) {
+        return;
+    }
+
+    panel.textContent = "";
+    updateAssessmentCardSelection();
+
+    if (!currentAssessment || !selectedAssessmentDimension) {
+        panel.hidden = true;
+        return;
+    }
+
+    const result = currentAssessment[selectedAssessmentDimension];
+    const reasons = result && result.reasons ? result.reasons : [];
+    const dimensionLabel = formatDimensionLabel(selectedAssessmentDimension);
+
+    panel.setAttribute(
+        "aria-label",
+        dimensionLabel + " assessment details"
+    );
+
+    const heading = document.createElement("div");
+    heading.className = "assessment-context-heading";
+    heading.textContent =
+        dimensionLabel + " · " +
+        formatAssessmentLabel(selectedAssessmentDimension, result.level);
+
+    const subtitle = document.createElement("p");
+    subtitle.className = "assessment-context-subtitle";
+    subtitle.textContent = "Why this assessment?";
+
+    panel.appendChild(heading);
+    panel.appendChild(subtitle);
+
+    if (reasons.length === 0) {
+        const emptyState = document.createElement("p");
+        emptyState.className = "empty-state";
+        emptyState.textContent =
+            "No specific assessment findings to display.";
+        panel.appendChild(emptyState);
+    } else {
+        const list = document.createElement("div");
+        list.className = "assessment-context-list";
+
+        reasons.forEach(function (reason) {
+            list.appendChild(renderFindingItem({
+                dimension: dimensionLabel,
+                message: reason.message,
+                severity: reason.severity,
+                type: "reason"
+            }, false));
+        });
+
+        panel.appendChild(list);
+    }
+
+    const action = document.createElement("button");
+    action.className = "assessment-context-action";
+    action.type = "button";
+    action.dataset.detailsTarget = selectedAssessmentDimension;
+    action.textContent = "View " +
+        selectedAssessmentDimension +
+        " details";
+    panel.appendChild(action);
+
+    panel.hidden = false;
+
+}
+
+
+function renderFindingItem(finding, includeDimensionLabel) {
+
+    const item = document.createElement("div");
+    item.className =
+        "finding-item " + getFindingClassName(finding);
+
+    const text = document.createElement("span");
+    text.className = "finding-text";
+
+    if (includeDimensionLabel) {
+        const label = document.createElement("span");
+        label.className = "finding-label";
+        label.textContent = finding.dimension;
+        text.appendChild(label);
+    }
+
+    const message = document.createElement("span");
+    message.className = "finding-message";
+    message.textContent = finding.message;
+
+    text.appendChild(message);
+    item.appendChild(text);
+
+    return item;
+
+}
+
+
+function updateAssessmentCardSelection() {
+
+    document.querySelectorAll(".assessment-card").forEach(function (card) {
+        const isSelected =
+            card.dataset.dimension === selectedAssessmentDimension;
+
+        card.classList.toggle("is-selected", isSelected);
+        card.setAttribute("aria-expanded", String(isSelected));
+    });
 
 }
 
@@ -475,6 +581,19 @@ function formatAssessmentLabel(dimension, level) {
     };
 
     return labels[dimension][level] || "Unavailable";
+
+}
+
+
+function formatDimensionLabel(dimension) {
+
+    const labels = {
+        security: "Security",
+        privacy: "Privacy",
+        network: "Network"
+    };
+
+    return labels[dimension] || dimension;
 
 }
 
@@ -1411,6 +1530,40 @@ function renderThirdPartyDomains(domains) {
 
 document.addEventListener("click", function (event) {
 
+    const card = event.target.closest(".assessment-card");
+
+    if (!card) {
+        return;
+    }
+
+    const dimension = card.dataset.dimension;
+
+    if (!currentAssessment || !dimension) {
+        return;
+    }
+
+    selectedAssessmentDimension =
+        selectedAssessmentDimension === dimension ? null : dimension;
+    renderAssessmentContextPanel();
+
+});
+
+
+document.addEventListener("click", function (event) {
+
+    const action = event.target.closest(".assessment-context-action");
+
+    if (!action) {
+        return;
+    }
+
+    focusTechnicalDetailsSection(action.dataset.detailsTarget);
+
+});
+
+
+document.addEventListener("click", function (event) {
+
     const trigger = event.target.closest("#technical-details-trigger");
 
     if (!trigger) {
@@ -1718,6 +1871,35 @@ function updateNetworkComposition(activity) {
     same.title = "Same-entity third-party: " + sameCount;
     external.title = "External third-party: " + externalCount;
     unknown.title = "Unknown third-party: " + unknownCount;
+
+}
+
+
+function focusTechnicalDetailsSection(dimension) {
+
+    const trigger = document.getElementById("technical-details-trigger");
+    const content = document.getElementById("technical-details-content");
+    const targetIds = {
+        security: "web-security-title",
+        privacy: "privacy-signals-title",
+        network: "network-title"
+    };
+    const target = document.getElementById(targetIds[dimension]);
+
+    if (!trigger || !content || !target) {
+        return;
+    }
+
+    trigger.setAttribute("aria-expanded", "true");
+    content.hidden = false;
+    target.setAttribute("tabindex", "-1");
+    target.scrollIntoView({
+        block: "start",
+        behavior: "smooth"
+    });
+    target.focus({
+        preventScroll: true
+    });
 
 }
 

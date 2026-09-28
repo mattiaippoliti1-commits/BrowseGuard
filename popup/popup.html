@@ -27,7 +27,13 @@
         <section class="assessment-panel" aria-labelledby="assessment-title">
             <p class="eyebrow" id="assessment-title">Assessment</p>
             <div class="assessment-grid">
-                <article class="assessment-card" data-dimension="security">
+                <button
+                    class="assessment-card"
+                    data-dimension="security"
+                    type="button"
+                    aria-expanded="false"
+                    aria-controls="assessment-context-panel"
+                >
                     <div class="assessment-card-top">
                         <svg class="assessment-icon" aria-hidden="true" viewBox="0 0 24 24">
                             <path d="M12 3l7 3v5c0 4.7-2.8 8.3-7 10-4.2-1.7-7-5.3-7-10V6l7-3z"></path>
@@ -35,8 +41,14 @@
                         <span class="assessment-label">Security</span>
                     </div>
                     <strong id="assessment-security">Loading...</strong>
-                </article>
-                <article class="assessment-card" data-dimension="privacy">
+                </button>
+                <button
+                    class="assessment-card"
+                    data-dimension="privacy"
+                    type="button"
+                    aria-expanded="false"
+                    aria-controls="assessment-context-panel"
+                >
                     <div class="assessment-card-top">
                         <svg class="assessment-icon" aria-hidden="true" viewBox="0 0 24 24">
                             <path d="M3 12s3.4-6 9-6 9 6 9 6-3.4 6-9 6-9-6-9-6z"></path>
@@ -45,8 +57,14 @@
                         <span class="assessment-label">Privacy</span>
                     </div>
                     <strong id="assessment-privacy">Loading...</strong>
-                </article>
-                <article class="assessment-card" data-dimension="network">
+                </button>
+                <button
+                    class="assessment-card"
+                    data-dimension="network"
+                    type="button"
+                    aria-expanded="false"
+                    aria-controls="assessment-context-panel"
+                >
                     <div class="assessment-card-top">
                         <svg class="assessment-icon" aria-hidden="true" viewBox="0 0 24 24">
                             <path d="M8 7l8 4.5M8 17l8-5.5"></path>
@@ -57,8 +75,14 @@
                         <span class="assessment-label">Network</span>
                     </div>
                     <strong id="assessment-network">Loading...</strong>
-                </article>
+                </button>
             </div>
+            <div
+                class="assessment-context-panel"
+                id="assessment-context-panel"
+                aria-live="polite"
+                hidden
+            ></div>
             <p class="assessment-data-status" id="assessment-data-status"></p>
         </section>
 
