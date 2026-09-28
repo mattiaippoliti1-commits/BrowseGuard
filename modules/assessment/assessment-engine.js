@@ -454,7 +454,7 @@ function assessPrivacy(snapshot, dataStatus) {
                 "known-trackers",
                 trackerActivity === "elevated" ? "high" :
                     trackerActivity === "moderate" ? "medium" : "low",
-                "Known tracker activity was observed",
+                "Activity from tracking-associated domains was observed",
                 {
                     trackerDomainCount: trackerDomains,
                     trackerRequests: trackerRequests,

@@ -2,380 +2,200 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BrowserGuard</title>
-
     <link rel="stylesheet" href="popup.css">
-
 </head>
 
 <body>
-
-    <div class="container">
-
-        <h1>BrowserGuard</h1>
-
-        <p class="subtitle">
-            Real-Time Web Risk Detection
-        </p>
-
-        <!-- Temporary explainable assessment summary -->
-        <div class="card">
-
-            <h2>Assessment</h2>
-
-            <div class="analysis-row">
-                <span>Security</span>
-                <span id="assessment-security">Loading...</span>
+    <main class="app-shell">
+        <header class="app-header">
+            <div class="brand-row">
+                <div class="brand-mark" aria-hidden="true"><span></span></div>
+                <div>
+                    <h1>BrowserGuard</h1>
+                    <p class="subtitle">Web Security Monitor</p>
+                </div>
             </div>
-
-            <div class="analysis-row">
-                <span>Privacy</span>
-                <span id="assessment-privacy">Loading...</span>
+            <div class="site-strip">
+                <span class="site-host" id="hostname">Loading...</span>
+                <span class="protocol-badge" id="protocol">Loading...</span>
             </div>
+        </header>
 
-            <div class="analysis-row">
-                <span>Network</span>
-                <span id="assessment-network">Loading...</span>
+        <section class="assessment-panel" aria-labelledby="assessment-title">
+            <p class="eyebrow" id="assessment-title">Overall Assessment</p>
+            <div class="assessment-grid">
+                <article class="assessment-card" data-dimension="security">
+                    <div class="assessment-card-top">
+                        <span class="assessment-icon shield-icon" aria-hidden="true"></span>
+                        <span class="assessment-label">Security</span>
+                    </div>
+                    <strong id="assessment-security">Loading...</strong>
+                </article>
+                <article class="assessment-card" data-dimension="privacy">
+                    <div class="assessment-card-top">
+                        <span class="assessment-icon privacy-icon" aria-hidden="true"></span>
+                        <span class="assessment-label">Privacy</span>
+                    </div>
+                    <strong id="assessment-privacy">Loading...</strong>
+                </article>
+                <article class="assessment-card" data-dimension="network">
+                    <div class="assessment-card-top">
+                        <span class="assessment-icon network-icon" aria-hidden="true"></span>
+                        <span class="assessment-label">Network</span>
+                    </div>
+                    <strong id="assessment-network">Loading...</strong>
+                </article>
             </div>
+            <p class="assessment-data-status" id="assessment-data-status"></p>
+        </section>
 
-            <p
-                class="assessment-data-status"
-                id="assessment-data-status"
-            ></p>
+        <section class="card key-findings-card" aria-labelledby="findings-title">
+            <p class="eyebrow" id="findings-title">Key Findings</p>
+            <div class="assessment-reasons" id="assessment-reasons"></div>
+        </section>
 
-            <div
-                class="assessment-reasons"
-                id="assessment-reasons"
-            ></div>
-
-        </div>
-
-
-        <!-- Basic URL information -->
-        <div class="card">
-
-            <h2>URL Analysis</h2>
-
-            <div class="analysis-row">
-                <span>Protocol</span>
-                <span id="protocol">Loading...</span>
+        <section class="quick-stats" aria-label="Quick stats">
+            <div class="stat-card">
+                <strong id="network-total-requests">Loading...</strong>
+                <span>Requests</span>
             </div>
-
-            <div class="analysis-row">
-                <span>Hostname</span>
-                <span id="hostname">Loading...</span>
+            <div class="stat-card">
+                <strong id="tracker-known-count">Loading...</strong>
+                <span>Tracking domains</span>
             </div>
-
-            <div class="analysis-row">
-                <span>URL Length</span>
-                <span id="url-length">Loading...</span>
+            <div class="stat-card">
+                <strong id="network-external-third-party">Loading...</strong>
+                <span>External requests</span>
             </div>
-
-            <div class="analysis-row">
-                <span>Subdomains</span>
-                <span id="subdomains">Loading...</span>
+            <div class="stat-card">
+                <strong id="network-same-entity-third-party">Loading...</strong>
+                <span>Same-entity</span>
             </div>
+        </section>
 
-            <div class="analysis-row">
-                <span>IP Address</span>
-                <span id="ip-address">Loading...</span>
-            </div>
-
-            <div class="analysis-row">
-                <span>Punycode</span>
-                <span id="punycode">Loading...</span>
-            </div>
-
-        </div>
-
-
-        <!-- Page-level information collected by the content script -->
-        <div class="card">
-
-            <h2>Page Analysis</h2>
-
-            <div class="analysis-row">
-                <span>Forms</span>
-                <span id="page-forms">Loading...</span>
-            </div>
-
-            <div class="analysis-row">
-                <span>Password Fields</span>
-                <span id="password-fields">Loading...</span>
-            </div>
-
-            <div class="analysis-row">
-                <span>External Forms</span>
-                <span id="external-forms">Loading...</span>
-            </div>
-
-            <div class="analysis-row">
-                <span>External Password Forms</span>
-                <span id="external-password-forms">Loading...</span>
-            </div>
-
-            <div class="analysis-row">
-                <span>Insecure Password Forms</span>
-                <span id="insecure-password-forms">Loading...</span>
-            </div>
-
-            <div class="analysis-row">
-                <span>Total Links</span>
-                <span id="total-links">Loading...</span>
-            </div>
-
-            <div class="analysis-row">
-                <span>External Links</span>
-                <span id="external-links">Loading...</span>
-            </div>
-
-            <div class="analysis-row">
-                <span>Mismatched Links</span>
-                <span id="mismatched-links">Loading...</span>
-            </div>
-
-            <div class="analysis-row">
-                <span>Iframes</span>
-                <span id="iframes">Loading...</span>
-            </div>
-
-            <div class="analysis-row">
-                <span>Hidden Iframes</span>
-                <span id="hidden-iframes">Loading...</span>
-            </div>
-
-            <div class="analysis-row">
-                <span>External Scripts</span>
-                <span id="external-scripts">Loading...</span>
-            </div>
-
-        </div>
-
-
-        <!-- Security indicators detected during URL analysis -->
-        <div class="card">
-
-            <h2>Security Indicators</h2>
-
-            <div class="analysis-row">
-                <span>HTTPS</span>
-                <span id="https-indicator">Loading...</span>
-            </div>
-
-            <div class="analysis-row">
-                <span>Long URL</span>
-                <span id="long-url">Loading...</span>
-            </div>
-
-            <div class="analysis-row">
-                <span>Many Subdomains</span>
-                <span id="many-subdomains">Loading...</span>
-            </div>
-
-            <div class="analysis-row">
-                <span>Contains @</span>
-                <span id="at-symbol">Loading...</span>
-            </div>
-
-            <div class="analysis-row">
-                <span>URL Encoding</span>
-                <span id="url-encoding">Loading...</span>
-            </div>
-
-        </div>
-
-
-        <!-- Web security headers and page configuration -->
-        <div class="card">
-
-            <h2>Web Security</h2>
-
-            <div class="analysis-row">
-                <span>HTTPS</span>
-                <span id="web-security-https">Loading...</span>
-            </div>
-
-            <div class="analysis-row">
-                <span>CSP</span>
-                <span id="web-security-csp">Loading...</span>
-            </div>
-
-            <div class="analysis-row">
-                <span>HSTS</span>
-                <span id="web-security-hsts">Loading...</span>
-            </div>
-
-            <div class="analysis-row">
-                <span>X-Content-Type-Options</span>
-                <span id="web-security-content-type">Loading...</span>
-            </div>
-
-            <div class="analysis-row">
-                <span>Referrer-Policy</span>
-                <span id="web-security-referrer">Loading...</span>
-            </div>
-
-            <div class="analysis-row">
-                <span>Permissions-Policy</span>
-                <span id="web-security-permissions">Loading...</span>
-            </div>
-
-            <div class="analysis-row">
-                <span>Anti-framing</span>
-                <span id="web-security-anti-framing">Loading...</span>
-            </div>
-
-            <div class="analysis-row">
-                <span>Mixed Content</span>
-                <span id="web-security-mixed-content">Loading...</span>
-            </div>
-
-            <div class="analysis-row">
-                <span>Iframe Security</span>
-                <span id="web-security-iframes">Loading...</span>
-            </div>
-
-            <div
-                class="web-security-observations"
-                id="web-security-observations"
-            ></div>
-
-        </div>
-
-
-        <!-- Runtime privacy-sensitive API usage observed from page scripts -->
-        <div class="card">
-
-            <h2>Runtime Privacy</h2>
-
-            <p
-                class="runtime-indicator-note"
-                id="runtime-indicator-note"
-                hidden
-            >
-                Multiple fingerprinting indicators detected.
-            </p>
-
-            <div
-                class="runtime-category-list"
-                id="runtime-category-list"
-            >
-                <p class="empty-state">Loading...</p>
-            </div>
-
-        </div>
-
-
-        <!-- Known tracker information derived from the local tracker dataset -->
-        <div class="card">
-
-            <h2>Privacy / Trackers</h2>
-
-            <div class="analysis-row">
-                <span>Known Trackers</span>
-                <span id="tracker-known-count">Loading...</span>
-            </div>
-
-            <div class="analysis-row">
-                <span>Tracker Requests</span>
-                <span id="tracker-request-count">Loading...</span>
-            </div>
-
-            <div
-                class="network-domain-list"
-                id="tracker-domain-list"
-            >
-                <p class="empty-state">Loading...</p>
-            </div>
-
+        <section class="technical-details">
             <button
-                class="show-more-button"
-                id="tracker-show-more"
+                class="accordion-trigger"
+                id="technical-details-trigger"
                 type="button"
-                hidden
+                aria-expanded="false"
+                aria-controls="technical-details-content"
             >
-                Show more
+                <span>Technical Details</span>
+                <span class="chevron" aria-hidden="true"></span>
             </button>
 
-        </div>
+            <div class="accordion-content" id="technical-details-content" hidden>
+                <section class="detail-section" aria-labelledby="url-page-title">
+                    <h2 id="url-page-title">URL &amp; Page</h2>
+                    <div class="definition-grid">
+                        <div class="analysis-row"><span>Protocol</span><span id="protocol-detail">Loading...</span></div>
+                        <div class="analysis-row"><span>Hostname</span><span id="hostname-detail">Loading...</span></div>
+                        <div class="analysis-row"><span>URL length</span><span id="url-length">Loading...</span></div>
+                        <div class="analysis-row"><span>Subdomains</span><span id="subdomains">Loading...</span></div>
+                        <div class="analysis-row"><span>Forms</span><span id="page-forms">Loading...</span></div>
+                        <div class="analysis-row"><span>Password fields</span><span id="password-fields">Loading...</span></div>
+                        <div class="analysis-row"><span>External forms</span><span id="external-forms">Loading...</span></div>
+                        <div class="analysis-row"><span>External password forms</span><span id="external-password-forms">Loading...</span></div>
+                        <div class="analysis-row"><span>Insecure password forms</span><span id="insecure-password-forms">Loading...</span></div>
+                        <div class="analysis-row"><span>Total links</span><span id="total-links">Loading...</span></div>
+                        <div class="analysis-row"><span>External links</span><span id="external-links">Loading...</span></div>
+                        <div class="analysis-row"><span>Mismatched links</span><span id="mismatched-links">Loading...</span></div>
+                        <div class="analysis-row"><span>Iframes</span><span id="iframes">Loading...</span></div>
+                        <div class="analysis-row"><span>Hidden iframes</span><span id="hidden-iframes">Loading...</span></div>
+                        <div class="analysis-row"><span>External scripts</span><span id="external-scripts">Loading...</span></div>
+                    </div>
+                    <div class="indicator-strip" aria-label="URL indicators">
+                        <span class="indicator-chip" id="https-indicator">Loading...</span>
+                        <span class="indicator-chip" id="long-url">Loading...</span>
+                        <span class="indicator-chip" id="many-subdomains">Loading...</span>
+                        <span class="indicator-chip" id="at-symbol">Loading...</span>
+                        <span class="indicator-chip" id="url-encoding">Loading...</span>
+                        <span class="indicator-chip" id="ip-address">Loading...</span>
+                        <span class="indicator-chip" id="punycode">Loading...</span>
+                    </div>
+                </section>
 
+                <section class="detail-section" aria-labelledby="web-security-title">
+                    <h2 id="web-security-title">Web Security</h2>
+                    <div class="definition-grid">
+                        <div class="analysis-row"><span>HTTPS</span><span id="web-security-https">Loading...</span></div>
+                        <div class="analysis-row"><span>CSP <span class="info-dot" title="CSP observations are shown as secondary details when available.">i</span></span><span id="web-security-csp">Loading...</span></div>
+                        <div class="analysis-row"><span>HSTS</span><span id="web-security-hsts">Loading...</span></div>
+                        <div class="analysis-row"><span>X-Content-Type-Options</span><span id="web-security-content-type">Loading...</span></div>
+                        <div class="analysis-row"><span>Referrer-Policy</span><span id="web-security-referrer">Loading...</span></div>
+                        <div class="analysis-row"><span>Permissions-Policy</span><span id="web-security-permissions">Loading...</span></div>
+                        <div class="analysis-row"><span>Anti-framing</span><span id="web-security-anti-framing">Loading...</span></div>
+                        <div class="analysis-row"><span>Mixed Content</span><span id="web-security-mixed-content">Loading...</span></div>
+                        <div class="analysis-row"><span>Iframe Security</span><span id="web-security-iframes">Loading...</span></div>
+                    </div>
+                    <div class="web-security-observations" id="web-security-observations"></div>
+                </section>
 
-        <!-- Network information collected by the background service worker -->
-        <div class="card">
+                <section class="detail-section" aria-labelledby="privacy-signals-title">
+                    <h2 id="privacy-signals-title">
+                        Privacy Signals
+                        <span class="info-dot" title="Runtime privacy reports privacy-sensitive API activity and fingerprinting-related indicators without collecting fingerprint values.">i</span>
+                    </h2>
+                    <p class="runtime-indicator-note" id="runtime-indicator-note" hidden>
+                        Multiple fingerprinting-related indicators observed.
+                    </p>
+                    <div class="runtime-category-list" id="runtime-category-list">
+                        <p class="empty-state">Loading...</p>
+                    </div>
+                </section>
 
-            <h2>Network Activity</h2>
+                <section class="detail-section" aria-labelledby="tracking-title">
+                    <div class="detail-heading-row">
+                        <h2 id="tracking-title">
+                            Tracking-associated Domains
+                            <span class="info-dot" title="Domain associated with tracking-related categories in the local Tracker Radar-derived dataset. This does not prove that the individual request performs tracking.">i</span>
+                        </h2>
+                        <span class="section-count" id="tracker-request-count">Loading...</span>
+                    </div>
+                    <div class="network-domain-list" id="tracker-domain-list">
+                        <p class="empty-state">Loading...</p>
+                    </div>
+                    <button class="show-more-button" id="tracker-show-more" type="button" hidden>
+                        Show more
+                    </button>
+                </section>
 
-            <div class="analysis-row">
-                <span>Total Requests</span>
-                <span id="network-total-requests">Loading...</span>
+                <section class="detail-section" aria-labelledby="network-title">
+                    <h2 id="network-title">Network Activity</h2>
+                    <div class="definition-grid">
+                        <div class="analysis-row"><span>Total requests</span><span id="network-total-requests-detail">Loading...</span></div>
+                        <div class="analysis-row"><span>First-party</span><span id="network-first-party-requests">Loading...</span></div>
+                        <div class="analysis-row"><span>Third-party</span><span id="network-third-party-requests">Loading...</span></div>
+                        <div class="analysis-row"><span>Third-party domains</span><span id="network-third-party-domains">Loading...</span></div>
+                        <div class="analysis-row"><span>Same-entity third-party <span class="info-dot" title="Third-party domain associated with the same organization as the current site.">i</span></span><span id="network-same-entity-third-party-detail">Loading...</span></div>
+                        <div class="analysis-row"><span>External third-party</span><span id="network-external-third-party-detail">Loading...</span></div>
+                        <div class="analysis-row"><span>Unknown third-party <span class="info-dot" title="Third-party domain that could not be associated with the site owner using local entity metadata.">i</span></span><span id="network-unknown-third-party">Loading...</span></div>
+                    </div>
+                    <div class="network-composition" aria-label="Third-party breakdown">
+                        <span class="network-segment same-entity" id="network-segment-same"></span>
+                        <span class="network-segment external" id="network-segment-external"></span>
+                        <span class="network-segment unknown" id="network-segment-unknown"></span>
+                    </div>
+                    <h3>Resource Types</h3>
+                    <div class="network-types" id="network-resource-types"></div>
+                    <h3>Top Third-party Domains</h3>
+                    <div class="network-domain-list" id="network-domain-list">
+                        <p class="empty-state">Loading...</p>
+                    </div>
+                    <button class="show-more-button" id="network-show-more" type="button" hidden>
+                        Show more
+                    </button>
+                </section>
             </div>
-
-            <div class="analysis-row">
-                <span>First-party Requests</span>
-                <span id="network-first-party-requests">Loading...</span>
-            </div>
-
-            <div class="analysis-row">
-                <span>Third-party Requests</span>
-                <span id="network-third-party-requests">Loading...</span>
-            </div>
-
-            <div class="analysis-row">
-                <span>Third-party Domains</span>
-                <span id="network-third-party-domains">Loading...</span>
-            </div>
-
-            <div class="analysis-row">
-                <span>Same-entity Third-party</span>
-                <span id="network-same-entity-third-party">Loading...</span>
-            </div>
-
-            <div class="analysis-row">
-                <span>External Third-party</span>
-                <span id="network-external-third-party">Loading...</span>
-            </div>
-
-            <div class="analysis-row">
-                <span>Unknown Third-party</span>
-                <span id="network-unknown-third-party">Loading...</span>
-            </div>
-
-            <div class="network-types" id="network-resource-types"></div>
-
-            <h3>Top Third-party Domains</h3>
-
-            <div
-                class="network-domain-list"
-                id="network-domain-list"
-            >
-                <p class="empty-state">Loading...</p>
-            </div>
-
-            <button
-                class="show-more-button"
-                id="network-show-more"
-                type="button"
-                hidden
-            >
-                Show more
-            </button>
-
-        </div>
-
-    </div>
-
+        </section>
+    </main>
 
     <script src="../modules/assessment/assessment-engine.js"></script>
     <script src="popup.js"></script>
-
 </body>
 
 </html>

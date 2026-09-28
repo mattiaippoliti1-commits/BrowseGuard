@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         // Stop if the active tab or its URL cannot be retrieved
         if (!tab || !tab.url) {
+            updateUrlUnavailable();
             updatePageAnalysis(null);
             updateNetworkActivity(null);
             updateRuntimePrivacy(null);
@@ -52,6 +53,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         // Log unexpected errors while retrieving the active tab
         console.error("Error retrieving tab:", error);
 
+        updateUrlUnavailable();
         updatePageAnalysis(null);
         updateNetworkActivity(null);
         updateRuntimePrivacy(null);
@@ -64,9 +66,12 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 const visibleThirdPartyDomainLimit = 5;
 const visibleTrackerDomainLimit = 5;
+const visibleFindingLimit = 5;
 let currentNetworkActivity = null;
+let currentAssessment = null;
 let showAllThirdPartyDomains = false;
 let showAllTrackerDomains = false;
+let showAllFindings = false;
 
 
 /**
@@ -131,11 +136,10 @@ function analyzeURL(urlString) {
         // UPDATE URL ANALYSIS CARD
         // --------------------------------------------------
 
-        document.getElementById("protocol").textContent =
-            protocol.toUpperCase();
+        updateProtocolDisplay(protocol);
 
-        document.getElementById("hostname").textContent =
-            hostname;
+        updateText("hostname", hostname);
+        updateText("hostname-detail", hostname);
 
         document.getElementById("url-length").textContent =
             urlLength;
@@ -154,20 +158,33 @@ function analyzeURL(urlString) {
         // UPDATE SECURITY INDICATORS CARD
         // --------------------------------------------------
 
-        document.getElementById("https-indicator").textContent =
-            usesHTTPS ? "Yes" : "No";
+        updateIndicatorChip(
+            "https-indicator",
+            usesHTTPS ? "HTTPS" : "HTTP",
+            usesHTTPS ? "positive" : "warning",
+            true
+        );
 
-        document.getElementById("long-url").textContent =
-            isLongURL ? "Detected" : "No";
+        updateIndicatorChip("long-url", "Long URL", "warning", isLongURL);
 
-        document.getElementById("many-subdomains").textContent =
-            hasManySubdomains ? "Detected" : "No";
+        updateIndicatorChip(
+            "many-subdomains",
+            "Many subdomains",
+            "warning",
+            hasManySubdomains
+        );
 
-        document.getElementById("at-symbol").textContent =
-            hasAtSymbol ? "Detected" : "No";
+        updateIndicatorChip("at-symbol", "Contains @", "warning", hasAtSymbol);
 
-        document.getElementById("url-encoding").textContent =
-            hasURLEncoding ? "Detected" : "No";
+        updateIndicatorChip(
+            "url-encoding",
+            "URL encoding",
+            "warning",
+            hasURLEncoding
+        );
+
+        updateIndicatorChip("ip-address", "IP address", "warning", isIPAddress);
+        updateIndicatorChip("punycode", "Punycode", "warning", hasPunycode);
 
         return {
             protocol: protocol,
@@ -187,6 +204,7 @@ function analyzeURL(urlString) {
 
         // Log errors caused by invalid or unsupported URLs
         console.error("URL analysis failed:", error);
+        updateUrlUnavailable();
         return null;
 
     }
@@ -205,23 +223,34 @@ function updateAssessment(assessment) {
     const dataStatus = document.getElementById("assessment-data-status");
     const reasons = document.getElementById("assessment-reasons");
 
+    currentAssessment = assessment;
+    showAllFindings = false;
     reasons.textContent = "";
     dataStatus.textContent = "";
 
     if (!assessment) {
-        document.getElementById("assessment-security").textContent = unavailable;
-        document.getElementById("assessment-privacy").textContent = unavailable;
-        document.getElementById("assessment-network").textContent = unavailable;
+        updateAssessmentCard("security", null, unavailable);
+        updateAssessmentCard("privacy", null, unavailable);
+        updateAssessmentCard("network", null, unavailable);
         dataStatus.textContent = "Analysis incomplete.";
         return;
     }
 
-    document.getElementById("assessment-security").textContent =
-        assessment.security.summary;
-    document.getElementById("assessment-privacy").textContent =
-        assessment.privacy.summary;
-    document.getElementById("assessment-network").textContent =
-        assessment.network.summary;
+    updateAssessmentCard(
+        "security",
+        assessment.security.level,
+        formatAssessmentLabel("security", assessment.security.level)
+    );
+    updateAssessmentCard(
+        "privacy",
+        assessment.privacy.level,
+        formatAssessmentLabel("privacy", assessment.privacy.level)
+    );
+    updateAssessmentCard(
+        "network",
+        assessment.network.level,
+        formatAssessmentLabel("network", assessment.network.level)
+    );
 
     if (assessment.dataStatus === "partial") {
         dataStatus.textContent =
@@ -241,42 +270,170 @@ function updateAssessment(assessment) {
 function renderAssessmentReasons(assessment) {
 
     const container = document.getElementById("assessment-reasons");
-    const reasonGroups = [
-        ["Security", assessment.security.reasons],
-        ["Privacy", assessment.privacy.reasons],
-        ["Network", assessment.network.reasons]
-    ];
+    const findings = collectFindings(assessment);
+    const visibleFindings = showAllFindings ?
+        findings :
+        findings.slice(0, visibleFindingLimit);
+    const hiddenFindingCount = findings.length - visibleFindings.length;
 
-    reasonGroups.forEach(function ([label, reasons]) {
-        if (!reasons || reasons.length === 0) {
-            return;
-        }
+    container.textContent = "";
 
-        const title = document.createElement("h3");
-        title.textContent = label + " why";
-        container.appendChild(title);
+    if (findings.length === 0) {
+        const emptyState = document.createElement("p");
+        emptyState.className = "empty-state";
+        emptyState.textContent = "No assessment findings available yet.";
+        container.appendChild(emptyState);
+        return;
+    }
 
-        const list = document.createElement("ul");
-        list.className = "assessment-reason-list";
+    const list = document.createElement("div");
+    list.className = "finding-list";
 
-        const visibleReasonLimit = 3;
-        const visibleReasons = reasons.slice(0, visibleReasonLimit);
-        const hiddenReasonCount = reasons.length - visibleReasons.length;
+    visibleFindings.forEach(function (finding) {
+        const item = document.createElement("div");
+        item.className =
+            "finding-item " + getFindingClassName(finding);
 
-        visibleReasons.forEach(function (reason) {
-            const item = document.createElement("li");
-            item.textContent = reason.message;
-            list.appendChild(item);
+        const text = document.createElement("span");
+        text.className = "finding-text";
+
+        const label = document.createElement("span");
+        label.className = "finding-label";
+        label.textContent = finding.dimension;
+
+        const message = document.createElement("span");
+        message.className = "finding-message";
+        message.textContent = finding.message;
+
+        text.appendChild(label);
+        text.appendChild(message);
+        item.appendChild(text);
+        list.appendChild(item);
+    });
+
+    container.appendChild(list);
+
+    if (hiddenFindingCount > 0 || showAllFindings) {
+        const button = document.createElement("button");
+        button.className = "show-more-button";
+        button.id = "findings-show-more";
+        button.type = "button";
+        button.textContent = showAllFindings ?
+            "Show fewer findings" :
+            "Show all findings (" + hiddenFindingCount + " more)";
+        container.appendChild(button);
+    }
+
+}
+
+
+function collectFindings(assessment) {
+
+    return [
+        ["Security", assessment.security],
+        ["Privacy", assessment.privacy],
+        ["Network", assessment.network]
+    ].flatMap(function ([dimension, result]) {
+        const reasons = (result.reasons || []).map(function (reason) {
+            return {
+                dimension: dimension,
+                message: reason.message,
+                severity: reason.severity,
+                type: "reason"
+            };
         });
 
-        if (hiddenReasonCount > 0) {
-            const item = document.createElement("li");
-            item.textContent = "+ " + hiddenReasonCount + " more observations";
-            list.appendChild(item);
-        }
+        const positives = (result.positiveSignals || []).map(function (signal) {
+            return {
+                dimension: dimension,
+                message: signal.message,
+                severity: "positive",
+                type: "positive"
+            };
+        });
 
-        container.appendChild(list);
+        return reasons.concat(positives);
     });
+
+}
+
+
+function getFindingClassName(finding) {
+
+    if (finding.type === "positive") {
+        return "is-positive";
+    }
+
+    return "is-" + finding.severity;
+
+}
+
+
+function updateAssessmentCard(dimension, level, label) {
+
+    const element = document.getElementById("assessment-" + dimension);
+    const card = document.querySelector(
+        ".assessment-card[data-dimension='" + dimension + "']"
+    );
+
+    element.textContent = label;
+
+    if (!card) {
+        return;
+    }
+
+    card.classList.remove("is-good", "is-observation", "is-moderate", "is-danger");
+    card.classList.add(getAssessmentStatusClass(dimension, level));
+
+}
+
+
+function formatAssessmentLabel(dimension, level) {
+
+    const labels = {
+        security: {
+            "no-major-issues": "No major issues",
+            observations: "Observations",
+            attention: "Attention"
+        },
+        privacy: {
+            "low-activity": "Low",
+            "moderate-activity": "Moderate",
+            "elevated-activity": "Elevated"
+        },
+        network: {
+            "low-third-party-activity": "Low",
+            "moderate-third-party-activity": "Moderate",
+            "high-third-party-activity": "High"
+        }
+    };
+
+    return labels[dimension][level] || "Unavailable";
+
+}
+
+
+function getAssessmentStatusClass(dimension, level) {
+
+    const classes = {
+        security: {
+            "no-major-issues": "is-good",
+            observations: "is-observation",
+            attention: "is-danger"
+        },
+        privacy: {
+            "low-activity": "is-good",
+            "moderate-activity": "is-moderate",
+            "elevated-activity": "is-danger"
+        },
+        network: {
+            "low-third-party-activity": "is-good",
+            "moderate-third-party-activity": "is-moderate",
+            "high-third-party-activity": "is-danger"
+        }
+    };
+
+    return (classes[dimension] && classes[dimension][level]) || "is-observation";
 
 }
 
@@ -688,6 +845,10 @@ function updateNetworkActivity(activity) {
             document.getElementById(elementId).textContent = unavailable;
         });
 
+        updateText("network-total-requests-detail", unavailable);
+        updateText("network-same-entity-third-party-detail", unavailable);
+        updateText("network-external-third-party-detail", unavailable);
+        updateNetworkComposition(null);
         renderNetworkResourceTypes(null);
         renderThirdPartyDomains([]);
         updateTrackerDetection(null);
@@ -699,6 +860,16 @@ function updateNetworkActivity(activity) {
             activity[propertyName];
     });
 
+    updateText("network-total-requests-detail", activity.totalRequests);
+    updateText(
+        "network-same-entity-third-party-detail",
+        activity.sameEntityThirdPartyRequests
+    );
+    updateText(
+        "network-external-third-party-detail",
+        activity.externalThirdPartyRequests
+    );
+    updateNetworkComposition(activity);
     renderNetworkResourceTypes(activity.resourceTypes);
     renderThirdPartyDomains(activity.thirdPartyDomains || []);
     updateTrackerDetection(activity);
@@ -993,6 +1164,7 @@ function renderRuntimeCategory(label, category) {
 
     const status = document.createElement("span");
     status.className = "runtime-category-status";
+    status.classList.add(category.detected ? "is-active" : "is-idle");
     status.textContent = formatRuntimeCategoryStatus(category);
 
     header.appendChild(title);
@@ -1173,6 +1345,37 @@ function renderThirdPartyDomains(domains) {
 
 document.addEventListener("click", function (event) {
 
+    const trigger = event.target.closest("#technical-details-trigger");
+
+    if (!trigger) {
+        return;
+    }
+
+    const content = document.getElementById(
+        trigger.getAttribute("aria-controls")
+    );
+    const isExpanded = trigger.getAttribute("aria-expanded") === "true";
+
+    trigger.setAttribute("aria-expanded", String(!isExpanded));
+    content.hidden = isExpanded;
+
+});
+
+
+document.addEventListener("click", function (event) {
+
+    if (event.target.id !== "findings-show-more" || !currentAssessment) {
+        return;
+    }
+
+    showAllFindings = !showAllFindings;
+    renderAssessmentReasons(currentAssessment);
+
+});
+
+
+document.addEventListener("click", function (event) {
+
     if (event.target.id !== "network-show-more" || !currentNetworkActivity) {
         return;
     }
@@ -1196,9 +1399,9 @@ document.addEventListener("click", function (event) {
 
 
 /**
- * Render the known tracker list with a compact Show more control.
+ * Render the tracking-associated domain list with a compact Show more control.
  *
- * @param {Array<object>} trackers - Known tracker summaries.
+ * @param {Array<object>} trackers - Tracking-associated domain summaries.
  */
 function renderTrackerDomains(trackers) {
 
@@ -1210,7 +1413,8 @@ function renderTrackerDomains(trackers) {
     if (!trackers || trackers.length === 0) {
         const emptyState = document.createElement("p");
         emptyState.className = "empty-state";
-        emptyState.textContent = "No known trackers detected.";
+        emptyState.textContent =
+            "No tracking-associated domains detected.";
         list.appendChild(emptyState);
         showMoreButton.hidden = true;
         return;
@@ -1246,16 +1450,41 @@ function renderTrackerDomains(trackers) {
 
 
 /**
- * @param {object} tracker - Known tracker summary.
+ * @param {object} tracker - Tracking-associated domain summary.
  * @returns {string} Human-readable tracker category and count summary.
  */
 function formatTrackerSummary(tracker) {
 
     const requestLabel =
         tracker.requestCount === 1 ? "request" : "requests";
+    const matchNote =
+        tracker.hostname && tracker.hostname !== tracker.matchedDomain ?
+            " · observed: " + tracker.hostname :
+            "";
 
-    return tracker.category + " · " +
-        tracker.requestCount + " " + requestLabel;
+    return formatTrackingCategory(tracker.category) + " · " +
+        tracker.requestCount + " " + requestLabel +
+        matchNote;
+
+}
+
+
+/**
+ * Present Tracker Radar categories without implying that every request is
+ * itself definitively tracking.
+ *
+ * @param {string} category - Internal normalized Tracker Radar category.
+ * @returns {string} User-facing category label.
+ */
+function formatTrackingCategory(category) {
+
+    const labels = {
+        Advertising: "Advertising-related",
+        Analytics: "Analytics-related",
+        Social: "Social-related"
+    };
+
+    return labels[category] || category || "Other";
 
 }
 
@@ -1310,6 +1539,119 @@ function formatResourceType(type) {
     };
 
     return labels[type] || type;
+
+}
+
+
+function updateText(elementId, value) {
+
+    const element = document.getElementById(elementId);
+
+    if (!element) {
+        return;
+    }
+
+    element.textContent = value;
+
+}
+
+
+function updateProtocolDisplay(protocol) {
+
+    const label = protocol.toUpperCase();
+    const badge = document.getElementById("protocol");
+
+    updateText("protocol", label);
+    updateText("protocol-detail", label);
+
+    if (!badge) {
+        return;
+    }
+
+    badge.classList.remove("is-https", "is-http");
+    badge.classList.add(protocol === "https" ? "is-https" : "is-http");
+
+}
+
+
+function updateUrlUnavailable() {
+
+    updateText("protocol", "Unavailable");
+    updateText("protocol-detail", "Unavailable");
+    updateText("hostname", "Unavailable");
+    updateText("hostname-detail", "Unavailable");
+
+    const protocol = document.getElementById("protocol");
+
+    if (protocol) {
+        protocol.classList.remove("is-https", "is-http");
+    }
+
+    [
+        "url-length",
+        "subdomains"
+    ].forEach(function (elementId) {
+        updateText(elementId, "Unavailable");
+    });
+
+    [
+        "https-indicator",
+        "long-url",
+        "many-subdomains",
+        "at-symbol",
+        "url-encoding",
+        "ip-address",
+        "punycode"
+    ].forEach(function (elementId) {
+        updateIndicatorChip(elementId, "Unavailable", "warning", false);
+    });
+
+}
+
+
+function updateIndicatorChip(elementId, label, status, isVisible) {
+
+    const element = document.getElementById(elementId);
+
+    if (!element) {
+        return;
+    }
+
+    element.textContent = label;
+    element.classList.remove("is-muted", "is-positive", "is-warning");
+
+    if (!isVisible) {
+        element.classList.add("is-muted");
+        return;
+    }
+
+    element.classList.add(status === "positive" ? "is-positive" : "is-warning");
+
+}
+
+
+function updateNetworkComposition(activity) {
+
+    const same = document.getElementById("network-segment-same");
+    const external = document.getElementById("network-segment-external");
+    const unknown = document.getElementById("network-segment-unknown");
+
+    if (!same || !external || !unknown) {
+        return;
+    }
+
+    const sameCount = activity ? activity.sameEntityThirdPartyRequests || 0 : 0;
+    const externalCount = activity ? activity.externalThirdPartyRequests || 0 : 0;
+    const unknownCount = activity ? activity.unknownThirdPartyRequests || 0 : 0;
+    const total = sameCount + externalCount + unknownCount;
+
+    same.style.flexGrow = total > 0 ? sameCount : 0;
+    external.style.flexGrow = total > 0 ? externalCount : 0;
+    unknown.style.flexGrow = total > 0 ? unknownCount : 0;
+
+    same.title = "Same-entity third-party: " + sameCount;
+    external.title = "External third-party: " + externalCount;
+    unknown.title = "Unknown third-party: " + unknownCount;
 
 }
 
