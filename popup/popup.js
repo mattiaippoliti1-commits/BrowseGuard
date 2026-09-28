@@ -677,7 +677,10 @@ function updateNetworkActivity(activity) {
         ["network-total-requests", "totalRequests"],
         ["network-first-party-requests", "firstPartyRequests"],
         ["network-third-party-requests", "thirdPartyRequests"],
-        ["network-third-party-domains", "thirdPartyDomainCount"]
+        ["network-third-party-domains", "thirdPartyDomainCount"],
+        ["network-same-entity-third-party", "sameEntityThirdPartyRequests"],
+        ["network-external-third-party", "externalThirdPartyRequests"],
+        ["network-unknown-third-party", "unknownThirdPartyRequests"]
     ];
 
     if (!activity) {

@@ -10,7 +10,8 @@ function createTrackerMatcher(trackerData) {
     const trackersByDomain = new Map();
 
     (trackerData.trackers || []).forEach(function (tracker) {
-        const normalizedDomain = normalizeTrackerHostname(tracker.domain);
+        const normalizedTracker = normalizeTrackerEntry(tracker);
+        const normalizedDomain = normalizeTrackerHostname(normalizedTracker.domain);
 
         if (!normalizedDomain) {
             return;
@@ -18,7 +19,9 @@ function createTrackerMatcher(trackerData) {
 
         trackersByDomain.set(normalizedDomain, {
             domain: normalizedDomain,
-            category: tracker.category || "Other"
+            category: normalizedTracker.category || "Other",
+            owner: normalizedTracker.owner || "",
+            prevalence: normalizedTracker.prevalence
         });
     });
 
@@ -57,6 +60,21 @@ function findTrackerMatch(hostname, trackersByDomain) {
 
 }
 
+function normalizeTrackerEntry(tracker) {
+
+    if (Array.isArray(tracker)) {
+        return {
+            domain: tracker[0],
+            category: tracker[1],
+            owner: tracker[2],
+            prevalence: tracker[3]
+        };
+    }
+
+    return tracker || {};
+
+}
+
 function normalizeTrackerHostname(hostname) {
 
     return String(hostname || "")
@@ -69,12 +87,14 @@ if (typeof module !== "undefined" && module.exports) {
     module.exports = {
         createTrackerMatcher: createTrackerMatcher,
         findTrackerMatch: findTrackerMatch,
+        normalizeTrackerEntry: normalizeTrackerEntry,
         normalizeTrackerHostname: normalizeTrackerHostname
     };
 } else {
     globalThis.BrowserGuardTrackerMatcher = {
         createTrackerMatcher: createTrackerMatcher,
         findTrackerMatch: findTrackerMatch,
+        normalizeTrackerEntry: normalizeTrackerEntry,
         normalizeTrackerHostname: normalizeTrackerHostname
     };
 }

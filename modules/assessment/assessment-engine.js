@@ -607,10 +607,18 @@ function assessNetwork(snapshot, dataStatus) {
     }
 
     const totalRequests = network.totalRequests || 0;
-    const thirdPartyRequests = network.thirdPartyRequests || 0;
-    const thirdPartyDomainCount = network.thirdPartyDomainCount || 0;
+    const thirdPartyRequests = typeof network.assessmentThirdPartyRequests === "number" ?
+        network.assessmentThirdPartyRequests :
+        network.thirdPartyRequests || 0;
+    const thirdPartyDomainCount =
+        typeof network.assessmentThirdPartyDomainCount === "number" ?
+            network.assessmentThirdPartyDomainCount :
+            network.thirdPartyDomainCount || 0;
     const thirdPartyRatio = totalRequests > 0 ?
         thirdPartyRequests / totalRequests :
+        0;
+    const rawThirdPartyRatio = totalRequests > 0 ?
+        (network.thirdPartyRequests || 0) / totalRequests :
         0;
 
     let level = "low-third-party-activity";
@@ -657,9 +665,18 @@ function assessNetwork(snapshot, dataStatus) {
             "Third-party network activity was observed",
             {
                 totalRequests: totalRequests,
-                thirdPartyRequests: thirdPartyRequests,
-                thirdPartyDomainCount: thirdPartyDomainCount,
-                thirdPartyRatio: Number(thirdPartyRatio.toFixed(3))
+                thirdPartyRequests: network.thirdPartyRequests || 0,
+                thirdPartyDomainCount: network.thirdPartyDomainCount || 0,
+                assessmentThirdPartyRequests: thirdPartyRequests,
+                assessmentThirdPartyDomainCount: thirdPartyDomainCount,
+                sameEntityThirdPartyRequests:
+                    network.sameEntityThirdPartyRequests || 0,
+                externalThirdPartyRequests:
+                    network.externalThirdPartyRequests || 0,
+                unknownThirdPartyRequests:
+                    network.unknownThirdPartyRequests || 0,
+                thirdPartyRatio: Number(rawThirdPartyRatio.toFixed(3)),
+                assessmentThirdPartyRatio: Number(thirdPartyRatio.toFixed(3))
             }
         ));
     }

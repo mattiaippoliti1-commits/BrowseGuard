@@ -60,15 +60,21 @@ Authorization headers, or POST data to external services.
 
 ## Tracker Dataset
 
-The current dataset is a small local prototype subset in `data/tracker-data.js`.
+The current dataset is a generated local compact dataset in
+`data/tracker-data.js`.
 
-- Source basis: DuckDuckGo Tracker Radar
+- Source: DuckDuckGo Tracker Radar
 - Source repository: https://github.com/duckduckgo/tracker-radar
 - Source license: Creative Commons Attribution-NonCommercial-ShareAlike 4.0
   International
-- BrowserGuard subset review date: 2026-09-28
-- Current subset size: 15 domains
-- Structure: each entry contains a domain and category
+- Generated at: 2026-09-28T10:21:25.235Z
+- Source ref: `main`
+- Region: `US`
+- Current tracker domains: 948
+- Current entity domains: 38,370
+- Generated dataset size: about 1.44 MB
+- Structure: compact local arrays for tracker domains, normalized categories,
+  owner/prevalence metadata, and entity-domain ownership mappings
 
 Categories currently used:
 
@@ -76,9 +82,13 @@ Categories currently used:
 - Advertising
 - Social
 
-The subset is intentionally small for a university prototype. It demonstrates
-the architecture and local matching behavior without bundling a large external
-dataset.
+The update pipeline is `node scripts/update-tracker-radar.js`. That developer
+script downloads DuckDuckGo Tracker Radar source files and regenerates the local
+dataset. The extension runtime never contacts DuckDuckGo and does not require
+additional Chrome permissions.
+
+Tracker Radar categories are normalized into user-facing BrowserGuard
+categories. BrowserGuard does not infer tracker category from a domain name.
 
 ## Domain Matching
 
@@ -92,6 +102,33 @@ Tracker matching is domain-bound:
 The matcher uses suffix lookup over hostname labels and a `Map` of known tracker
 domains. It avoids substring matching such as `hostname.includes(domain)`.
 
+## Entity-aware Third-party Classification
+
+Raw first-party and third-party metrics keep their original meaning:
+
+- First-party: the request registrable domain matches the page registrable
+  domain.
+- Third-party: the request registrable domain differs from the page registrable
+  domain.
+
+BrowserGuard also computes a separate entity relationship layer using Tracker
+Radar entity-domain metadata:
+
+- `same-entity-third-party`: different registrable domains, but both domains
+  map to the same known entity.
+- `external-third-party`: different registrable domains and both entities are
+  known and different.
+- `unknown-third-party`: one or both entities are unknown.
+
+Unknown is conservative: missing entity data is not treated as external and is
+not treated as trusted. Same-entity does not imply safe or privacy-preserving.
+Third-party does not imply tracker or malicious.
+
+The Network Assessment uses external plus unknown third-party activity for
+escalation, while the raw UI counters still show all third-party requests.
+Tracker Detection remains independent: a same-entity third-party can still be a
+known tracker if it appears in Tracker Radar.
+
 ## Limitations
 
 - BrowserGuard detects only trackers present in the local dataset.
@@ -99,6 +136,8 @@ domains. It avoids substring matching such as `hostname.includes(domain)`.
 - A known tracker does not imply malware, phishing, or that the website is
   unsafe.
 - Third-party does not mean tracker.
+- Same-entity does not imply safe or privacy-preserving.
+- Entity resolution depends on Tracker Radar metadata coverage.
 - Tracker Detection is currently applied to third-party requests.
 - CNAME uncloaking and DNS resolution are not implemented.
 - First-party tracking and first-party-hosted tracker infrastructure may not be
@@ -321,10 +360,14 @@ browserguard/
 │   ├── runtime-bridge.js
 │   └── runtime-monitor.js
 ├── data/
+│   ├── generated/
+│   │   └── tracker-radar-metadata.json
 │   └── tracker-data.js
 ├── modules/
 │   ├── assessment/
 │   │   └── assessment-engine.js
+│   ├── network/
+│   │   └── entity-resolver.js
 │   ├── security/
 │   │   └── web-security-analyzer.js
 │   └── trackers/
@@ -342,12 +385,16 @@ browserguard/
     ├── background-network.test.js
     ├── background-runtime.test.js
     ├── background-web-security.test.js
+    ├── entity-resolver.test.js
     ├── manifest-paths.test.js
     ├── page-analysis-iframe.test.js
     ├── runtime-monitor.test.js
     ├── tracker-matcher.test.js
     └── web-security-analyzer.test.js
 ```
+
+`scripts/update-tracker-radar.js` regenerates the local tracker/entity dataset
+from DuckDuckGo Tracker Radar for development updates.
 
 `background/` contains the Manifest V3 service worker. `content/` contains both
 isolated-world content scripts and the MAIN-world runtime monitor. `popup/`
@@ -361,6 +408,7 @@ Run the local tests with:
 
 ```bash
 node tests/tracker-matcher.test.js
+node tests/entity-resolver.test.js
 node tests/assessment-engine.test.js
 node tests/background-network.test.js
 node tests/runtime-monitor.test.js
