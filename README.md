@@ -236,7 +236,10 @@ Security levels:
 Security combines strong, moderate, and weak observations. Strong observations
 such as an HTTP main page, mixed content, or insecure password forms produce
 `attention`. Two moderate observations or four weak observations also produce
-`attention`. A smaller number of observations produces `observations`.
+`attention`. A smaller number of observations produces `observations`. When CSP
+is completely absent and no `X-Frame-Options` header is observed,
+anti-framing absence is kept as informational evidence instead of adding a
+second weak signal for escalation.
 
 Privacy levels:
 
@@ -245,10 +248,15 @@ Privacy levels:
 - `elevated-activity`
 
 Tracker activity becomes moderate at 2 tracker domains or 10 tracker requests,
-and elevated at 5 tracker domains or 30 tracker requests. Runtime privacy
-activity is considered multiple when at least 3 monitored categories are
-observed. Moderate tracker activity combined with multiple runtime categories is
-treated as elevated privacy-related activity.
+and elevated at 5 tracker domains, or at 30 tracker requests when at least 2
+tracker domains are involved. Tracker categories such as Analytics,
+Advertising, and Social are descriptive evidence only; they are not weighted.
+Runtime privacy activity is considered multiple when at least 3 monitored
+categories are observed. WebGL hardware information alone does not create a
+significant escalation, but WebGL hardware information combined with Canvas or
+Device Information is treated as combined fingerprinting-related indicators.
+Moderate tracker activity combined with multiple runtime categories is treated
+as elevated privacy-related activity.
 
 Network levels:
 
@@ -258,13 +266,22 @@ Network levels:
 
 Third-party network activity becomes moderate at a 25% third-party request
 ratio, 5 third-party domains, or 20 third-party requests. It becomes high at a
-50% third-party request ratio, 15 third-party domains, or at least 75
+50% third-party request ratio only when at least 10 third-party requests were
+observed. It also becomes high at 15 third-party domains when either at least
+15 third-party requests or at least 30 total requests were observed, or at 75
 third-party requests when the ratio is also at least 25%.
+
+`high-third-party-activity` means elevated network activity toward third-party
+origins. It does not mean high security risk, a dangerous website, or an unsafe
+website.
 
 The engine avoids double counting by keeping related URL heuristics in one
 reason, keeping tracker classification in Privacy, and keeping third-party
 volume in Network. Missing data is reported through `dataStatus` and
 `missingSources`; unavailable data is never treated as a positive signal.
+Missing Network Activity or Runtime Privacy data also adds a
+`privacy-data-incomplete` informational reason so incomplete privacy assessment
+does not look like observed zero activity.
 
 Each non-baseline assessment includes structured reasons such as:
 

@@ -15,13 +15,17 @@ const ASSESSMENT_THRESHOLDS = {
         elevatedTrackerDomains: 5,
         moderateTrackerRequests: 10,
         elevatedTrackerRequests: 30,
+        elevatedTrackerRequestMinimumDomains: 2,
         multipleRuntimeCategories: 3
     },
     network: {
         moderateThirdPartyRatio: 0.25,
         highThirdPartyRatio: 0.5,
+        highThirdPartyRatioMinimumRequests: 10,
         moderateThirdPartyDomains: 5,
         highThirdPartyDomains: 15,
+        highThirdPartyDomainsMinimumRequests: 15,
+        highThirdPartyDomainsMinimumTotalRequests: 30,
         moderateThirdPartyRequests: 20,
         highThirdPartyRequests: 75
     }
@@ -160,7 +164,7 @@ function assessSecurity(snapshot, dataStatus) {
         reasons.push(createReason(
             "external-password-forms",
             "medium",
-            "Password forms submit to an external host",
+            "Password form submission target is external",
             {
                 formCount: page.externalPasswordForms
             }
@@ -251,12 +255,24 @@ function assessSecurity(snapshot, dataStatus) {
         web.headers.antiFraming.status ===
             "No explicit anti-framing policy detected"
     ) {
-        weakCount++;
+        const csp = web.headers.csp;
+        const isMissingBecauseCspIsAbsent =
+            csp &&
+            !csp.present &&
+            !csp.reportOnly &&
+            !web.headers.antiFraming.xFrameOptions;
+
+        if (!isMissingBecauseCspIsAbsent) {
+            weakCount++;
+        }
+
         reasons.push(createReason(
             "anti-framing-missing",
-            "low",
+            isMissingBecauseCspIsAbsent ? "info" : "low",
             "No explicit anti-framing policy was observed",
-            {}
+            {
+                countedForEscalation: !isMissingBecauseCspIsAbsent
+            }
         ));
     }
 
@@ -418,7 +434,12 @@ function assessPrivacy(snapshot, dataStatus) {
 
         if (
             trackerDomains >= ASSESSMENT_THRESHOLDS.privacy.elevatedTrackerDomains ||
-            trackerRequests >= ASSESSMENT_THRESHOLDS.privacy.elevatedTrackerRequests
+            (
+                trackerRequests >=
+                    ASSESSMENT_THRESHOLDS.privacy.elevatedTrackerRequests &&
+                trackerDomains >=
+                    ASSESSMENT_THRESHOLDS.privacy.elevatedTrackerRequestMinimumDomains
+            )
         ) {
             trackerActivity = "elevated";
         } else if (
@@ -452,19 +473,29 @@ function assessPrivacy(snapshot, dataStatus) {
             "webgl",
             "UNMASKED_RENDERER_WEBGL"
         ) || hasRuntimeDetail(runtime, "webgl", "UNMASKED_VENDOR_WEBGL");
+        const hasCombinedRuntimeIndicators =
+            webglHardware &&
+            (
+                detectedCategories.includes("canvas") ||
+                detectedCategories.includes("navigator")
+            );
 
         if (
             detectedCategories.length >=
-            ASSESSMENT_THRESHOLDS.privacy.multipleRuntimeCategories
+                ASSESSMENT_THRESHOLDS.privacy.multipleRuntimeCategories ||
+            hasCombinedRuntimeIndicators
         ) {
             runtimeActivity = "multiple";
             reasons.push(createReason(
                 "multiple-runtime-privacy-indicators",
                 "medium",
-                "Multiple fingerprinting-related indicators were observed",
+                hasCombinedRuntimeIndicators ?
+                    "Combined fingerprinting-related indicators were observed" :
+                    "Multiple fingerprinting-related indicators were observed",
                 {
                     categories: detectedCategories,
-                    webglHardware: webglHardware
+                    webglHardware: webglHardware,
+                    combinedRuntimeIndicators: hasCombinedRuntimeIndicators
                 }
             ));
         } else if (detectedCategories.length > 0) {
@@ -475,10 +506,25 @@ function assessPrivacy(snapshot, dataStatus) {
                 "Privacy-sensitive API usage was observed",
                 {
                     categories: detectedCategories,
-                    webglHardware: webglHardware
+                    webglHardware: webglHardware,
+                    combinedRuntimeIndicators: false
                 }
             ));
         }
+    }
+
+    if (!network || !runtime) {
+        reasons.push(createReason(
+            "privacy-data-incomplete",
+            "info",
+            "Some privacy inputs are unavailable or incomplete",
+            {
+                missing: {
+                    networkActivity: !network,
+                    runtimePrivacy: !runtime
+                }
+            }
+        ));
     }
 
     const level = determinePrivacyLevel(trackerActivity, runtimeActivity, dataStatus);
@@ -571,9 +617,23 @@ function assessNetwork(snapshot, dataStatus) {
 
     let level = "low-third-party-activity";
 
+    const highRatioWithVolume =
+        thirdPartyRatio >= ASSESSMENT_THRESHOLDS.network.highThirdPartyRatio &&
+        thirdPartyRequests >=
+            ASSESSMENT_THRESHOLDS.network.highThirdPartyRatioMinimumRequests;
+    const highDomainDiversityWithVolume =
+        thirdPartyDomainCount >=
+            ASSESSMENT_THRESHOLDS.network.highThirdPartyDomains &&
+        (
+            thirdPartyRequests >=
+                ASSESSMENT_THRESHOLDS.network.highThirdPartyDomainsMinimumRequests ||
+            totalRequests >=
+                ASSESSMENT_THRESHOLDS.network.highThirdPartyDomainsMinimumTotalRequests
+        );
+
     if (
-        thirdPartyRatio >= ASSESSMENT_THRESHOLDS.network.highThirdPartyRatio ||
-        thirdPartyDomainCount >= ASSESSMENT_THRESHOLDS.network.highThirdPartyDomains ||
+        highRatioWithVolume ||
+        highDomainDiversityWithVolume ||
         (
             thirdPartyRequests >=
                 ASSESSMENT_THRESHOLDS.network.highThirdPartyRequests &&
