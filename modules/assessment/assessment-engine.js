@@ -7,7 +7,6 @@
 
 const ASSESSMENT_THRESHOLDS = {
     security: {
-        weakSignalsForAttention: 4,
         moderateSignalsForAttention: 2
     },
     privacy: {
@@ -289,25 +288,25 @@ function assessSecurity(snapshot, dataStatus) {
     }
 
     if (page && page.hiddenIframeCount > 0) {
-        weakCount++;
         reasons.push(createReason(
             "hidden-iframes",
-            "low",
+            "info",
             "Hidden iframes were observed",
             {
-                iframeCount: page.hiddenIframeCount
+                iframeCount: page.hiddenIframeCount,
+                countedForEscalation: false
             }
         ));
     }
 
     if (page && page.thirdPartyUnsandboxedIframeCount > 0) {
-        weakCount++;
         reasons.push(createReason(
             "third-party-unsandboxed-iframes",
-            "low",
+            "info",
             "Third-party iframes without sandbox were observed",
             {
-                iframeCount: page.thirdPartyUnsandboxedIframeCount
+                iframeCount: page.thirdPartyUnsandboxedIframeCount,
+                countedForEscalation: false
             }
         ));
     }
@@ -390,8 +389,7 @@ function determineSecurityLevel(strongCount, moderateCount, weakCount, dataStatu
     }
 
     if (
-        moderateCount >= ASSESSMENT_THRESHOLDS.security.moderateSignalsForAttention ||
-        weakCount >= ASSESSMENT_THRESHOLDS.security.weakSignalsForAttention
+        moderateCount >= ASSESSMENT_THRESHOLDS.security.moderateSignalsForAttention
     ) {
         return "attention";
     }

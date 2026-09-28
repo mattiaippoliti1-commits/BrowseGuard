@@ -259,11 +259,21 @@ function renderAssessmentReasons(assessment) {
         const list = document.createElement("ul");
         list.className = "assessment-reason-list";
 
-        reasons.slice(0, 3).forEach(function (reason) {
+        const visibleReasonLimit = 3;
+        const visibleReasons = reasons.slice(0, visibleReasonLimit);
+        const hiddenReasonCount = reasons.length - visibleReasons.length;
+
+        visibleReasons.forEach(function (reason) {
             const item = document.createElement("li");
             item.textContent = reason.message;
             list.appendChild(item);
         });
+
+        if (hiddenReasonCount > 0) {
+            const item = document.createElement("li");
+            item.textContent = "+ " + hiddenReasonCount + " more observations";
+            list.appendChild(item);
+        }
 
         container.appendChild(list);
     });
