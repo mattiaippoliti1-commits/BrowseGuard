@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>BrowserGuard Test Page</title>
+
+    <!-- External script used only to test BrowserGuard's external script counter. -->
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+
+    <style>
+        body {
+            max-width: 760px;
+            margin: 40px auto;
+            padding: 0 20px;
+            font-family: Arial, sans-serif;
+            line-height: 1.5;
+        }
+
+        section {
+            margin-top: 32px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+
+        label {
+            display: block;
+            margin-top: 12px;
+        }
+
+        input {
+            display: block;
+            width: 100%;
+            max-width: 360px;
+            margin-top: 4px;
+            padding: 8px;
+        }
+
+        button {
+            margin-top: 14px;
+            padding: 8px 14px;
+        }
+
+        .hidden-frame {
+            display: none;
+        }
+
+        .zero-frame {
+            width: 0;
+            height: 0;
+            border: 0;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <h1>BrowserGuard Test Page</h1>
+
+    <p>
+        This local page contains safe examples for testing DOM-based phishing
+        indicators. Do not enter real credentials.
+    </p>
+
+
+    <section>
+
+        <h2>Forms</h2>
+
+        <!-- Internal form: should count as a form, but not as external. -->
+        <form action="/local-submit" method="post">
+            <label>
+                Search
+                <input type="text" name="query">
+            </label>
+            <button type="submit">Submit Local Form</button>
+        </form>
+
+        <!-- External form: should increment externalForms. -->
+        <form action="https://example.com/submit" method="post">
+            <label>
+                Newsletter email
+                <input type="email" name="email">
+            </label>
+            <button type="submit">Submit External Form</button>
+        </form>
+
+        <!-- External password form: should increment password and external password counters. -->
+        <form action="https://example.org/login" method="post">
+            <label>
+                Username
+                <input type="text" name="username">
+            </label>
+            <label>
+                Password
+                <input type="password" name="password">
+            </label>
+            <button type="submit">Fake Login</button>
+        </form>
+
+        <!-- Insecure password form: should increment insecurePasswordForms. -->
+        <form action="http://example.net/login" method="post">
+            <label>
+                Test password
+                <input type="password" name="test-password">
+            </label>
+            <button type="submit">Fake HTTP Login</button>
+        </form>
+
+    </section>
+
+
+    <section>
+
+        <h2>Links</h2>
+
+        <ul>
+            <li>
+                <a href="/local-page.html">Internal local link</a>
+            </li>
+            <li>
+                <a href="https://example.com">External link to example.com</a>
+            </li>
+            <li>
+                <a href="https://example.org/login">example.com</a>
+            </li>
+            <li>
+                <a href="https://example.net/account">https://example.com/account</a>
+            </li>
+            <li>
+                <a href="https://example.edu/news">Read more</a>
+            </li>
+        </ul>
+
+    </section>
+
+
+    <section>
+
+        <h2>Iframes</h2>
+
+        <!-- Visible iframe: should count as an iframe, but not hidden. -->
+        <iframe
+            src="about:blank"
+            title="Visible test iframe"
+            width="300"
+            height="100"
+        ></iframe>
+
+        <!-- Hidden iframe: should increment hiddenIframeCount. -->
+        <iframe
+            class="hidden-frame"
+            src="about:blank"
+            title="Hidden test iframe"
+        ></iframe>
+
+        <!-- Zero-size iframe: should increment hiddenIframeCount. -->
+        <iframe
+            class="zero-frame"
+            src="about:blank"
+            title="Zero-size test iframe"
+        ></iframe>
+
+    </section>
+
+</body>
+
+</html>
