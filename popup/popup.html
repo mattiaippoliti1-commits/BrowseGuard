@@ -25,25 +25,35 @@
         </header>
 
         <section class="assessment-panel" aria-labelledby="assessment-title">
-            <p class="eyebrow" id="assessment-title">Overall Assessment</p>
+            <p class="eyebrow" id="assessment-title">Assessment</p>
             <div class="assessment-grid">
                 <article class="assessment-card" data-dimension="security">
                     <div class="assessment-card-top">
-                        <span class="assessment-icon shield-icon" aria-hidden="true"></span>
+                        <svg class="assessment-icon" aria-hidden="true" viewBox="0 0 24 24">
+                            <path d="M12 3l7 3v5c0 4.7-2.8 8.3-7 10-4.2-1.7-7-5.3-7-10V6l7-3z"></path>
+                        </svg>
                         <span class="assessment-label">Security</span>
                     </div>
                     <strong id="assessment-security">Loading...</strong>
                 </article>
                 <article class="assessment-card" data-dimension="privacy">
                     <div class="assessment-card-top">
-                        <span class="assessment-icon privacy-icon" aria-hidden="true"></span>
+                        <svg class="assessment-icon" aria-hidden="true" viewBox="0 0 24 24">
+                            <path d="M3 12s3.4-6 9-6 9 6 9 6-3.4 6-9 6-9-6-9-6z"></path>
+                            <circle cx="12" cy="12" r="2.6"></circle>
+                        </svg>
                         <span class="assessment-label">Privacy</span>
                     </div>
                     <strong id="assessment-privacy">Loading...</strong>
                 </article>
                 <article class="assessment-card" data-dimension="network">
                     <div class="assessment-card-top">
-                        <span class="assessment-icon network-icon" aria-hidden="true"></span>
+                        <svg class="assessment-icon" aria-hidden="true" viewBox="0 0 24 24">
+                            <path d="M8 7l8 4.5M8 17l8-5.5"></path>
+                            <circle cx="6" cy="6" r="3"></circle>
+                            <circle cx="18" cy="12" r="3"></circle>
+                            <circle cx="6" cy="18" r="3"></circle>
+                        </svg>
                         <span class="assessment-label">Network</span>
                     </div>
                     <strong id="assessment-network">Loading...</strong>
@@ -55,6 +65,16 @@
         <section class="card key-findings-card" aria-labelledby="findings-title">
             <p class="eyebrow" id="findings-title">Key Findings</p>
             <div class="assessment-reasons" id="assessment-reasons"></div>
+        </section>
+
+        <section
+            class="positive-signals-card"
+            id="positive-signals-card"
+            aria-labelledby="positive-signals-title"
+            hidden
+        >
+            <p class="eyebrow" id="positive-signals-title">Positive Signals</p>
+            <div class="positive-signal-list" id="positive-signals"></div>
         </section>
 
         <section class="quick-stats" aria-label="Quick stats">
