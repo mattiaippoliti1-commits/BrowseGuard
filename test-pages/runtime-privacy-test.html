@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>BrowserGuard Runtime Privacy Test Page</title>
+
+    <style>
+        body {
+            max-width: 760px;
+            margin: 40px auto;
+            padding: 0 20px;
+            font-family: Arial, sans-serif;
+            line-height: 1.5;
+        }
+
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 12px;
+            text-align: left;
+        }
+
+        canvas {
+            display: block;
+            margin-top: 20px;
+            border: 1px solid #ddd;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <h1>BrowserGuard Runtime Privacy Test Page</h1>
+
+    <p>
+        Use these buttons to trigger privacy-sensitive APIs separately. Do not
+        enter personal data on this page.
+    </p>
+
+    <div class="actions">
+        <button id="canvas-data-url">Canvas toDataURL</button>
+        <button id="canvas-image-data">Canvas getImageData</button>
+        <button id="webgl-parameter">WebGL getParameter</button>
+        <button id="webgl-hardware">WebGL hardware information</button>
+        <button id="audio-context">AudioContext</button>
+        <button id="navigator-properties">Navigator properties</button>
+        <button id="screen-properties">Screen properties</button>
+        <button id="combined">Combined indicators</button>
+    </div>
+
+    <canvas
+        id="test-canvas"
+        width="220"
+        height="80"
+    ></canvas>
+
+    <script>
+        const canvas = document.getElementById("test-canvas");
+        const context = canvas.getContext("2d");
+
+        context.fillStyle = "#1f77b4";
+        context.fillRect(10, 10, 80, 40);
+        context.fillStyle = "#222";
+        context.fillText("BrowserGuard", 20, 36);
+
+        document.getElementById("canvas-data-url")
+            .addEventListener("click", function () {
+                canvas.toDataURL();
+            });
+
+        document.getElementById("canvas-image-data")
+            .addEventListener("click", function () {
+                context.getImageData(0, 0, 10, 10);
+            });
+
+        document.getElementById("webgl-parameter")
+            .addEventListener("click", function () {
+                const webglCanvas = document.createElement("canvas");
+                const gl = webglCanvas.getContext("webgl") ||
+                    webglCanvas.getContext("experimental-webgl");
+
+                if (gl) {
+                    gl.getParameter(gl.VERSION);
+                }
+            });
+
+        document.getElementById("webgl-hardware")
+            .addEventListener("click", function () {
+                const webglCanvas = document.createElement("canvas");
+                const gl = webglCanvas.getContext("webgl") ||
+                    webglCanvas.getContext("experimental-webgl");
+
+                if (!gl) {
+                    return;
+                }
+
+                const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
+
+                if (debugInfo) {
+                    gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
+                    gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+                }
+            });
+
+        document.getElementById("audio-context")
+            .addEventListener("click", function () {
+                const AudioCtor = window.AudioContext ||
+                    window.webkitAudioContext;
+                const OfflineAudioCtor = window.OfflineAudioContext ||
+                    window.webkitOfflineAudioContext;
+
+                if (AudioCtor) {
+                    const audioContext = new AudioCtor();
+                    audioContext.close();
+                }
+
+                if (OfflineAudioCtor) {
+                    new OfflineAudioCtor(1, 44100, 44100);
+                }
+            });
+
+        document.getElementById("navigator-properties")
+            .addEventListener("click", function () {
+                void navigator.hardwareConcurrency;
+                void navigator.deviceMemory;
+                void navigator.languages;
+                void navigator.platform;
+                void navigator.userAgent;
+                void navigator.maxTouchPoints;
+            });
+
+        document.getElementById("screen-properties")
+            .addEventListener("click", function () {
+                void screen.width;
+                void screen.height;
+                void screen.availWidth;
+                void screen.availHeight;
+                void screen.colorDepth;
+                void screen.pixelDepth;
+            });
+
+        document.getElementById("combined")
+            .addEventListener("click", function () {
+                document.getElementById("canvas-data-url").click();
+                document.getElementById("webgl-hardware").click();
+                document.getElementById("navigator-properties").click();
+                document.getElementById("screen-properties").click();
+            });
+    </script>
+
+</body>
+
+</html>

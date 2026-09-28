@@ -19,7 +19,9 @@ const context = vm.createContext({
     RegExp: RegExp,
     importScripts: function (...scriptPaths) {
         scriptPaths.forEach(function (scriptPath) {
-            const absolutePath = path.join(projectRoot, scriptPath);
+            const absolutePath = path.normalize(
+                path.join(projectRoot, "background", scriptPath)
+            );
             const source = fs.readFileSync(absolutePath, "utf8");
             vm.runInContext(source, context, {
                 filename: scriptPath
@@ -67,10 +69,13 @@ const context = vm.createContext({
 });
 
 vm.runInContext(
-    fs.readFileSync(path.join(projectRoot, "background.js"), "utf8"),
+    fs.readFileSync(
+        path.join(projectRoot, "background", "service-worker.js"),
+        "utf8"
+    ),
     context,
     {
-        filename: "background.js"
+        filename: "background/service-worker.js"
     }
 );
 

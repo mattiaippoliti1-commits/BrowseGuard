@@ -138,3 +138,53 @@ h3 {
 
     cursor: pointer;
 }
+
+.runtime-indicator-note {
+    margin: 8px 0 12px;
+
+    color: #555;
+
+    font-size: 13px;
+
+    font-weight: bold;
+}
+
+.runtime-category-list {
+    margin-top: 4px;
+}
+
+.runtime-category-item {
+    padding: 9px 0;
+
+    border-bottom: 1px solid #eee;
+}
+
+.runtime-category-header {
+    display: flex;
+
+    justify-content: space-between;
+
+    gap: 12px;
+}
+
+.runtime-category-title {
+    font-weight: bold;
+}
+
+.runtime-category-status {
+    max-width: 170px;
+
+    color: #666;
+
+    text-align: right;
+}
+
+.runtime-detail-list {
+    margin: 7px 0 0;
+
+    padding-left: 18px;
+
+    color: #666;
+
+    font-size: 12px;
+}

@@ -16,6 +16,8 @@ analysis of web page security and network activity.
   blocking or modifying them.
 - Tracker Detection: classifies some third-party network requests as known
   trackers by matching hostnames against a local dataset.
+- Runtime Privacy: observes selected runtime API usage associated with browser
+  fingerprinting indicators, without collecting fingerprint values.
 
 ## Network Activity
 
@@ -53,7 +55,7 @@ Authorization headers, or POST data to external services.
 
 ## Tracker Dataset
 
-The current dataset is a small local prototype subset in `tracker-data.js`.
+The current dataset is a small local prototype subset in `data/tracker-data.js`.
 
 - Source basis: DuckDuckGo Tracker Radar
 - Source repository: https://github.com/duckduckgo/tracker-radar
@@ -96,10 +98,97 @@ domains. It avoids substring matching such as `hostname.includes(domain)`.
 - CNAME uncloaking and DNS resolution are not implemented.
 - First-party tracking and first-party-hosted tracker infrastructure may not be
   detected.
-- Fingerprinting runtime detection, Canvas/WebGL/AudioContext monitoring,
-  cookie analysis, permission monitoring, WHOIS, DNS intelligence, domain
-  reputation, malware/phishing blacklists, and request blocking are not
-  implemented.
+- Runtime fingerprinting indicators cover selected APIs only; cookie analysis,
+  permission monitoring, WHOIS, DNS intelligence, domain reputation,
+  malware/phishing blacklists, and request blocking are not implemented.
+
+## Runtime Privacy / Fingerprinting Indicators
+
+Runtime Privacy observes selected privacy-sensitive APIs from page scripts.
+Because Chrome content scripts normally run in an isolated world, BrowserGuard
+installs `content/runtime-monitor.js` in the page `MAIN` world at
+`document_start`. That monitor wraps selected APIs and emits schema-limited
+`CustomEvent` messages to `content/runtime-bridge.js`, which runs as a normal
+isolated content script.
+
+The bridge validates each event and forwards only accepted event metadata to the
+background service worker. The page can potentially dispatch fake events, so the
+bridge and background treat this channel as untrusted. Events cannot request
+privileged actions and cannot access `chrome.*`; they only describe an observed
+category and API/property name.
+
+Monitored categories:
+
+- Canvas: `HTMLCanvasElement.toDataURL`, `HTMLCanvasElement.toBlob`,
+  `CanvasRenderingContext2D.getImageData`
+- WebGL: `WebGLRenderingContext.getParameter`,
+  `WebGL2RenderingContext.getParameter`, `getExtension`, including observation
+  of `WEBGL_debug_renderer_info` access and unmasked vendor/renderer parameter
+  requests
+- Audio: `AudioContext`, `OfflineAudioContext`
+- Device Information: `navigator.hardwareConcurrency`,
+  `navigator.deviceMemory`, `navigator.languages`, `navigator.platform`,
+  `navigator.userAgent`, `navigator.maxTouchPoints`
+- Screen Information: `screen.width`, `screen.height`, `screen.availWidth`,
+  `screen.availHeight`, `screen.colorDepth`, `screen.pixelDepth`
+
+Runtime Privacy stores only that an API/property was accessed. It does not store
+canvas output, images, audio output, GPU renderer/vendor strings, user agent
+values, screen resolution, CPU count, device memory, or other fingerprint values.
+
+The popup shows `Multiple fingerprinting indicators detected` only when at least
+three runtime categories are observed in the current tab. This is a descriptive
+indicator, not a global risk score and not proof of malicious behavior.
+
+Runtime monitor limitations:
+
+- Existing tabs may need a refresh after extension load for the `document_start`
+  MAIN-world monitor to be installed early.
+- Pages can spoof bridge events, so this signal is observational rather than
+  authoritative.
+- Browser APIs that are non-configurable or absent are skipped safely.
+- Legitimate graphics, audio, feature detection, or responsive design code can
+  trigger API usage indicators.
+- BrowserGuard does not block, spoof, randomize, or modify fingerprint-related
+  APIs.
+
+## Project Structure
+
+```text
+browserguard/
+├── manifest.json
+├── README.md
+├── background/
+│   └── service-worker.js
+├── content/
+│   ├── page-analysis.js
+│   ├── runtime-bridge.js
+│   └── runtime-monitor.js
+├── data/
+│   └── tracker-data.js
+├── modules/
+│   └── trackers/
+│       └── tracker-matcher.js
+├── popup/
+│   ├── popup.html
+│   ├── popup.css
+│   └── popup.js
+├── test-pages/
+│   ├── dom-analysis-test.html
+│   └── runtime-privacy-test.html
+└── tests/
+    ├── background-network.test.js
+    ├── background-runtime.test.js
+    ├── manifest-paths.test.js
+    ├── runtime-monitor.test.js
+    └── tracker-matcher.test.js
+```
+
+`background/` contains the Manifest V3 service worker. `content/` contains both
+isolated-world content scripts and the MAIN-world runtime monitor. `popup/`
+contains the extension UI. `data/` contains local datasets, while `modules/`
+contains reusable analysis/matching logic. Manual HTML fixtures live in
+`test-pages/`, separate from automated tests in `tests/`.
 
 ## Tests
 
@@ -108,7 +197,13 @@ Run the local tests with:
 ```bash
 node tests/tracker-matcher.test.js
 node tests/background-network.test.js
-node --check background.js
-node --check popup.js
+node tests/runtime-monitor.test.js
+node tests/background-runtime.test.js
+node tests/manifest-paths.test.js
+node --check background/service-worker.js
+node --check popup/popup.js
+node --check content/page-analysis.js
+node --check content/runtime-monitor.js
+node --check content/runtime-bridge.js
 python3 -m json.tool manifest.json
 ```
