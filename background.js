@@ -5,9 +5,14 @@
  * It does not block, modify, classify reputation, or assign risk to traffic.
  */
 
+importScripts("tracker-data.js", "tracker-matcher.js");
+
 const tabNetworkStates = new Map();
 const networkStateStorageKey = "browserGuardNetworkStates";
 const networkStatesReady = restoreNetworkStates();
+const trackerMatcher = BrowserGuardTrackerMatcher.createTrackerMatcher(
+    BROWSERGUARD_TRACKER_DATA
+);
 
 const COMMON_COMPOUND_PUBLIC_SUFFIXES = new Set([
     "co.uk",
@@ -130,8 +135,10 @@ function createNetworkState(pageUrl) {
         totalRequests: 0,
         firstPartyRequests: 0,
         thirdPartyRequests: 0,
+        trackerRequests: 0,
         resourceTypes: {},
-        thirdPartyDomains: {}
+        thirdPartyDomains: {},
+        trackerDomains: {}
     };
 
 }
@@ -164,6 +171,12 @@ function recordNetworkRequest(state, details) {
     state.thirdPartyRequests++;
     recordThirdPartyDomain(state, requestHostname, resourceType);
 
+    const trackerMatch = trackerMatcher.findTrackerMatch(requestHostname);
+
+    if (trackerMatch) {
+        recordTrackerDomain(state, requestHostname, resourceType, trackerMatch);
+    }
+
 }
 
 /**
@@ -187,6 +200,37 @@ function recordThirdPartyDomain(state, hostname, resourceType) {
 
     domain.requestCount++;
     incrementCounter(domain.types, resourceType);
+
+}
+
+/**
+ * Add request counts for a known tracker observed as third-party traffic.
+ *
+ * @param {object} state - Per-tab network state.
+ * @param {string} hostname - Request hostname.
+ * @param {string} resourceType - Chrome resource type.
+ * @param {object} trackerMatch - Matched tracker metadata.
+ */
+function recordTrackerDomain(state, hostname, resourceType, trackerMatch) {
+
+    state.trackerRequests++;
+
+    const trackerKey = trackerMatch.matchedDomain;
+
+    if (!state.trackerDomains[trackerKey]) {
+        state.trackerDomains[trackerKey] = {
+            hostname: hostname,
+            matchedDomain: trackerMatch.matchedDomain,
+            category: trackerMatch.category,
+            requestCount: 0,
+            types: {}
+        };
+    }
+
+    const tracker = state.trackerDomains[trackerKey];
+
+    tracker.requestCount++;
+    incrementCounter(tracker.types, resourceType);
 
 }
 
@@ -272,14 +316,28 @@ function getNetworkActivitySnapshot(tabId) {
                 left.hostname.localeCompare(right.hostname);
         });
 
+    const trackerDomains = Object.values(state.trackerDomains || {})
+        .sort(function (left, right) {
+            return right.requestCount - left.requestCount ||
+                left.matchedDomain.localeCompare(right.matchedDomain);
+        });
+
     return {
         pageUrl: state.pageUrl,
         pageHostname: state.pageHostname,
         pageSite: state.pageSite,
+        trackerDataset: {
+            source: BROWSERGUARD_TRACKER_DATA.source,
+            license: BROWSERGUARD_TRACKER_DATA.license,
+            reviewedAt: BROWSERGUARD_TRACKER_DATA.reviewedAt,
+            entryCount: trackerMatcher.size
+        },
         totalRequests: state.totalRequests,
         firstPartyRequests: state.firstPartyRequests,
         thirdPartyRequests: state.thirdPartyRequests,
         thirdPartyDomainCount: thirdPartyDomains.length,
+        trackerRequests: state.trackerRequests || 0,
+        trackerDomainCount: trackerDomains.length,
         resourceTypes: {
             ...state.resourceTypes
         },
@@ -289,6 +347,17 @@ function getNetworkActivitySnapshot(tabId) {
                 requestCount: domain.requestCount,
                 types: {
                     ...domain.types
+                }
+            };
+        }),
+        trackerDomains: trackerDomains.map(function (tracker) {
+            return {
+                hostname: tracker.hostname,
+                matchedDomain: tracker.matchedDomain,
+                category: tracker.category,
+                requestCount: tracker.requestCount,
+                types: {
+                    ...tracker.types
                 }
             };
         })
@@ -305,12 +374,21 @@ function createEmptyNetworkSnapshot() {
         pageUrl: "",
         pageHostname: "",
         pageSite: "",
+        trackerDataset: {
+            source: BROWSERGUARD_TRACKER_DATA.source,
+            license: BROWSERGUARD_TRACKER_DATA.license,
+            reviewedAt: BROWSERGUARD_TRACKER_DATA.reviewedAt,
+            entryCount: trackerMatcher.size
+        },
         totalRequests: 0,
         firstPartyRequests: 0,
         thirdPartyRequests: 0,
         thirdPartyDomainCount: 0,
+        trackerRequests: 0,
+        trackerDomainCount: 0,
         resourceTypes: {},
-        thirdPartyDomains: []
+        thirdPartyDomains: [],
+        trackerDomains: []
     };
 
 }
@@ -333,7 +411,7 @@ async function restoreNetworkStates() {
             storedData[networkStateStorageKey] || {};
 
         Object.entries(serializedStates).forEach(function ([tabId, state]) {
-            tabNetworkStates.set(Number(tabId), state);
+            tabNetworkStates.set(Number(tabId), normalizeNetworkState(state));
         });
 
     } catch (error) {
@@ -341,6 +419,30 @@ async function restoreNetworkStates() {
         console.error("BrowserGuard: network state restore failed", error);
 
     }
+
+}
+
+
+/**
+ * Fill fields added after earlier stored versions of the network state.
+ *
+ * @param {object} state - Restored network state.
+ * @returns {object} Normalized network state.
+ */
+function normalizeNetworkState(state) {
+
+    return {
+        pageUrl: state.pageUrl || "",
+        pageHostname: state.pageHostname || "",
+        pageSite: state.pageSite || "",
+        totalRequests: state.totalRequests || 0,
+        firstPartyRequests: state.firstPartyRequests || 0,
+        thirdPartyRequests: state.thirdPartyRequests || 0,
+        trackerRequests: state.trackerRequests || 0,
+        resourceTypes: state.resourceTypes || {},
+        thirdPartyDomains: state.thirdPartyDomains || {},
+        trackerDomains: state.trackerDomains || {}
+    };
 
 }
 
