@@ -41,8 +41,10 @@ document.addEventListener("DOMContentLoaded", async function () {
 });
 
 const visibleThirdPartyDomainLimit = 5;
+const visibleTrackerDomainLimit = 5;
 let currentNetworkActivity = null;
 let showAllThirdPartyDomains = false;
+let showAllTrackerDomains = false;
 
 
 /**
@@ -491,6 +493,7 @@ function updateNetworkActivity(activity) {
 
         renderNetworkResourceTypes(null);
         renderThirdPartyDomains([]);
+        updateTrackerDetection(null);
         return;
     }
 
@@ -501,6 +504,40 @@ function updateNetworkActivity(activity) {
 
     renderNetworkResourceTypes(activity.resourceTypes);
     renderThirdPartyDomains(activity.thirdPartyDomains || []);
+    updateTrackerDetection(activity);
+
+}
+
+
+/**
+ * Update the Privacy / Trackers card in the popup.
+ *
+ * @param {object|null} activity - Network activity snapshot from background.js.
+ */
+function updateTrackerDetection(activity) {
+
+    showAllTrackerDomains = false;
+
+    const summaryFields = [
+        ["tracker-known-count", "trackerDomainCount"],
+        ["tracker-request-count", "trackerRequests"]
+    ];
+
+    if (!activity) {
+        summaryFields.forEach(function ([elementId]) {
+            document.getElementById(elementId).textContent = "Unavailable";
+        });
+
+        renderTrackerDomains([]);
+        return;
+    }
+
+    summaryFields.forEach(function ([elementId, propertyName]) {
+        document.getElementById(elementId).textContent =
+            activity[propertyName] || 0;
+    });
+
+    renderTrackerDomains(activity.trackerDomains || []);
 
 }
 
@@ -594,6 +631,83 @@ document.addEventListener("click", function (event) {
     renderThirdPartyDomains(currentNetworkActivity.thirdPartyDomains || []);
 
 });
+
+
+document.addEventListener("click", function (event) {
+
+    if (event.target.id !== "tracker-show-more" || !currentNetworkActivity) {
+        return;
+    }
+
+    showAllTrackerDomains = !showAllTrackerDomains;
+    renderTrackerDomains(currentNetworkActivity.trackerDomains || []);
+
+});
+
+
+/**
+ * Render the known tracker list with a compact Show more control.
+ *
+ * @param {Array<object>} trackers - Known tracker summaries.
+ */
+function renderTrackerDomains(trackers) {
+
+    const list = document.getElementById("tracker-domain-list");
+    const showMoreButton = document.getElementById("tracker-show-more");
+
+    list.textContent = "";
+
+    if (!trackers || trackers.length === 0) {
+        const emptyState = document.createElement("p");
+        emptyState.className = "empty-state";
+        emptyState.textContent = "No known trackers detected.";
+        list.appendChild(emptyState);
+        showMoreButton.hidden = true;
+        return;
+    }
+
+    const visibleTrackers = showAllTrackerDomains ?
+        trackers :
+        trackers.slice(0, visibleTrackerDomainLimit);
+
+    visibleTrackers.forEach(function (tracker) {
+        const item = document.createElement("div");
+        item.className = "network-domain-item";
+
+        const hostname = document.createElement("span");
+        hostname.className = "network-domain-hostname";
+        hostname.textContent = tracker.matchedDomain;
+
+        const details = document.createElement("span");
+        details.className = "network-domain-details";
+        details.textContent = formatTrackerSummary(tracker);
+
+        item.appendChild(hostname);
+        item.appendChild(details);
+        list.appendChild(item);
+    });
+
+    showMoreButton.hidden = trackers.length <= visibleTrackerDomainLimit;
+    showMoreButton.textContent = showAllTrackerDomains ?
+        "Show less" :
+        "Show more";
+
+}
+
+
+/**
+ * @param {object} tracker - Known tracker summary.
+ * @returns {string} Human-readable tracker category and count summary.
+ */
+function formatTrackerSummary(tracker) {
+
+    const requestLabel =
+        tracker.requestCount === 1 ? "request" : "requests";
+
+    return tracker.category + " · " +
+        tracker.requestCount + " " + requestLabel;
+
+}
 
 
 /**

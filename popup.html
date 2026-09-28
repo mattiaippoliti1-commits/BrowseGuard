@@ -161,6 +161,40 @@
         </div>
 
 
+        <!-- Known tracker information derived from the local tracker dataset -->
+        <div class="card">
+
+            <h2>Privacy / Trackers</h2>
+
+            <div class="analysis-row">
+                <span>Known Trackers</span>
+                <span id="tracker-known-count">Loading...</span>
+            </div>
+
+            <div class="analysis-row">
+                <span>Tracker Requests</span>
+                <span id="tracker-request-count">Loading...</span>
+            </div>
+
+            <div
+                class="network-domain-list"
+                id="tracker-domain-list"
+            >
+                <p class="empty-state">Loading...</p>
+            </div>
+
+            <button
+                class="show-more-button"
+                id="tracker-show-more"
+                type="button"
+                hidden
+            >
+                Show more
+            </button>
+
+        </div>
+
+
         <!-- Network information collected by the background service worker -->
         <div class="card">
 
