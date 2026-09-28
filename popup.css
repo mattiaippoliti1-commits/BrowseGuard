@@ -60,3 +60,81 @@ h2 {
 
     word-break: break-all;
 }
+
+h3 {
+    margin: 16px 0 8px;
+
+    font-size: 14px;
+}
+
+.network-types {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 6px;
+
+    margin-top: 12px;
+}
+
+.network-type-pill {
+    padding: 4px 7px;
+
+    font-size: 12px;
+
+    background: #eef2f7;
+
+    border-radius: 6px;
+}
+
+.network-domain-list {
+    margin-top: 4px;
+}
+
+.network-domain-item {
+    padding: 8px 0;
+
+    border-bottom: 1px solid #eee;
+}
+
+.network-domain-hostname {
+    display: block;
+
+    font-weight: bold;
+
+    word-break: break-all;
+}
+
+.network-domain-details {
+    display: block;
+
+    margin-top: 3px;
+
+    color: #666;
+
+    font-size: 12px;
+}
+
+.empty-state {
+    margin: 8px 0 0;
+
+    color: #666;
+
+    font-size: 13px;
+}
+
+.show-more-button {
+    margin-top: 10px;
+
+    padding: 7px 10px;
+
+    color: #222;
+
+    background: #f5f5f5;
+
+    border: 1px solid #ddd;
+
+    border-radius: 6px;
+
+    cursor: pointer;
+}
