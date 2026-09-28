@@ -235,11 +235,13 @@ Security levels:
 
 Security combines strong, moderate, and weak observations. Strong observations
 such as an HTTP main page, mixed content, or insecure password forms produce
-`attention`. Two moderate observations or four weak observations also produce
-`attention`. A smaller number of observations produces `observations`. When CSP
-is completely absent and no `X-Frame-Options` header is observed,
-anti-framing absence is kept as informational evidence instead of adding a
-second weak signal for escalation.
+`attention`. Two moderate observations also produce `attention`. Weak
+observations produce at most `observations`, even when multiple weak hardening
+observations are present. Hidden iframes and third-party iframes without sandbox
+are kept as informational evidence and do not affect escalation. When CSP is
+completely absent and no `X-Frame-Options` header is observed, anti-framing
+absence is kept as informational evidence instead of adding a second weak signal
+for escalation.
 
 Privacy levels:
 

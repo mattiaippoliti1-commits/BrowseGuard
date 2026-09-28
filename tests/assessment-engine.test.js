@@ -202,6 +202,57 @@ snapshot.webSecurity.headers.antiFraming.status =
     "No explicit anti-framing policy detected";
 snapshot.webSecurity.headers.contentTypeOptions.status = "missing";
 assessment = assessBrowserState(snapshot);
+assert.strictEqual(assessment.security.level, "observations");
+
+snapshot = completeCleanSnapshot();
+snapshot.webSecurity.headers.csp.present = false;
+snapshot.webSecurity.headers.csp.status = "Missing";
+snapshot.webSecurity.headers.hsts.present = false;
+snapshot.webSecurity.headers.hsts.status = "Missing";
+snapshot.webSecurity.headers.contentTypeOptions.status = "missing";
+snapshot.webSecurity.headers.antiFraming.status = "No independent policy";
+snapshot.urlAnalysis.isLongURL = true;
+assessment = assessBrowserState(snapshot);
+assert.strictEqual(assessment.security.level, "observations");
+
+snapshot = completeCleanSnapshot();
+snapshot.pageAnalysis.hiddenIframeCount = 1;
+assessment = assessBrowserState(snapshot);
+assert.strictEqual(assessment.security.level, "no-major-issues");
+assert.strictEqual(
+    assessment.security.reasons.find(function (reason) {
+        return reason.id === "hidden-iframes";
+    }).severity,
+    "info"
+);
+
+snapshot = completeCleanSnapshot();
+snapshot.pageAnalysis.thirdPartyUnsandboxedIframeCount = 1;
+assessment = assessBrowserState(snapshot);
+assert.strictEqual(assessment.security.level, "no-major-issues");
+assert.strictEqual(
+    assessment.security.reasons.find(function (reason) {
+        return reason.id === "third-party-unsandboxed-iframes";
+    }).severity,
+    "info"
+);
+
+snapshot = completeCleanSnapshot();
+snapshot.pageAnalysis.hiddenIframeCount = 3;
+snapshot.pageAnalysis.thirdPartyUnsandboxedIframeCount = 2;
+assessment = assessBrowserState(snapshot);
+assert.strictEqual(assessment.security.level, "no-major-issues");
+assert.deepStrictEqual(
+    assessment.security.reasons.map(function (reason) {
+        return reason.severity;
+    }),
+    ["info", "info"]
+);
+
+snapshot = completeCleanSnapshot();
+snapshot.pageAnalysis.externalPasswordForms = 1;
+snapshot.pageAnalysis.httpsPageHttpIframeCount = 1;
+assessment = assessBrowserState(snapshot);
 assert.strictEqual(assessment.security.level, "attention");
 
 snapshot = completeCleanSnapshot();
@@ -341,6 +392,88 @@ snapshot.networkActivity.thirdPartyRequests = 0;
 snapshot.networkActivity.thirdPartyDomainCount = 0;
 assessment = assessBrowserState(snapshot);
 assert.strictEqual(assessment.network.level, "low-third-party-activity");
+
+snapshot = completeCleanSnapshot();
+snapshot.urlAnalysis.hostname = "www.ilpost.it";
+snapshot.urlAnalysis.urlLength = 22;
+snapshot.urlAnalysis.subdomainCount = 1;
+snapshot.pageAnalysis.formCount = 1;
+snapshot.pageAnalysis.totalLinks = 164;
+snapshot.pageAnalysis.externalLinks = 6;
+snapshot.pageAnalysis.mismatchedLinks = 1;
+snapshot.pageAnalysis.iframeCount = 19;
+snapshot.pageAnalysis.hiddenIframeCount = 19;
+snapshot.pageAnalysis.externalScriptCount = 52;
+snapshot.pageAnalysis.thirdPartyIframeCount = 14;
+snapshot.pageAnalysis.sandboxedIframeCount = 11;
+snapshot.pageAnalysis.thirdPartyUnsandboxedIframeCount = 4;
+snapshot.webSecurity.headers.csp.present = false;
+snapshot.webSecurity.headers.csp.status = "Missing";
+snapshot.webSecurity.headers.hsts.present = false;
+snapshot.webSecurity.headers.hsts.status = "Missing";
+snapshot.webSecurity.headers.contentTypeOptions.present = false;
+snapshot.webSecurity.headers.contentTypeOptions.status = "missing";
+snapshot.webSecurity.headers.referrerPolicy.present = false;
+snapshot.webSecurity.headers.referrerPolicy.status = "Not explicitly set";
+snapshot.webSecurity.headers.permissionsPolicy.present = false;
+snapshot.webSecurity.headers.permissionsPolicy.status = "Not explicitly set";
+snapshot.webSecurity.headers.antiFraming.cspFrameAncestors = null;
+snapshot.webSecurity.headers.antiFraming.xFrameOptions = "";
+snapshot.webSecurity.headers.antiFraming.status =
+    "No explicit anti-framing policy detected";
+snapshot.networkActivity.totalRequests = 272;
+snapshot.networkActivity.firstPartyRequests = 40;
+snapshot.networkActivity.thirdPartyRequests = 232;
+snapshot.networkActivity.thirdPartyDomainCount = 93;
+snapshot.networkActivity.trackerDomainCount = 7;
+snapshot.networkActivity.trackerRequests = 40;
+snapshot.networkActivity.trackerDomains = [
+    {
+        category: "Advertising"
+    },
+    {
+        category: "Analytics"
+    },
+    {
+        category: "Social"
+    }
+];
+snapshot.runtimePrivacy.categories.webgl = detectedRuntimeCategory([
+    "getExtension:WEBGL_debug_renderer_info",
+    "getParameter:UNMASKED_RENDERER_WEBGL"
+]);
+snapshot.runtimePrivacy.categories.navigator = detectedRuntimeCategory([
+    "deviceMemory:",
+    "hardwareConcurrency:",
+    "languages:",
+    "maxTouchPoints:",
+    "platform:",
+    "userAgent:"
+]);
+snapshot.runtimePrivacy.categories.screen = detectedRuntimeCategory([
+    "availHeight:",
+    "availWidth:",
+    "colorDepth:",
+    "height:",
+    "width:"
+]);
+assessment = assessBrowserState(snapshot);
+assert.strictEqual(assessment.security.level, "observations");
+assert.strictEqual(assessment.privacy.level, "elevated-activity");
+assert.strictEqual(assessment.network.level, "high-third-party-activity");
+assert.deepStrictEqual(
+    assessment.security.reasons.map(function (reason) {
+        return reason.id + ":" + reason.severity;
+    }),
+    [
+        "content-type-options-not-nosniff:low",
+        "csp-missing:low",
+        "hsts-missing:low",
+        "anti-framing-missing:info",
+        "hidden-iframes:info",
+        "third-party-unsandboxed-iframes:info"
+    ]
+);
 
 snapshot = completeCleanSnapshot();
 delete snapshot.runtimePrivacy;
