@@ -184,7 +184,8 @@ body::-webkit-scrollbar-thumb {
     transform: rotate(45deg);
 }
 
-.theme-toggle {
+.theme-toggle,
+.language-toggle {
     display: inline-grid;
     flex: 0 0 34px;
     width: 34px;
@@ -198,12 +199,22 @@ body::-webkit-scrollbar-thumb {
     cursor: pointer;
 }
 
-.theme-toggle:hover {
+.language-toggle {
+    margin-left: 0;
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+}
+
+.theme-toggle:hover,
+.language-toggle:hover {
     border-color: var(--brand-border);
     background: var(--surface-hover);
 }
 
-.theme-toggle:focus-visible {
+.theme-toggle:focus-visible,
+.language-toggle:focus-visible {
     outline: 2px solid var(--brand-primary);
     outline-offset: 2px;
 }
