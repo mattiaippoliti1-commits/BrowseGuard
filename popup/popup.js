@@ -1,26 +1,14 @@
 const themeStorageKey = "appearanceTheme";
-const languageStorageKey = "uiLanguage";
 const appearanceThemes = {
     dark: "dark",
     light: "light"
 };
-const uiLanguages = {
-    en: "en",
-    it: "it"
-};
-
-let currentLanguage = uiLanguages.en;
 
 applyTheme(getSystemTheme());
 loadStoredThemePreference().then(function (theme) {
     applyTheme(theme || getSystemTheme());
 }).catch(function () {
     applyTheme(getSystemTheme());
-});
-loadStoredLanguagePreference().then(function (language) {
-    applyLanguage(language || uiLanguages.en);
-}).catch(function () {
-    applyLanguage(uiLanguages.en);
 });
 
 // Wait until the popup HTML document is fully loaded
@@ -29,8 +17,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     try {
 
         setupThemeToggle();
-        setupLanguageToggle();
-        applyLanguage(currentLanguage);
 
         // Ask Chrome for the currently active tab
         const [tab] = await chrome.tabs.query({
@@ -127,315 +113,6 @@ function setupThemeToggle() {
 }
 
 
-function setupLanguageToggle() {
-
-    const toggle = document.getElementById("language-toggle");
-
-    if (!toggle) {
-        return;
-    }
-
-    updateLanguageToggle();
-
-    toggle.addEventListener("click", function () {
-        const nextLanguage =
-            currentLanguage === uiLanguages.en ?
-                uiLanguages.it :
-                uiLanguages.en;
-
-        applyLanguage(nextLanguage);
-        saveLanguagePreference(nextLanguage);
-    });
-
-}
-
-
-function applyLanguage(language) {
-
-    currentLanguage = isValidLanguage(language) ? language : uiLanguages.en;
-    document.documentElement.lang = currentLanguage;
-    updateLanguageToggle();
-    localizeStaticUI();
-
-    if (currentAssessment) {
-        updateAssessment(currentAssessment, {
-            preserveSelection: true
-        });
-    }
-
-    if (currentNetworkActivity) {
-        updateNetworkActivity(currentNetworkActivity);
-    }
-
-}
-
-
-function updateLanguageToggle() {
-
-    const toggle = document.getElementById("language-toggle");
-
-    if (!toggle) {
-        return;
-    }
-
-    const nextLanguage = currentLanguage === uiLanguages.en ?
-        uiLanguages.it :
-        uiLanguages.en;
-    const labelKey = nextLanguage === uiLanguages.it ?
-        "switchToItalian" :
-        "switchToEnglish";
-
-    toggle.textContent = nextLanguage.toUpperCase();
-    toggle.setAttribute("aria-label", t(labelKey));
-    toggle.title = t(labelKey);
-
-}
-
-
-function loadStoredLanguagePreference() {
-
-    return new Promise(function (resolve, reject) {
-        if (
-            typeof chrome === "undefined" ||
-            !chrome.storage ||
-            !chrome.storage.local
-        ) {
-            resolve(null);
-            return;
-        }
-
-        chrome.storage.local.get(languageStorageKey, function (result) {
-            if (chrome.runtime.lastError) {
-                reject(chrome.runtime.lastError);
-                return;
-            }
-
-            const language = result && result[languageStorageKey];
-            resolve(isValidLanguage(language) ? language : null);
-        });
-    });
-
-}
-
-
-function saveLanguagePreference(language) {
-
-    if (!isValidLanguage(language)) {
-        return;
-    }
-
-    if (
-        typeof chrome === "undefined" ||
-        !chrome.storage ||
-        !chrome.storage.local
-    ) {
-        return;
-    }
-
-    chrome.storage.local.set({
-        [languageStorageKey]: language
-    });
-
-}
-
-
-function isValidLanguage(language) {
-
-    return language === uiLanguages.en ||
-        language === uiLanguages.it;
-
-}
-
-
-function t(key, replacements) {
-
-    return BrowserGuardI18n.t(currentLanguage, key, replacements);
-
-}
-
-
-function localizeStaticUI() {
-
-    const textTargets = [
-        ["assessment-title", "assessment"],
-        ["findings-title", "keyFindings"],
-        ["positive-signals-title", "positiveSignals"],
-        ["technical-details-trigger", "technicalDetails", "firstElementChild"],
-        ["url-page-title", "urlPage"],
-        ["web-security-title", "webSecurity"],
-        ["privacy-signals-title", "privacySignals", "firstChild"],
-        ["tracking-title", "trackingAssociatedDomains", "firstChild"],
-        ["network-title", "networkActivity"]
-    ];
-
-    textTargets.forEach(function ([elementId, key, targetProperty]) {
-        const element = document.getElementById(elementId);
-
-        if (!element) {
-            return;
-        }
-
-        const target = targetProperty ? element[targetProperty] : element;
-
-        if (target) {
-            target.textContent = t(key);
-        }
-    });
-
-    document.querySelector(".subtitle").textContent = t("appSubtitle");
-
-    document.querySelectorAll(".assessment-card").forEach(function (card) {
-        const label = card.querySelector(".assessment-label");
-
-        if (label) {
-            label.textContent = t(card.dataset.dimension);
-        }
-    });
-
-    const quickStatLabels = document.querySelectorAll(".stat-card span");
-    [
-        "requests",
-        "trackingDomains",
-        "externalRequests",
-        "sameEntity"
-    ].forEach(function (key, index) {
-        if (quickStatLabels[index]) {
-            quickStatLabels[index].textContent = t(key);
-        }
-    });
-
-    setDefinitionLabels();
-    setTooltipLabels();
-    localizeTransientValues();
-    updateThemeToggle();
-    updateLanguageToggle();
-
-}
-
-
-function localizeTransientValues() {
-
-    document.querySelectorAll("span, strong, p").forEach(function (element) {
-        if (element.textContent === "Loading..." ||
-            element.textContent === "Caricamento...") {
-            element.textContent = t("loading");
-        }
-
-        if (element.textContent === "Unavailable" ||
-            element.textContent === "Non disponibile") {
-            element.textContent = t("unavailable");
-        }
-
-        if (element.textContent === "Yes" ||
-            element.textContent === "Sì") {
-            element.textContent = t("yes");
-        }
-
-        if (element.textContent === "No") {
-            element.textContent = t("no");
-        }
-    });
-
-}
-
-
-function setDefinitionLabels() {
-
-    const labels = [
-        ["protocol-detail", "protocol"],
-        ["hostname-detail", "hostname"],
-        ["url-length", "urlLength"],
-        ["subdomains", "subdomains"],
-        ["page-forms", "forms"],
-        ["password-fields", "passwordFields"],
-        ["external-forms", "externalForms"],
-        ["external-password-forms", "externalPasswordForms"],
-        ["insecure-password-forms", "insecurePasswordForms"],
-        ["total-links", "totalLinks"],
-        ["external-links", "externalLinks"],
-        ["mismatched-links", "mismatchedLinks"],
-        ["iframes", "iframes"],
-        ["hidden-iframes", "hiddenIframes"],
-        ["external-scripts", "externalScripts"],
-        ["web-security-https", "https"],
-        ["web-security-csp", "csp"],
-        ["web-security-hsts", "hsts"],
-        ["web-security-content-type", "xContentTypeOptions"],
-        ["web-security-referrer", "referrerPolicy"],
-        ["web-security-permissions", "permissionsPolicy"],
-        ["web-security-anti-framing", "antiFraming"],
-        ["web-security-mixed-content", "mixedContent"],
-        ["web-security-iframes", "iframeSecurity"],
-        ["network-total-requests-detail", "totalRequests"],
-        ["network-first-party-requests", "firstParty"],
-        ["network-third-party-requests", "thirdParty"],
-        ["network-third-party-domains", "thirdPartyDomains"],
-        ["network-same-entity-third-party-detail", "sameEntityThirdParty"],
-        ["network-external-third-party-detail", "externalThirdParty"],
-        ["network-unknown-third-party", "unknownThirdParty"]
-    ];
-
-    labels.forEach(function ([valueElementId, labelKey]) {
-        const valueElement = document.getElementById(valueElementId);
-        const row = valueElement && valueElement.closest(".analysis-row");
-        const label = row && row.querySelector("span:first-child");
-
-        if (label) {
-            label.childNodes[0].textContent = t(labelKey) + " ";
-        }
-    });
-
-    const headings = document.querySelectorAll("#network-title + .definition-grid + .network-composition + h3");
-    headings.forEach(function (heading) {
-        heading.textContent = t("resourceTypes");
-    });
-
-    const topDomainsHeading = document.querySelector("#network-resource-types + h3");
-
-    if (topDomainsHeading) {
-        topDomainsHeading.textContent = t("topThirdPartyDomains");
-    }
-
-}
-
-
-function setTooltipLabels() {
-
-    const tooltipTargets = [
-        ["web-security-csp", "cspTooltip"],
-        ["privacy-signals-title", "runtimePrivacyTooltip"],
-        ["tracking-title", "trackingAssociatedTooltip"],
-        ["network-same-entity-third-party-detail", "sameEntityTooltip"],
-        ["network-unknown-third-party", "unknownThirdPartyTooltip"]
-    ];
-
-    tooltipTargets.forEach(function ([elementId, key]) {
-        const element = document.getElementById(elementId);
-        const container = element && (
-            element.closest("h2") ||
-            element.closest(".analysis-row")
-        );
-        const info = container && container.querySelector(".info-dot");
-
-        if (info) {
-            info.title = t(key);
-        }
-    });
-
-    const indicatorStrip = document.querySelector(".indicator-strip");
-    const networkComposition = document.querySelector(".network-composition");
-
-    if (indicatorStrip) {
-        indicatorStrip.setAttribute("aria-label", t("urlIndicators"));
-    }
-
-    if (networkComposition) {
-        networkComposition.setAttribute("aria-label", t("thirdPartyBreakdown"));
-    }
-
-}
-
-
 function getSystemTheme() {
 
     return window.matchMedia &&
@@ -478,8 +155,8 @@ function updateThemeToggle() {
 
     const isDark = getCurrentTheme() === appearanceThemes.dark;
     const label = isDark ?
-        t("switchToLightMode") :
-        t("switchToDarkMode");
+        "Switch to light mode" :
+        "Switch to dark mode";
 
     toggle.setAttribute("aria-label", label);
     toggle.title = label;
@@ -616,10 +293,10 @@ function analyzeURL(urlString) {
             subdomainCount;
 
         document.getElementById("ip-address").textContent =
-            isIPAddress ? t("yes") : t("no");
+            isIPAddress ? "Yes" : "No";
 
         document.getElementById("punycode").textContent =
-            hasPunycode ? t("yes") : t("no");
+            hasPunycode ? "Yes" : "No";
 
 
         // --------------------------------------------------
@@ -633,26 +310,26 @@ function analyzeURL(urlString) {
             true
         );
 
-        updateIndicatorChip("long-url", t("longUrl"), "warning", isLongURL);
+        updateIndicatorChip("long-url", "Long URL", "warning", isLongURL);
 
         updateIndicatorChip(
             "many-subdomains",
-            t("manySubdomains"),
+            "Many subdomains",
             "warning",
             hasManySubdomains
         );
 
-        updateIndicatorChip("at-symbol", t("containsAt"), "warning", hasAtSymbol);
+        updateIndicatorChip("at-symbol", "Contains @", "warning", hasAtSymbol);
 
         updateIndicatorChip(
             "url-encoding",
-            t("urlEncoding"),
+            "URL encoding",
             "warning",
             hasURLEncoding
         );
 
-        updateIndicatorChip("ip-address", t("ipAddress"), "warning", isIPAddress);
-        updateIndicatorChip("punycode", t("punycode"), "warning", hasPunycode);
+        updateIndicatorChip("ip-address", "IP address", "warning", isIPAddress);
+        updateIndicatorChip("punycode", "Punycode", "warning", hasPunycode);
 
         return {
             protocol: protocol,
@@ -685,17 +362,14 @@ function analyzeURL(urlString) {
  *
  * @param {object|null} assessment - Assessment Engine output.
  */
-function updateAssessment(assessment, options) {
+function updateAssessment(assessment) {
 
-    const unavailable = t("unavailable");
+    const unavailable = "Unavailable";
     const dataStatus = document.getElementById("assessment-data-status");
     const reasons = document.getElementById("assessment-reasons");
-    const preserveSelection = options && options.preserveSelection;
 
     currentAssessment = assessment;
-    if (!preserveSelection) {
-        selectedAssessmentDimension = null;
-    }
+    selectedAssessmentDimension = null;
     showAllFindings = false;
     reasons.textContent = "";
     dataStatus.textContent = "";
@@ -706,7 +380,7 @@ function updateAssessment(assessment, options) {
         updateAssessmentCard("security", null, unavailable);
         updateAssessmentCard("privacy", null, unavailable);
         updateAssessmentCard("network", null, unavailable);
-        dataStatus.textContent = t("analysisIncomplete");
+        dataStatus.textContent = "Analysis incomplete.";
         return;
     }
 
@@ -728,9 +402,7 @@ function updateAssessment(assessment, options) {
 
     if (assessment.dataStatus === "partial") {
         dataStatus.textContent =
-            t("analysisIncompleteWithSources", {
-                sources: assessment.missingSources.join(", ")
-            });
+            "Analysis incomplete: " + assessment.missingSources.join(", ");
     }
 
     renderAssessmentReasons(assessment);
@@ -758,7 +430,7 @@ function renderAssessmentReasons(assessment) {
     if (findings.length === 0) {
         const emptyState = document.createElement("p");
         emptyState.className = "empty-state";
-        emptyState.textContent = t("noAssessmentFindings");
+        emptyState.textContent = "No assessment findings available yet.";
         container.appendChild(emptyState);
         return;
     }
@@ -778,9 +450,8 @@ function renderAssessmentReasons(assessment) {
         button.id = "findings-show-more";
         button.type = "button";
         button.textContent = showAllFindings ?
-            t("showFewerFindings") :
-            t("showAllFindings") + " (" + hiddenFindingCount + " " +
-                t("more") + ")";
+            "Show fewer findings" :
+            "Show all findings (" + hiddenFindingCount + " more)";
         container.appendChild(button);
     }
 
@@ -820,7 +491,7 @@ function renderAssessmentContextPanel() {
 
     const subtitle = document.createElement("p");
     subtitle.className = "assessment-context-subtitle";
-    subtitle.textContent = t("whyThisAssessment");
+    subtitle.textContent = "Why this assessment?";
 
     panel.appendChild(heading);
     panel.appendChild(subtitle);
@@ -829,7 +500,7 @@ function renderAssessmentContextPanel() {
         const emptyState = document.createElement("p");
         emptyState.className = "empty-state";
         emptyState.textContent =
-            t("noSpecificAssessmentFindings");
+            "No specific assessment findings to display.";
         panel.appendChild(emptyState);
     } else {
         const list = document.createElement("div");
@@ -838,7 +509,6 @@ function renderAssessmentContextPanel() {
         reasons.forEach(function (reason) {
             list.appendChild(renderFindingItem({
                 dimension: dimensionLabel,
-                id: reason.id,
                 message: reason.message,
                 severity: reason.severity,
                 type: "reason"
@@ -852,7 +522,9 @@ function renderAssessmentContextPanel() {
     action.className = "assessment-context-action";
     action.type = "button";
     action.dataset.detailsTarget = selectedAssessmentDimension;
-    action.textContent = getDetailsActionLabel(selectedAssessmentDimension);
+    action.textContent = "View " +
+        selectedAssessmentDimension +
+        " details";
     panel.appendChild(action);
 
     panel.hidden = false;
@@ -878,7 +550,7 @@ function renderFindingItem(finding, includeDimensionLabel) {
 
     const message = document.createElement("span");
     message.className = "finding-message";
-    message.textContent = BrowserGuardI18n.reason(currentLanguage, finding);
+    message.textContent = finding.message;
 
     text.appendChild(message);
     item.appendChild(text);
@@ -904,14 +576,13 @@ function updateAssessmentCardSelection() {
 function collectReasonFindings(assessment) {
 
     return [
-        [t("security"), assessment.security],
-        [t("privacy"), assessment.privacy],
-        [t("network"), assessment.network]
+        ["Security", assessment.security],
+        ["Privacy", assessment.privacy],
+        ["Network", assessment.network]
     ].flatMap(function ([dimension, result]) {
         return (result.reasons || []).map(function (reason) {
             return {
                 dimension: dimension,
-                id: reason.id,
                 message: reason.message,
                 severity: reason.severity,
                 type: "reason"
@@ -972,7 +643,27 @@ function collectPositiveSignals(assessment) {
 
 function formatPositiveSignalLabel(signal) {
 
-    return BrowserGuardI18n.positiveSignal(currentLanguage, signal);
+    const labelsById = {
+        "https-enabled": "HTTPS",
+        "hsts-present": "HSTS",
+        "csp-present": "CSP",
+        "content-type-nosniff": "XCTO nosniff",
+        "anti-framing-present": "Anti-framing",
+        "no-mixed-content-observed": "No mixed content"
+    };
+
+    const labelsByMessage = {
+        "HTTPS connection observed": "HTTPS",
+        "HSTS header present": "HSTS",
+        "CSP header present": "CSP",
+        "X-Content-Type-Options nosniff present": "XCTO nosniff",
+        "Explicit anti-framing policy observed": "Anti-framing",
+        "No mixed content observed": "No mixed content"
+    };
+
+    return labelsById[signal.id] ||
+        labelsByMessage[signal.message] ||
+        signal.message;
 
 }
 
@@ -1011,23 +702,23 @@ function formatAssessmentLabel(dimension, level) {
 
     const labels = {
         security: {
-            "no-major-issues": t("noMajorIssues"),
-            observations: t("observations"),
-            attention: t("attention")
+            "no-major-issues": "No major issues",
+            observations: "Observations",
+            attention: "Attention"
         },
         privacy: {
-            "low-activity": t("low"),
-            "moderate-activity": t("moderate"),
-            "elevated-activity": t("elevated")
+            "low-activity": "Low",
+            "moderate-activity": "Moderate",
+            "elevated-activity": "Elevated"
         },
         network: {
-            "low-third-party-activity": t("low"),
-            "moderate-third-party-activity": t("moderate"),
-            "high-third-party-activity": t("high")
+            "low-third-party-activity": "Low",
+            "moderate-third-party-activity": "Moderate",
+            "high-third-party-activity": "High"
         }
     };
 
-    return labels[dimension][level] || t("unavailable");
+    return labels[dimension][level] || "Unavailable";
 
 }
 
@@ -1035,25 +726,12 @@ function formatAssessmentLabel(dimension, level) {
 function formatDimensionLabel(dimension) {
 
     const labels = {
-        security: t("security"),
-        privacy: t("privacy"),
-        network: t("network")
+        security: "Security",
+        privacy: "Privacy",
+        network: "Network"
     };
 
     return labels[dimension] || dimension;
-
-}
-
-
-function getDetailsActionLabel(dimension) {
-
-    const labels = {
-        security: t("viewSecurityDetails"),
-        privacy: t("viewPrivacyDetails"),
-        network: t("viewNetworkDetails")
-    };
-
-    return labels[dimension] || t("technicalDetails");
 
 }
 
@@ -1432,7 +1110,7 @@ function delay(milliseconds) {
  */
 function updatePageAnalysis(analysis) {
 
-    const unavailable = t("unavailable");
+    const unavailable = "Unavailable";
     const pageAnalysisFields = [
         ["page-forms", "formCount"],
         ["password-fields", "passwordFieldCount"],
@@ -1474,7 +1152,7 @@ function updateNetworkActivity(activity) {
     currentNetworkActivity = activity;
     showAllThirdPartyDomains = false;
 
-    const unavailable = t("unavailable");
+    const unavailable = "Unavailable";
     const summaryFields = [
         ["network-total-requests", "totalRequests"],
         ["network-first-party-requests", "firstPartyRequests"],
@@ -1538,7 +1216,7 @@ function updateRuntimePrivacy(runtimePrivacy) {
     if (!runtimePrivacy) {
         const emptyState = document.createElement("p");
         emptyState.className = "empty-state";
-        emptyState.textContent = t("runtimePrivacyUnavailable");
+        emptyState.textContent = "Runtime privacy data unavailable.";
         list.appendChild(emptyState);
         return;
     }
@@ -1549,12 +1227,8 @@ function updateRuntimePrivacy(runtimePrivacy) {
         ["canvas", "Canvas"],
         ["webgl", "WebGL"],
         ["audio", "Audio"],
-        ["navigator", currentLanguage === uiLanguages.it ?
-            "Informazioni dispositivo" :
-            "Device Information"],
-        ["screen", currentLanguage === uiLanguages.it ?
-            "Informazioni schermo" :
-            "Screen Information"]
+        ["navigator", "Device Information"],
+        ["screen", "Screen Information"]
     ];
 
     categoryDefinitions.forEach(function ([categoryKey, label]) {
@@ -1576,7 +1250,7 @@ function updateRuntimePrivacy(runtimePrivacy) {
  */
 function updateWebSecurity(webSecurity, pageAnalysis) {
 
-    const unavailable = t("unavailable");
+    const unavailable = "Unavailable";
     const observations = document.getElementById("web-security-observations");
     observations.textContent = "";
 
@@ -1599,7 +1273,7 @@ function updateWebSecurity(webSecurity, pageAnalysis) {
     }
 
     document.getElementById("web-security-https").textContent =
-        webSecurity.https.enabled ? t("enabled") : t("notObserved");
+        webSecurity.https.enabled ? "Enabled" : "Not observed";
 
     document.getElementById("web-security-csp").textContent =
         formatCspStatus(webSecurity.headers.csp);
@@ -1633,7 +1307,7 @@ function updateWebSecurity(webSecurity, pageAnalysis) {
 function formatCspStatus(csp) {
 
     if (!csp) {
-        return t("unavailable");
+        return "Unavailable";
     }
 
     const observationCount = csp.observations ? csp.observations.length : 0;
@@ -1650,14 +1324,14 @@ function formatCspStatus(csp) {
 function formatHstsStatus(hsts) {
 
     if (!hsts || !hsts.present) {
-        return t("missing");
+        return "Missing";
     }
 
     if (hsts.maxAge === null) {
-        return t("present");
+        return "Present";
     }
 
-    return t("present") + " · max-age " + hsts.maxAge;
+    return "Present · max-age " + hsts.maxAge;
 
 }
 
@@ -1665,7 +1339,7 @@ function formatHstsStatus(hsts) {
 function formatPermissionsPolicyStatus(permissionsPolicy) {
 
     if (!permissionsPolicy || !permissionsPolicy.present) {
-        return t("notExplicitlySet");
+        return "Not explicitly set";
     }
 
     const featureCount = permissionsPolicy.features ?
@@ -1673,8 +1347,8 @@ function formatPermissionsPolicyStatus(permissionsPolicy) {
         0;
 
     return featureCount > 0 ?
-        t("present") + " · " + featureCount + " " + t("features") :
-        t("present");
+        "Present · " + featureCount + " features" :
+        "Present";
 
 }
 
@@ -1682,15 +1356,10 @@ function formatPermissionsPolicyStatus(permissionsPolicy) {
 function formatMixedContentStatus(mixedContent) {
 
     if (!mixedContent || mixedContent.requestCount === 0) {
-        return t("noneObserved");
+        return "None observed";
     }
 
-    return t("observedWithCount", {
-        count: mixedContent.requestCount,
-        requests: mixedContent.requestCount === 1 ?
-            t("requestSingular") :
-            t("requestPlural")
-    });
+    return "Observed · " + mixedContent.requestCount + " requests";
 
 }
 
@@ -1698,7 +1367,7 @@ function formatMixedContentStatus(mixedContent) {
 function formatIframeSecurityStatus(pageAnalysis) {
 
     if (!pageAnalysis) {
-        return t("unavailable");
+        return "Unavailable";
     }
 
     return pageAnalysis.thirdPartyIframeCount + " third-party · " +
@@ -1852,16 +1521,14 @@ function renderRuntimeCategory(label, category) {
 function formatRuntimeCategoryStatus(category) {
 
     if (!category.detected) {
-        return t("notObserved");
+        return "Not observed";
     }
 
     if (category.eventCount === 1) {
-        return t("eventSingular");
+        return "1 event";
     }
 
-    return t("eventPlural", {
-        count: category.eventCount
-    });
+    return category.eventCount + " events";
 
 }
 
@@ -1903,7 +1570,7 @@ function updateTrackerDetection(activity) {
 
     if (!activity) {
         summaryFields.forEach(function ([elementId]) {
-            document.getElementById(elementId).textContent = t("unavailable");
+            document.getElementById(elementId).textContent = "Unavailable";
         });
 
         renderTrackerDomains([]);
@@ -1964,7 +1631,7 @@ function renderThirdPartyDomains(domains) {
     if (!domains || domains.length === 0) {
         const emptyState = document.createElement("p");
         emptyState.className = "empty-state";
-        emptyState.textContent = t("noThirdPartyDomains");
+        emptyState.textContent = "No third-party domains observed yet.";
         list.appendChild(emptyState);
         showMoreButton.hidden = true;
         return;
@@ -1993,8 +1660,8 @@ function renderThirdPartyDomains(domains) {
 
     showMoreButton.hidden = domains.length <= visibleThirdPartyDomainLimit;
     showMoreButton.textContent = showAllThirdPartyDomains ?
-        t("showLess") :
-        t("showMore");
+        "Show less" :
+        "Show more";
 
 }
 
@@ -2104,7 +1771,7 @@ function renderTrackerDomains(trackers) {
         const emptyState = document.createElement("p");
         emptyState.className = "empty-state";
         emptyState.textContent =
-            t("noTrackingAssociatedDomains");
+            "No tracking-associated domains detected.";
         list.appendChild(emptyState);
         showMoreButton.hidden = true;
         return;
@@ -2133,8 +1800,8 @@ function renderTrackerDomains(trackers) {
 
     showMoreButton.hidden = trackers.length <= visibleTrackerDomainLimit;
     showMoreButton.textContent = showAllTrackerDomains ?
-        t("showLess") :
-        t("showMore");
+        "Show less" :
+        "Show more";
 
 }
 
@@ -2146,10 +1813,10 @@ function renderTrackerDomains(trackers) {
 function formatTrackerSummary(tracker) {
 
     const requestLabel =
-        tracker.requestCount === 1 ? t("requestSingular") : t("requestPlural");
+        tracker.requestCount === 1 ? "request" : "requests";
     const matchNote =
         tracker.hostname && tracker.hostname !== tracker.matchedDomain ?
-            " · " + t("observed") + ": " + tracker.hostname :
+            " · observed: " + tracker.hostname :
             "";
 
     return formatTrackingCategory(tracker.category) + " · " +
@@ -2169,12 +1836,12 @@ function formatTrackerSummary(tracker) {
 function formatTrackingCategory(category) {
 
     const labels = {
-        Advertising: t("advertisingRelated"),
-        Analytics: t("analyticsRelated"),
-        Social: t("socialRelated")
+        Advertising: "Advertising-related",
+        Analytics: "Analytics-related",
+        Social: "Social-related"
     };
 
-    return labels[category] || category || t("otherCategory");
+    return labels[category] || category || "Other";
 
 }
 
@@ -2186,7 +1853,7 @@ function formatTrackingCategory(category) {
 function formatDomainRequestSummary(domain) {
 
     const requestLabel =
-        domain.requestCount === 1 ? t("requestSingular") : t("requestPlural");
+        domain.requestCount === 1 ? "request" : "requests";
 
     const typeSummary = Object.entries(domain.types || {})
         .sort(function (left, right) {
@@ -2217,15 +1884,15 @@ function formatDomainRequestSummary(domain) {
 function formatResourceType(type) {
 
     const labels = {
-        main_frame: t("document"),
-        script: t("scripts"),
-        stylesheet: t("stylesheets"),
-        image: t("images"),
-        font: t("fonts"),
-        xhr: t("xhrFetch"),
-        media: t("media"),
-        iframe: t("iframes"),
-        other: t("other")
+        main_frame: "document",
+        script: "scripts",
+        stylesheet: "stylesheets",
+        image: "images",
+        font: "fonts",
+        xhr: "XHR/fetch",
+        media: "media",
+        iframe: "iframes",
+        other: "other"
     };
 
     return labels[type] || type;
@@ -2266,10 +1933,10 @@ function updateProtocolDisplay(protocol) {
 
 function updateUrlUnavailable() {
 
-    updateText("protocol", t("unavailable"));
-    updateText("protocol-detail", t("unavailable"));
-    updateText("hostname", t("unavailable"));
-    updateText("hostname-detail", t("unavailable"));
+    updateText("protocol", "Unavailable");
+    updateText("protocol-detail", "Unavailable");
+    updateText("hostname", "Unavailable");
+    updateText("hostname-detail", "Unavailable");
 
     const protocol = document.getElementById("protocol");
 
@@ -2281,7 +1948,7 @@ function updateUrlUnavailable() {
         "url-length",
         "subdomains"
     ].forEach(function (elementId) {
-        updateText(elementId, t("unavailable"));
+        updateText(elementId, "Unavailable");
     });
 
     [
@@ -2293,7 +1960,7 @@ function updateUrlUnavailable() {
         "ip-address",
         "punycode"
     ].forEach(function (elementId) {
-        updateIndicatorChip(elementId, t("unavailable"), "warning", false);
+        updateIndicatorChip(elementId, "Unavailable", "warning", false);
     });
 
 }
@@ -2339,9 +2006,9 @@ function updateNetworkComposition(activity) {
     external.style.flexGrow = total > 0 ? externalCount : 0;
     unknown.style.flexGrow = total > 0 ? unknownCount : 0;
 
-    same.title = t("sameEntityThirdParty") + ": " + sameCount;
-    external.title = t("externalThirdParty") + ": " + externalCount;
-    unknown.title = t("unknownThirdParty") + ": " + unknownCount;
+    same.title = "Same-entity third-party: " + sameCount;
+    external.title = "External third-party: " + externalCount;
+    unknown.title = "Unknown third-party: " + unknownCount;
 
 }
 
