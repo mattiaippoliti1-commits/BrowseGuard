@@ -8,7 +8,8 @@ const popupHtmlPath = path.join(popupDir, "popup.html");
 
 const popupHtml = fs.readFileSync(popupHtmlPath, "utf8");
 const localAssets = [];
-const assetPattern = /<(script|link)\b[^>]*(?:src|href)=["']([^"']+)["'][^>]*>/gi;
+const assetPattern =
+    /<(script|link|img)\b[^>]*(?:src|href)=["']([^"']+)["'][^>]*>/gi;
 
 let match;
 while ((match = assetPattern.exec(popupHtml)) !== null) {

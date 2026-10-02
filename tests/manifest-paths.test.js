@@ -19,6 +19,9 @@ function assertExtensionPathExists(extensionPath) {
 assertExtensionPathExists(manifest.action.default_popup);
 assertExtensionPathExists(manifest.background.service_worker);
 
+Object.values(manifest.icons || {}).forEach(assertExtensionPathExists);
+Object.values(manifest.action.default_icon || {}).forEach(assertExtensionPathExists);
+
 manifest.content_scripts.forEach(function (contentScript) {
     (contentScript.js || []).forEach(assertExtensionPathExists);
     (contentScript.css || []).forEach(assertExtensionPathExists);

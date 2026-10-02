@@ -774,7 +774,6 @@ async function requestPageAnalysis(tab) {
     }
 
     if (!canAnalyzeTabURL(tab.url)) {
-        console.debug("BrowserGuard: page analysis unsupported for this page");
         return null;
     }
 
@@ -782,7 +781,6 @@ async function requestPageAnalysis(tab) {
         await ensureContentScriptAvailable(tab);
 
     if (!isContentScriptAvailable) {
-        console.debug("BrowserGuard: content script not available after retry");
         return null;
     }
 
@@ -799,16 +797,12 @@ async function requestPageAnalysis(tab) {
             return null;
         }
 
-        console.debug("BrowserGuard: content script available");
-
         return response.data;
 
     } catch (error) {
 
         // The listener can disappear if the tab navigates while the popup is open.
-        if (isReceivingEndMissing(error)) {
-            console.debug("BrowserGuard: content script not yet available");
-        } else {
+        if (!isReceivingEndMissing(error)) {
             console.error("BrowserGuard: real page analysis error", error);
         }
 
@@ -835,11 +829,8 @@ async function ensureContentScriptAvailable(tab) {
         const pingResponse = await pingContentScript(tab.id);
 
         if (pingResponse && pingResponse.ready) {
-            console.debug("BrowserGuard: content script available");
             return true;
         }
-
-        console.debug("BrowserGuard: content script not yet available");
 
         if (attempt === 1) {
             await injectContentScript(tab.id);

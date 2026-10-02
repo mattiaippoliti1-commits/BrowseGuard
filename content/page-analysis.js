@@ -417,21 +417,4 @@ if (!globalThis.browserGuardMessageListenerRegistered) {
 
     });
 
-    console.debug("BrowserGuard: content script listener registered");
-
-}
-
-
-// Run the full page analysis once when the content script is loaded for debugging.
-if (!globalThis.browserGuardInitialAnalysisLogged) {
-
-    globalThis.browserGuardInitialAnalysisLogged = true;
-
-    const pageAnalysis = analyzePage();
-
-    console.log(
-        "BrowserGuard Page Analysis:",
-        pageAnalysis
-    );
-
 }
