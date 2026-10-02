@@ -31,10 +31,10 @@ tab and records:
 
 - total observed requests;
 - first-party requests;
-- third-party requests;
-- distinct third-party hostnames;
+- cross-origin requests, stored internally as third-party requests;
+- distinct cross-origin hostnames;
 - request counts by Chrome resource type;
-- request counts per third-party hostname.
+- request counts per cross-origin hostname.
 
 First-party vs third-party classification uses a centralized registrable-domain
 heuristic so that hosts such as `www.example.com` and `static.example.com` are
@@ -61,6 +61,11 @@ absence of tracking.
 The matching runs locally inside the extension. BrowserGuard does not send
 visited URLs, hostnames, request data, history, cookies, request bodies,
 Authorization headers, or POST data to external services.
+
+BrowserGuard performs analysis locally. Some per-tab aggregate state, including
+page/domain information required by the analysis, may be temporarily stored in
+`chrome.storage.session`. This data is not transmitted to external services by
+the extension.
 
 ## Tracker Dataset
 
@@ -111,7 +116,9 @@ tracking-associated domains. It avoids substring matching such as
 
 ## Entity-aware Third-party Classification
 
-Raw first-party and third-party metrics keep their original meaning:
+Raw first-party and third-party metrics keep their original browser-origin
+meaning. In the popup, these are presented as first-party and cross-origin so
+they are not confused with independent external organizations:
 
 - First-party: the request registrable domain matches the page registrable
   domain.
@@ -132,7 +139,7 @@ not treated as trusted. Same-entity does not imply safe or privacy-preserving.
 Third-party does not imply tracker or malicious.
 
 The Network Assessment uses external plus unknown third-party activity for
-escalation, while the raw UI counters still show all third-party requests.
+escalation, while the raw UI counters still show all cross-origin requests.
 Tracking evidence remains independent: a same-entity third-party can still be
 tracking-associated if it appears in Tracker Radar.
 
@@ -272,7 +279,7 @@ Output shape:
 
 BrowserGuard intentionally does not calculate a global numeric score. The three
 dimensions are separate so that security hardening, privacy-related activity,
-and third-party network volume are not collapsed into one ambiguous number.
+and external network exposure are not collapsed into one ambiguous number.
 
 Security levels:
 
@@ -305,6 +312,11 @@ Runtime privacy activity is considered multiple when at least 3 monitored
 categories are observed. WebGL hardware information alone does not create a
 significant escalation, but WebGL hardware information combined with Canvas or
 Device Information is treated as combined fingerprinting-related indicators.
+Weak device/screen observations alone, such as `navigator.userAgent`,
+`navigator.maxTouchPoints`, `screen.width`, `screen.height`, and
+`screen.colorDepth`, remain visible evidence but are not treated the same as
+stronger fingerprinting indicators. They do not combine with one
+tracking-associated domain to produce Moderate privacy activity.
 Moderate tracker activity combined with multiple runtime categories is treated
 as elevated privacy-related activity.
 
@@ -314,16 +326,23 @@ Network levels:
 - `moderate-third-party-activity`
 - `high-third-party-activity`
 
-Third-party network activity becomes moderate at a 25% third-party request
-ratio, 5 third-party domains, or 20 third-party requests. It becomes high at a
-50% third-party request ratio only when at least 10 third-party requests were
-observed. It also becomes high at 15 third-party domains when either at least
-15 third-party requests or at least 30 total requests were observed, or at 75
-third-party requests when the ratio is also at least 25%.
+External third-party exposure becomes moderate at a 25% external/unknown
+third-party request ratio, 5 external/unknown third-party domains, or 20
+external/unknown third-party requests. It becomes high at a 50%
+external/unknown third-party request ratio only when at least 10 such requests
+were observed. It also becomes high at 15 external/unknown third-party domains
+when either at least 15 external/unknown third-party requests or at least 30
+total requests were observed, or at 75 external/unknown third-party requests
+when the ratio is also at least 25%.
 
-`high-third-party-activity` means elevated network activity toward third-party
-origins. It does not mean high security risk, a dangerous website, or an unsafe
-website.
+`high-third-party-activity` means elevated external third-party exposure. It
+does not mean high security risk, a dangerous website, or an unsafe website.
+
+Mismatched visible links are reported when visible link text looks like a URL or
+domain but points to a different hostname. One isolated mismatch is not treated
+as evidence of phishing. Multiple mismatches, proportionally significant
+mismatches, or an explicit URL displayed to the user that points to a different
+external host can produce a Security observation.
 
 The engine avoids double counting by keeping related URL heuristics in one
 reason, keeping tracker classification in Privacy, and keeping third-party

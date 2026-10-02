@@ -138,7 +138,7 @@
             </div>
             <div class="stat-card">
                 <strong id="network-same-entity-third-party">Loading...</strong>
-                <span>Same-entity</span>
+                <span>Same-entity cross-origin</span>
             </div>
         </section>
 
@@ -215,12 +215,13 @@
                 </section>
 
                 <section class="detail-section" aria-labelledby="tracking-title">
-                    <div class="detail-heading-row">
-                        <h2 id="tracking-title">
-                            Tracking-associated Domains
-                            <span class="info-dot" title="Domain associated with tracking-related categories in the local Tracker Radar-derived dataset. This does not prove that the individual request performs tracking.">i</span>
-                        </h2>
-                        <span class="section-count" id="tracker-request-count">Loading...</span>
+                    <h2 id="tracking-title">
+                        Tracking-associated Activity
+                        <span class="info-dot" title="Domain associated with tracking-related categories in the local Tracker Radar-derived dataset. This does not prove that the individual request performs tracking.">i</span>
+                    </h2>
+                    <div class="definition-grid">
+                        <div class="analysis-row"><span>Tracking-associated domains</span><span id="tracker-domain-count-detail">Loading...</span></div>
+                        <div class="analysis-row"><span>Tracking-associated requests</span><span id="tracker-request-count">Loading...</span></div>
                     </div>
                     <div class="network-domain-list" id="tracker-domain-list">
                         <p class="empty-state">Loading...</p>
@@ -235,20 +236,15 @@
                     <div class="definition-grid">
                         <div class="analysis-row"><span>Total requests</span><span id="network-total-requests-detail">Loading...</span></div>
                         <div class="analysis-row"><span>First-party</span><span id="network-first-party-requests">Loading...</span></div>
-                        <div class="analysis-row"><span>Third-party</span><span id="network-third-party-requests">Loading...</span></div>
-                        <div class="analysis-row"><span>Third-party domains</span><span id="network-third-party-domains">Loading...</span></div>
-                        <div class="analysis-row"><span>Same-entity third-party <span class="info-dot" title="Third-party domain associated with the same organization as the current site.">i</span></span><span id="network-same-entity-third-party-detail">Loading...</span></div>
-                        <div class="analysis-row"><span>External third-party</span><span id="network-external-third-party-detail">Loading...</span></div>
-                        <div class="analysis-row"><span>Unknown third-party <span class="info-dot" title="Third-party domain that could not be associated with the site owner using local entity metadata.">i</span></span><span id="network-unknown-third-party">Loading...</span></div>
-                    </div>
-                    <div class="network-composition" aria-label="Third-party breakdown">
-                        <span class="network-segment same-entity" id="network-segment-same"></span>
-                        <span class="network-segment external" id="network-segment-external"></span>
-                        <span class="network-segment unknown" id="network-segment-unknown"></span>
+                        <div class="analysis-row"><span>Cross-origin requests <span class="info-dot" title="Browser-origin classification: the request registrable domain differs from the page registrable domain. Cross-origin does not necessarily mean an external organization.">i</span></span><span id="network-third-party-requests">Loading...</span></div>
+                        <div class="analysis-row"><span>Cross-origin domains</span><span id="network-third-party-domains">Loading...</span></div>
+                        <div class="analysis-row"><span>Same-entity cross-origin <span class="info-dot" title="Cross-origin domain associated with the same organization as the current site using local entity metadata.">i</span></span><span id="network-same-entity-third-party-detail">Loading...</span></div>
+                        <div class="analysis-row"><span>External third-party <span class="info-dot" title="Cross-origin domain associated with a known different organization. The Network assessment is based on external plus unknown exposure, not raw cross-origin volume.">i</span></span><span id="network-external-third-party-detail">Loading...</span></div>
+                        <div class="analysis-row"><span>Unknown third-party <span class="info-dot" title="Cross-origin domain that could not be associated with the site owner using local entity metadata.">i</span></span><span id="network-unknown-third-party">Loading...</span></div>
                     </div>
                     <h3>Resource Types</h3>
                     <div class="network-types" id="network-resource-types"></div>
-                    <h3>Top Third-party Domains</h3>
+                    <h3>Top Cross-origin Domains</h3>
                     <div class="network-domain-list" id="network-domain-list">
                         <p class="empty-state">Loading...</p>
                     </div>

@@ -94,6 +94,8 @@ function analyzeLinks() {
     const links = document.querySelectorAll("a[href]");
     let externalLinks = 0;
     let mismatchedLinks = 0;
+    let suspiciousMismatchedLinks = 0;
+    const mismatchedLinkDetails = [];
 
     links.forEach(function (link) {
 
@@ -121,6 +123,25 @@ function analyzeLinks() {
                 displayedURL.hostname !== hrefURL.hostname
             ) {
                 mismatchedLinks++;
+
+                const detail = {
+                    displayedHostname: displayedURL.hostname,
+                    destinationHostname: hrefURL.hostname,
+                    externalDestination: hasDifferentHostname(hrefURL),
+                    explicitDisplayedUrl: /^https?:\/\//i.test(visibleText)
+                };
+
+                if (
+                    detail.externalDestination &&
+                    detail.explicitDisplayedUrl
+                ) {
+                    suspiciousMismatchedLinks++;
+                    detail.suspicious = true;
+                } else {
+                    detail.suspicious = false;
+                }
+
+                mismatchedLinkDetails.push(detail);
             }
 
         } catch (error) {
@@ -135,7 +156,9 @@ function analyzeLinks() {
     return {
         totalLinks: links.length,
         externalLinks: externalLinks,
-        mismatchedLinks: mismatchedLinks
+        mismatchedLinks: mismatchedLinks,
+        suspiciousMismatchedLinks: suspiciousMismatchedLinks,
+        mismatchedLinkDetails: mismatchedLinkDetails.slice(0, 20)
     };
 
 }

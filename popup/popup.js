@@ -712,9 +712,9 @@ function formatAssessmentLabel(dimension, level) {
             "elevated-activity": "Elevated"
         },
         network: {
-            "low-third-party-activity": "Low",
-            "moderate-third-party-activity": "Moderate",
-            "high-third-party-activity": "High"
+            "low-third-party-activity": "Low external",
+            "moderate-third-party-activity": "Moderate external",
+            "high-third-party-activity": "High external"
         }
     };
 
@@ -1171,7 +1171,6 @@ function updateNetworkActivity(activity) {
         updateText("network-total-requests-detail", unavailable);
         updateText("network-same-entity-third-party-detail", unavailable);
         updateText("network-external-third-party-detail", unavailable);
-        updateNetworkComposition(null);
         renderNetworkResourceTypes(null);
         renderThirdPartyDomains([]);
         updateTrackerDetection(null);
@@ -1192,7 +1191,6 @@ function updateNetworkActivity(activity) {
         "network-external-third-party-detail",
         activity.externalThirdPartyRequests
     );
-    updateNetworkComposition(activity);
     renderNetworkResourceTypes(activity.resourceTypes);
     renderThirdPartyDomains(activity.thirdPartyDomains || []);
     updateTrackerDetection(activity);
@@ -1565,6 +1563,7 @@ function updateTrackerDetection(activity) {
 
     const summaryFields = [
         ["tracker-known-count", "trackerDomainCount"],
+        ["tracker-domain-count-detail", "trackerDomainCount"],
         ["tracker-request-count", "trackerRequests"]
     ];
 
@@ -1617,9 +1616,9 @@ function renderNetworkResourceTypes(resourceTypes) {
 
 
 /**
- * Render the third-party domain list with a compact Show more control.
+ * Render the cross-origin domain list with a compact Show more control.
  *
- * @param {Array<object>} domains - Third-party domain summaries.
+ * @param {Array<object>} domains - Cross-origin domain summaries.
  */
 function renderThirdPartyDomains(domains) {
 
@@ -1631,7 +1630,7 @@ function renderThirdPartyDomains(domains) {
     if (!domains || domains.length === 0) {
         const emptyState = document.createElement("p");
         emptyState.className = "empty-state";
-        emptyState.textContent = "No third-party domains observed yet.";
+        emptyState.textContent = "No cross-origin domains observed yet.";
         list.appendChild(emptyState);
         showMoreButton.hidden = true;
         return;
@@ -1847,7 +1846,7 @@ function formatTrackingCategory(category) {
 
 
 /**
- * @param {object} domain - Third-party domain summary.
+ * @param {object} domain - Cross-origin domain summary.
  * @returns {string} Human-readable count and resource type summary.
  */
 function formatDomainRequestSummary(domain) {
@@ -1983,32 +1982,6 @@ function updateIndicatorChip(elementId, label, status, isVisible) {
     }
 
     element.classList.add(status === "positive" ? "is-positive" : "is-warning");
-
-}
-
-
-function updateNetworkComposition(activity) {
-
-    const same = document.getElementById("network-segment-same");
-    const external = document.getElementById("network-segment-external");
-    const unknown = document.getElementById("network-segment-unknown");
-
-    if (!same || !external || !unknown) {
-        return;
-    }
-
-    const sameCount = activity ? activity.sameEntityThirdPartyRequests || 0 : 0;
-    const externalCount = activity ? activity.externalThirdPartyRequests || 0 : 0;
-    const unknownCount = activity ? activity.unknownThirdPartyRequests || 0 : 0;
-    const total = sameCount + externalCount + unknownCount;
-
-    same.style.flexGrow = total > 0 ? sameCount : 0;
-    external.style.flexGrow = total > 0 ? externalCount : 0;
-    unknown.style.flexGrow = total > 0 ? unknownCount : 0;
-
-    same.title = "Same-entity third-party: " + sameCount;
-    external.title = "External third-party: " + externalCount;
-    unknown.title = "Unknown third-party: " + unknownCount;
 
 }
 

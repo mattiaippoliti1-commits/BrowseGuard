@@ -7,7 +7,9 @@
 
 const ASSESSMENT_THRESHOLDS = {
     security: {
-        moderateSignalsForAttention: 2
+        moderateSignalsForAttention: 2,
+        mismatchedLinkMinimumCount: 3,
+        mismatchedLinkMinimumRatio: 0.25
     },
     privacy: {
         moderateTrackerDomains: 2,
@@ -311,6 +313,48 @@ function assessSecurity(snapshot, dataStatus) {
         ));
     }
 
+    if (page && page.mismatchedLinks > 0) {
+        const totalLinks = page.totalLinks || 0;
+        const mismatchedLinkRatio = totalLinks > 0 ?
+            page.mismatchedLinks / totalLinks :
+            0;
+        const suspiciousMismatchedLinks =
+            page.suspiciousMismatchedLinks || 0;
+        const shouldReportMismatchedLinks =
+            suspiciousMismatchedLinks > 0 ||
+            page.mismatchedLinks >=
+                ASSESSMENT_THRESHOLDS.security.mismatchedLinkMinimumCount ||
+            mismatchedLinkRatio >=
+                ASSESSMENT_THRESHOLDS.security.mismatchedLinkMinimumRatio;
+
+        if (shouldReportMismatchedLinks) {
+            const severity =
+                suspiciousMismatchedLinks > 0 ||
+                page.mismatchedLinks >=
+                    ASSESSMENT_THRESHOLDS.security.mismatchedLinkMinimumCount ?
+                    "low" :
+                    "info";
+
+            if (severity === "low") {
+                weakCount++;
+            }
+
+            reasons.push(createReason(
+                "mismatched-link-destinations",
+                severity,
+                "Visible link text pointed to a different destination host",
+                {
+                    mismatchedLinks: page.mismatchedLinks,
+                    suspiciousMismatchedLinks: suspiciousMismatchedLinks,
+                    totalLinks: totalLinks,
+                    mismatchedLinkRatio:
+                        Number(mismatchedLinkRatio.toFixed(3)),
+                    countedForEscalation: severity === "low"
+                }
+            ));
+        }
+    }
+
     if (url) {
         const urlObservationIds = [];
 
@@ -466,6 +510,8 @@ function assessPrivacy(snapshot, dataStatus) {
 
     if (runtime) {
         const detectedCategories = getDetectedRuntimeCategories(runtime);
+        const weakDeviceScreenOnly =
+            hasOnlyWeakDeviceScreenRuntimeIndicators(runtime, detectedCategories);
         const webglHardware = hasRuntimeDetail(
             runtime,
             "webgl",
@@ -497,13 +543,16 @@ function assessPrivacy(snapshot, dataStatus) {
                 }
             ));
         } else if (detectedCategories.length > 0) {
-            runtimeActivity = "limited";
+            runtimeActivity = weakDeviceScreenOnly ? "weak" : "limited";
             reasons.push(createReason(
                 "runtime-privacy-api-usage",
-                "low",
-                "Privacy-sensitive API usage was observed",
+                weakDeviceScreenOnly ? "info" : "low",
+                weakDeviceScreenOnly ?
+                    "Weak device or screen information access was observed" :
+                    "Privacy-sensitive API usage was observed",
                 {
                     categories: detectedCategories,
+                    weakDeviceScreenOnly: weakDeviceScreenOnly,
                     webglHardware: webglHardware,
                     combinedRuntimeIndicators: false
                 }
@@ -556,6 +605,7 @@ function determinePrivacyLevel(trackerActivity, runtimeActivity, dataStatus) {
     if (
         trackerActivity === "limited" ||
         runtimeActivity === "limited" ||
+        runtimeActivity === "weak" ||
         dataStatus === "partial"
     ) {
         return "low-activity";
@@ -591,7 +641,7 @@ function assessNetwork(snapshot, dataStatus) {
             reasons.push(createReason(
                 "network-data-unavailable",
                 "info",
-                "Network activity data is unavailable or incomplete",
+                "External network exposure data is unavailable or incomplete",
                 {}
             ));
         }
@@ -600,7 +650,7 @@ function assessNetwork(snapshot, dataStatus) {
             level: "low-third-party-activity",
             summary: dataStatus === "partial" ?
                 "Analysis incomplete" :
-                "No third-party network activity observed",
+                "No external third-party exposure observed",
             reasons: reasons,
             positiveSignals: []
         };
@@ -662,7 +712,7 @@ function assessNetwork(snapshot, dataStatus) {
             "third-party-network-activity",
             level === "high-third-party-activity" ? "high" :
                 level === "moderate-third-party-activity" ? "medium" : "low",
-            "Third-party network activity was observed",
+            "External third-party network exposure was observed",
             {
                 totalRequests: totalRequests,
                 thirdPartyRequests: network.thirdPartyRequests || 0,
@@ -693,9 +743,9 @@ function assessNetwork(snapshot, dataStatus) {
 function getNetworkSummary(level) {
 
     const summaries = {
-        "low-third-party-activity": "Low third-party network activity",
-        "moderate-third-party-activity": "Moderate third-party network activity",
-        "high-third-party-activity": "High third-party network activity"
+        "low-third-party-activity": "Low external third-party exposure",
+        "moderate-third-party-activity": "Moderate external third-party exposure",
+        "high-third-party-activity": "High external third-party exposure"
     };
 
     return summaries[level];
@@ -712,6 +762,36 @@ function getDetectedRuntimeCategories(runtime) {
             return name;
         })
         .sort();
+
+}
+
+function hasOnlyWeakDeviceScreenRuntimeIndicators(runtime, detectedCategories) {
+
+    if (detectedCategories.length === 0) {
+        return false;
+    }
+
+    const weakCategories = new Set([
+        "navigator",
+        "screen"
+    ]);
+
+    if (!detectedCategories.every(function (category) {
+        return weakCategories.has(category);
+    })) {
+        return false;
+    }
+
+    const strongerNavigatorDetails = [
+        "deviceMemory",
+        "hardwareConcurrency",
+        "languages",
+        "platform"
+    ];
+
+    return !strongerNavigatorDetails.some(function (detailName) {
+        return hasRuntimeDetail(runtime, "navigator", detailName);
+    });
 
 }
 

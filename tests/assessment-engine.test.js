@@ -285,6 +285,39 @@ assessment = assessBrowserState(snapshot);
 assert.strictEqual(assessment.privacy.level, "moderate-activity");
 
 snapshot = completeCleanSnapshot();
+snapshot.networkActivity.trackerDomainCount = 4;
+snapshot.networkActivity.trackerRequests = 17;
+snapshot.networkActivity.trackerDomains = [
+    {
+        matchedDomain: "amazon-adsystem.com",
+        requestCount: 13,
+        category: "Advertising"
+    },
+    {
+        matchedDomain: "amazon.com",
+        requestCount: 2,
+        category: "Advertising"
+    },
+    {
+        matchedDomain: "doubleclick.net",
+        requestCount: 1,
+        category: "Advertising"
+    },
+    {
+        matchedDomain: "google.com",
+        requestCount: 1,
+        category: "Advertising"
+    }
+];
+assessment = assessBrowserState(snapshot);
+assert.strictEqual(assessment.privacy.level, "moderate-activity");
+assert.ok(assessment.privacy.reasons.some(function (reason) {
+    return reason.id === "known-trackers" &&
+        reason.evidence.trackerDomainCount === 4 &&
+        reason.evidence.trackerRequests === 17;
+}));
+
+snapshot = completeCleanSnapshot();
 snapshot.networkActivity.trackerDomainCount =
     ASSESSMENT_THRESHOLDS.privacy.elevatedTrackerRequestMinimumDomains;
 snapshot.networkActivity.trackerRequests =
@@ -326,6 +359,40 @@ snapshot.runtimePrivacy.categories.screen = detectedRuntimeCategory([
 ]);
 assessment = assessBrowserState(snapshot);
 assert.strictEqual(assessment.privacy.level, "low-activity");
+
+snapshot = completeCleanSnapshot();
+snapshot.networkActivity.trackerDomainCount = 1;
+snapshot.networkActivity.trackerRequests = 1;
+snapshot.runtimePrivacy.categories.navigator = detectedRuntimeCategory([
+    "userAgent:",
+    "maxTouchPoints:"
+]);
+snapshot.runtimePrivacy.categories.screen = detectedRuntimeCategory([
+    "width:",
+    "height:",
+    "colorDepth:"
+]);
+assessment = assessBrowserState(snapshot);
+assert.strictEqual(assessment.privacy.level, "low-activity");
+assert.ok(assessment.privacy.reasons.some(function (reason) {
+    return reason.id === "runtime-privacy-api-usage" &&
+        reason.severity === "info" &&
+        reason.evidence.weakDeviceScreenOnly;
+}));
+
+snapshot = completeCleanSnapshot();
+snapshot.runtimePrivacy.categories.navigator = detectedRuntimeCategory([
+    "hardwareConcurrency:",
+    "deviceMemory:",
+    "languages:"
+]);
+assessment = assessBrowserState(snapshot);
+assert.strictEqual(assessment.privacy.level, "low-activity");
+assert.ok(assessment.privacy.reasons.some(function (reason) {
+    return reason.id === "runtime-privacy-api-usage" &&
+        reason.severity === "low" &&
+        !reason.evidence.weakDeviceScreenOnly;
+}));
 
 snapshot = completeCleanSnapshot();
 snapshot.runtimePrivacy.categories.canvas = detectedRuntimeCategory([
@@ -407,11 +474,85 @@ assert.ok(assessment.network.reasons.some(function (reason) {
 }));
 
 snapshot = completeCleanSnapshot();
+snapshot.networkActivity.totalRequests = 266;
+snapshot.networkActivity.firstPartyRequests = 38;
+snapshot.networkActivity.thirdPartyRequests = 228;
+snapshot.networkActivity.thirdPartyDomainCount = 14;
+snapshot.networkActivity.sameEntityThirdPartyRequests = 225;
+snapshot.networkActivity.externalThirdPartyRequests = 2;
+snapshot.networkActivity.unknownThirdPartyRequests = 1;
+snapshot.networkActivity.sameEntityThirdPartyDomainCount = 11;
+snapshot.networkActivity.externalThirdPartyDomainCount = 2;
+snapshot.networkActivity.unknownThirdPartyDomainCount = 1;
+snapshot.networkActivity.assessmentThirdPartyRequests = 3;
+snapshot.networkActivity.assessmentThirdPartyDomainCount = 3;
+assessment = assessBrowserState(snapshot);
+assert.strictEqual(assessment.network.level, "low-third-party-activity");
+assert.strictEqual(
+    assessment.network.summary,
+    "Low external third-party exposure"
+);
+assert.ok(assessment.network.reasons.some(function (reason) {
+    return reason.evidence.thirdPartyRequests === 228 &&
+        reason.evidence.sameEntityThirdPartyRequests === 225 &&
+        reason.evidence.assessmentThirdPartyRequests === 3;
+}));
+
+snapshot = completeCleanSnapshot();
 snapshot.networkActivity.totalRequests = 0;
 snapshot.networkActivity.thirdPartyRequests = 0;
 snapshot.networkActivity.thirdPartyDomainCount = 0;
 assessment = assessBrowserState(snapshot);
 assert.strictEqual(assessment.network.level, "low-third-party-activity");
+
+snapshot = completeCleanSnapshot();
+snapshot.pageAnalysis.totalLinks = 12;
+snapshot.pageAnalysis.externalLinks = 12;
+snapshot.pageAnalysis.mismatchedLinks = 1;
+snapshot.pageAnalysis.suspiciousMismatchedLinks = 0;
+assessment = assessBrowserState(snapshot);
+assert.ok(!assessment.security.reasons.some(function (reason) {
+    return reason.id === "mismatched-link-destinations";
+}));
+
+snapshot = completeCleanSnapshot();
+snapshot.pageAnalysis.totalLinks = 12;
+snapshot.pageAnalysis.externalLinks = 12;
+snapshot.pageAnalysis.mismatchedLinks = 3;
+snapshot.pageAnalysis.suspiciousMismatchedLinks = 0;
+assessment = assessBrowserState(snapshot);
+assert.strictEqual(assessment.security.level, "observations");
+assert.ok(assessment.security.reasons.some(function (reason) {
+    return reason.id === "mismatched-link-destinations" &&
+        reason.severity === "low" &&
+        reason.evidence.countedForEscalation;
+}));
+
+snapshot = completeCleanSnapshot();
+snapshot.pageAnalysis.totalLinks = 4;
+snapshot.pageAnalysis.externalLinks = 4;
+snapshot.pageAnalysis.mismatchedLinks = 1;
+snapshot.pageAnalysis.suspiciousMismatchedLinks = 0;
+assessment = assessBrowserState(snapshot);
+assert.strictEqual(assessment.security.level, "no-major-issues");
+assert.ok(assessment.security.reasons.some(function (reason) {
+    return reason.id === "mismatched-link-destinations" &&
+        reason.severity === "info" &&
+        !reason.evidence.countedForEscalation;
+}));
+
+snapshot = completeCleanSnapshot();
+snapshot.pageAnalysis.totalLinks = 12;
+snapshot.pageAnalysis.externalLinks = 12;
+snapshot.pageAnalysis.mismatchedLinks = 1;
+snapshot.pageAnalysis.suspiciousMismatchedLinks = 1;
+assessment = assessBrowserState(snapshot);
+assert.strictEqual(assessment.security.level, "observations");
+assert.ok(assessment.security.reasons.some(function (reason) {
+    return reason.id === "mismatched-link-destinations" &&
+        reason.severity === "low" &&
+        reason.evidence.suspiciousMismatchedLinks === 1;
+}));
 
 snapshot = completeCleanSnapshot();
 snapshot.urlAnalysis.hostname = "www.ilpost.it";

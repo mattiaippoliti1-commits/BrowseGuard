@@ -274,5 +274,57 @@ function getSnapshot(tabId) {
         wikipediaSnapshot.thirdPartyRequests
     );
 
+    await observe({
+        tabId: 4,
+        type: "main_frame",
+        url: "https://www.amazon.it/"
+    });
+
+    for (let index = 0; index < 13; index++) {
+        await observe({
+            tabId: 4,
+            type: "script",
+            url: "https://aax-eu.amazon-adsystem.com/event-" + index + ".js"
+        });
+    }
+
+    for (let index = 0; index < 2; index++) {
+        await observe({
+            tabId: 4,
+            type: "image",
+            url: "https://www.amazon.com/pixel-" + index + ".gif"
+        });
+    }
+
+    await observe({
+        tabId: 4,
+        type: "image",
+        url: "https://stats.g.doubleclick.net/activity"
+    });
+
+    await observe({
+        tabId: 4,
+        type: "script",
+        url: "https://www.google.com/recaptcha/api.js"
+    });
+
+    const trackerCounterSnapshot = await getSnapshot(4);
+    assert.strictEqual(trackerCounterSnapshot.trackerDomainCount, 4);
+    assert.strictEqual(trackerCounterSnapshot.trackerRequests, 17);
+    assert.deepStrictEqual(
+        trackerCounterSnapshot.trackerDomains.map(function (tracker) {
+            return [
+                tracker.matchedDomain,
+                tracker.requestCount
+            ];
+        }),
+        [
+            ["amazon-adsystem.com", 13],
+            ["amazon.com", 2],
+            ["doubleclick.net", 1],
+            ["google.com", 1]
+        ]
+    );
+
     console.log("Background network/tracker tests passed");
 })();
