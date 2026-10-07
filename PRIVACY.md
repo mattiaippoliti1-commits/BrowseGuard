@@ -1,6 +1,6 @@
 # BrowserGuard Privacy Policy
 
-Effective date: [DATE TO BE ADDED BEFORE PUBLICATION]
+Effective date: October 7, 2026
 
 BrowserGuard is a Chrome extension that analyzes technical security, privacy, tracking, and network signals from webpages locally inside the user's browser.
 
@@ -119,4 +119,4 @@ This Privacy Policy may be updated if BrowserGuard's functionality or data pract
 
 ## Contact
 
-[CONTACT INFORMATION TO BE ADDED BEFORE PUBLICATION]
+broseguard_ext@gmail.com
