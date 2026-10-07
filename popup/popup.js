@@ -18,14 +18,10 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         setupThemeToggle();
 
-        // Ask Chrome for the currently active tab
-        const [tab] = await chrome.tabs.query({
-            active: true,
-            currentWindow: true
-        });
+        const analysis = await loadFreshTabAnalysis();
 
         // Stop if the active tab or its URL cannot be retrieved
-        if (!tab || !tab.url) {
+        if (!analysis) {
             updateUrlUnavailable();
             updatePageAnalysis(null);
             updateNetworkActivity(null);
@@ -35,30 +31,17 @@ document.addEventListener("DOMContentLoaded", async function () {
             return;
         }
 
-        // Start the analysis of the current page URL
-        const urlAnalysis = analyzeURL(tab.url);
-
-        const networkActivity = await requestNetworkActivity(tab);
-        updateNetworkActivity(networkActivity);
-
-        const runtimePrivacy = await requestRuntimePrivacy(tab);
-        updateRuntimePrivacy(runtimePrivacy);
-
-        const webSecurity = await requestWebSecurity(tab);
-
-        // Ask the content script to analyze the current page DOM
-        const pageAnalysis = await requestPageAnalysis(tab);
-
-        // Update the popup with page-level information
-        updatePageAnalysis(pageAnalysis);
-        updateWebSecurity(webSecurity, pageAnalysis);
+        updateNetworkActivity(analysis.networkActivity);
+        updateRuntimePrivacy(analysis.runtimePrivacy);
+        updatePageAnalysis(analysis.pageAnalysis);
+        updateWebSecurity(analysis.webSecurity, analysis.pageAnalysis);
 
         const assessment = BrowserGuardAssessmentEngine.assessBrowserState({
-            urlAnalysis: urlAnalysis,
-            pageAnalysis: pageAnalysis,
-            networkActivity: networkActivity,
-            runtimePrivacy: runtimePrivacy,
-            webSecurity: webSecurity
+            urlAnalysis: analysis.urlAnalysis,
+            pageAnalysis: analysis.pageAnalysis,
+            networkActivity: analysis.networkActivity,
+            runtimePrivacy: analysis.runtimePrivacy,
+            webSecurity: analysis.webSecurity
         });
 
         updateAssessment(assessment);
@@ -88,6 +71,80 @@ let selectedAssessmentDimension = null;
 let showAllThirdPartyDomains = false;
 let showAllTrackerDomains = false;
 let showAllFindings = false;
+
+
+async function loadFreshTabAnalysis() {
+
+    const maxAttempts = 2;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        const tab = await getActiveTab();
+        const identity = createTabIdentity(tab);
+
+        if (!identity) {
+            return null;
+        }
+
+        const urlAnalysis = analyzeURL(tab.url);
+        const networkActivity = await requestNetworkActivity(tab);
+        const runtimePrivacy = await requestRuntimePrivacy(tab);
+        const webSecurity = await requestWebSecurity(tab);
+        const pageAnalysis = await requestPageAnalysis(tab);
+        const latestTab = await getActiveTab();
+
+        if (isSameTabIdentity(identity, createTabIdentity(latestTab))) {
+            return {
+                tab: tab,
+                urlAnalysis: urlAnalysis,
+                networkActivity: networkActivity,
+                runtimePrivacy: runtimePrivacy,
+                webSecurity: webSecurity,
+                pageAnalysis: pageAnalysis
+            };
+        }
+    }
+
+    return null;
+
+}
+
+
+async function getActiveTab() {
+
+    const [tab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true
+    });
+
+    return tab || null;
+
+}
+
+
+function createTabIdentity(tab) {
+
+    if (!tab || typeof tab.id !== "number" || !tab.url) {
+        return null;
+    }
+
+    return {
+        id: tab.id,
+        url: tab.url
+    };
+
+}
+
+
+function isSameTabIdentity(left, right) {
+
+    return Boolean(
+        left &&
+        right &&
+        left.id === right.id &&
+        left.url === right.url
+    );
+
+}
 
 
 function setupThemeToggle() {
@@ -628,6 +685,13 @@ function renderPositiveSignals(assessment) {
 }
 
 
+function isSnapshotAvailable(snapshot) {
+
+    return Boolean(snapshot && snapshot.available !== false);
+
+}
+
+
 function collectPositiveSignals(assessment) {
 
     return [
@@ -1144,6 +1208,7 @@ function updateNetworkActivity(activity) {
     showAllThirdPartyDomains = false;
 
     const unavailable = "Unavailable";
+    const notObservedYet = "Not observed yet";
     const summaryFields = [
         ["network-total-requests", "totalRequests"],
         ["network-first-party-requests", "firstPartyRequests"],
@@ -1165,6 +1230,20 @@ function updateNetworkActivity(activity) {
         renderNetworkResourceTypes(null);
         renderThirdPartyDomains([]);
         updateTrackerDetection(null);
+        return;
+    }
+
+    if (!isSnapshotAvailable(activity)) {
+        summaryFields.forEach(function ([elementId]) {
+            document.getElementById(elementId).textContent = notObservedYet;
+        });
+
+        updateText("network-total-requests-detail", notObservedYet);
+        updateText("network-same-entity-third-party-detail", notObservedYet);
+        updateText("network-external-third-party-detail", notObservedYet);
+        renderNetworkResourceTypes(null);
+        renderThirdPartyDomains(null);
+        updateTrackerDetection(activity);
         return;
     }
 
@@ -1206,6 +1285,14 @@ function updateRuntimePrivacy(runtimePrivacy) {
         const emptyState = document.createElement("p");
         emptyState.className = "empty-state";
         emptyState.textContent = "Runtime privacy data unavailable.";
+        list.appendChild(emptyState);
+        return;
+    }
+
+    if (!isSnapshotAvailable(runtimePrivacy)) {
+        const emptyState = document.createElement("p");
+        emptyState.className = "empty-state";
+        emptyState.textContent = "Runtime privacy data not observed yet.";
         list.appendChild(emptyState);
         return;
     }
@@ -1256,6 +1343,24 @@ function updateWebSecurity(webSecurity, pageAnalysis) {
             "web-security-iframes"
         ].forEach(function (elementId) {
             document.getElementById(elementId).textContent = unavailable;
+        });
+
+        return;
+    }
+
+    if (!isSnapshotAvailable(webSecurity)) {
+        [
+            "web-security-https",
+            "web-security-csp",
+            "web-security-hsts",
+            "web-security-content-type",
+            "web-security-referrer",
+            "web-security-permissions",
+            "web-security-anti-framing",
+            "web-security-mixed-content",
+            "web-security-iframes"
+        ].forEach(function (elementId) {
+            document.getElementById(elementId).textContent = "Not observed yet";
         });
 
         return;
@@ -1567,6 +1672,15 @@ function updateTrackerDetection(activity) {
         return;
     }
 
+    if (!isSnapshotAvailable(activity)) {
+        summaryFields.forEach(function ([elementId]) {
+            document.getElementById(elementId).textContent = "Not observed yet";
+        });
+
+        renderTrackerDomains(null);
+        return;
+    }
+
     summaryFields.forEach(function ([elementId, propertyName]) {
         document.getElementById(elementId).textContent =
             activity[propertyName] || 0;
@@ -1618,7 +1732,16 @@ function renderThirdPartyDomains(domains) {
 
     list.textContent = "";
 
-    if (!domains || domains.length === 0) {
+    if (!domains) {
+        const emptyState = document.createElement("p");
+        emptyState.className = "empty-state";
+        emptyState.textContent = "Network data not observed yet.";
+        list.appendChild(emptyState);
+        showMoreButton.hidden = true;
+        return;
+    }
+
+    if (domains.length === 0) {
         const emptyState = document.createElement("p");
         emptyState.className = "empty-state";
         emptyState.textContent = "No cross-origin domains observed yet.";
@@ -1757,7 +1880,17 @@ function renderTrackerDomains(trackers) {
 
     list.textContent = "";
 
-    if (!trackers || trackers.length === 0) {
+    if (!trackers) {
+        const emptyState = document.createElement("p");
+        emptyState.className = "empty-state";
+        emptyState.textContent =
+            "Tracking-associated activity not observed yet.";
+        list.appendChild(emptyState);
+        showMoreButton.hidden = true;
+        return;
+    }
+
+    if (trackers.length === 0) {
         const emptyState = document.createElement("p");
         emptyState.className = "empty-state";
         emptyState.textContent =

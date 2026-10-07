@@ -466,6 +466,7 @@ function getRuntimePrivacySnapshot(tabId) {
         }).length;
 
     return {
+        available: true,
         pageUrl: state.pageUrl,
         categories: categories,
         detectedCategoryCount: detectedCategoryCount,
@@ -480,6 +481,7 @@ function getRuntimePrivacySnapshot(tabId) {
 function createEmptyRuntimePrivacySnapshot() {
 
     return {
+        available: false,
         pageUrl: "",
         categories: {
             canvas: snapshotEmptyRuntimePrivacyCategory(),
@@ -609,6 +611,7 @@ function getWebSecuritySnapshot(tabId) {
     }
 
     return {
+        available: true,
         pageUrl: state.pageUrl,
         https: {
             ...state.https
@@ -638,7 +641,10 @@ function getWebSecuritySnapshot(tabId) {
  */
 function createEmptyWebSecuritySnapshot() {
 
-    return BrowserGuardWebSecurityAnalyzer.createEmptyWebSecurityState("");
+    return {
+        available: false,
+        ...BrowserGuardWebSecurityAnalyzer.createEmptyWebSecurityState("")
+    };
 
 }
 
@@ -1095,6 +1101,7 @@ function getNetworkActivitySnapshot(tabId) {
         externalThirdPartyDomains.length + unknownThirdPartyDomains.length;
 
     return {
+        available: true,
         pageUrl: state.pageUrl,
         pageHostname: state.pageHostname,
         pageSite: state.pageSite,
@@ -1192,6 +1199,7 @@ function mapDomainBucket(domains) {
 function createEmptyNetworkSnapshot() {
 
     return {
+        available: false,
         pageUrl: "",
         pageHostname: "",
         pageSite: "",

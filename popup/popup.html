@@ -194,7 +194,7 @@
                     <h2 id="web-security-title">Web Security</h2>
                     <div class="definition-grid">
                         <div class="analysis-row"><span>HTTPS</span><span id="web-security-https">Loading...</span></div>
-                        <div class="analysis-row"><span>CSP <span class="info-dot" title="CSP observations are shown as secondary details when available.">i</span></span><span id="web-security-csp">Loading...</span></div>
+                        <div class="analysis-row"><span>CSP <span class="info-wrap"><button class="info-dot" type="button" aria-label="About CSP observations" aria-describedby="tip-csp-observations">i</button><span class="info-tooltip" id="tip-csp-observations" role="tooltip">CSP observations are shown as secondary details when available.</span></span></span><span id="web-security-csp">Loading...</span></div>
                         <div class="analysis-row"><span>HSTS</span><span id="web-security-hsts">Loading...</span></div>
                         <div class="analysis-row"><span>X-Content-Type-Options</span><span id="web-security-content-type">Loading...</span></div>
                         <div class="analysis-row"><span>Referrer-Policy</span><span id="web-security-referrer">Loading...</span></div>
@@ -209,7 +209,7 @@
                 <section class="detail-section" aria-labelledby="privacy-signals-title">
                     <h2 id="privacy-signals-title">
                         Privacy Signals
-                        <span class="info-dot" title="Runtime privacy reports privacy-sensitive API activity and fingerprinting-related indicators without collecting fingerprint values.">i</span>
+                        <span class="info-wrap"><button class="info-dot" type="button" aria-label="About runtime privacy" aria-describedby="tip-runtime-privacy">i</button><span class="info-tooltip" id="tip-runtime-privacy" role="tooltip">Runtime privacy reports privacy-sensitive API activity and fingerprinting-related indicators without collecting fingerprint values.</span></span>
                     </h2>
                     <p class="runtime-indicator-note" id="runtime-indicator-note" hidden>
                         Multiple fingerprinting-related indicators observed.
@@ -222,7 +222,7 @@
                 <section class="detail-section" aria-labelledby="tracking-title">
                     <h2 id="tracking-title">
                         Tracking-associated Activity
-                        <span class="info-dot" title="Domain associated with tracking-related categories in the local Tracker Radar-derived dataset. This does not prove that the individual request performs tracking.">i</span>
+                        <span class="info-wrap"><button class="info-dot" type="button" aria-label="About tracking-associated activity" aria-describedby="tip-tracking-associated">i</button><span class="info-tooltip" id="tip-tracking-associated" role="tooltip">Domain associated with tracking-related categories in the local Tracker Radar-derived dataset. This does not prove that the individual request performs tracking.</span></span>
                     </h2>
                     <div class="definition-grid">
                         <div class="analysis-row"><span>Tracking-associated domains</span><span id="tracker-domain-count-detail">Loading...</span></div>
@@ -241,11 +241,11 @@
                     <div class="definition-grid">
                         <div class="analysis-row"><span>Total requests</span><span id="network-total-requests-detail">Loading...</span></div>
                         <div class="analysis-row"><span>First-party</span><span id="network-first-party-requests">Loading...</span></div>
-                        <div class="analysis-row"><span>Cross-origin requests <span class="info-dot" title="Browser-origin classification: the request registrable domain differs from the page registrable domain. Cross-origin does not necessarily mean an external organization.">i</span></span><span id="network-third-party-requests">Loading...</span></div>
+                        <div class="analysis-row"><span>Cross-origin requests <span class="info-wrap"><button class="info-dot" type="button" aria-label="About cross-origin requests" aria-describedby="tip-cross-origin">i</button><span class="info-tooltip" id="tip-cross-origin" role="tooltip">Browser-origin classification: the request registrable domain differs from the page registrable domain. Cross-origin does not necessarily mean an external organization.</span></span></span><span id="network-third-party-requests">Loading...</span></div>
                         <div class="analysis-row"><span>Cross-origin domains</span><span id="network-third-party-domains">Loading...</span></div>
-                        <div class="analysis-row"><span>Same-entity cross-origin <span class="info-dot" title="Cross-origin domain associated with the same organization as the current site using local entity metadata.">i</span></span><span id="network-same-entity-third-party-detail">Loading...</span></div>
-                        <div class="analysis-row"><span>External third-party <span class="info-dot" title="Cross-origin domain associated with a known different organization. The Network assessment is based on external plus unknown exposure, not raw cross-origin volume.">i</span></span><span id="network-external-third-party-detail">Loading...</span></div>
-                        <div class="analysis-row"><span>Unknown third-party <span class="info-dot" title="Cross-origin domain that could not be associated with the site owner using local entity metadata.">i</span></span><span id="network-unknown-third-party">Loading...</span></div>
+                        <div class="analysis-row"><span>Same-entity cross-origin <span class="info-wrap"><button class="info-dot" type="button" aria-label="About same-entity cross-origin requests" aria-describedby="tip-same-entity">i</button><span class="info-tooltip" id="tip-same-entity" role="tooltip">Cross-origin domain associated with the same organization as the current site using local entity metadata.</span></span></span><span id="network-same-entity-third-party-detail">Loading...</span></div>
+                        <div class="analysis-row"><span>External third-party <span class="info-wrap"><button class="info-dot" type="button" aria-label="About external third-party requests" aria-describedby="tip-external-third-party">i</button><span class="info-tooltip" id="tip-external-third-party" role="tooltip">Cross-origin domain associated with a known different organization. The Network assessment is based on external plus unknown exposure, not raw cross-origin volume.</span></span></span><span id="network-external-third-party-detail">Loading...</span></div>
+                        <div class="analysis-row"><span>Unknown third-party <span class="info-wrap"><button class="info-dot" type="button" aria-label="About unknown third-party requests" aria-describedby="tip-unknown-third-party">i</button><span class="info-tooltip" id="tip-unknown-third-party" role="tooltip">Cross-origin domain that could not be associated with the site owner using local entity metadata.</span></span></span><span id="network-unknown-third-party">Loading...</span></div>
                     </div>
                     <h3>Resource Types</h3>
                     <div class="network-types" id="network-resource-types"></div>

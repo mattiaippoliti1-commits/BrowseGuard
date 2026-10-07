@@ -744,18 +744,60 @@ h3 {
     font-weight: 700;
 }
 
+.info-wrap {
+    position: relative;
+    display: inline-flex;
+    vertical-align: text-top;
+}
+
 .info-dot {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 15px;
     height: 15px;
+    padding: 0;
     border: 1px solid var(--border);
     border-radius: var(--radius-pill);
     color: var(--brand-primary);
+    background: var(--control-surface);
     font-size: 10px;
     font-weight: 800;
-    vertical-align: text-top;
+    font-family: inherit;
+    line-height: 1;
+    cursor: help;
+}
+
+.info-dot:focus-visible {
+    outline: 2px solid var(--brand-primary);
+    outline-offset: 2px;
+}
+
+.info-tooltip {
+    position: absolute;
+    z-index: 10;
+    right: 0;
+    bottom: calc(100% + 6px);
+    width: 220px;
+    max-width: 72vw;
+    padding: var(--space-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    background: var(--surface);
+    box-shadow: var(--shadow-panel);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.35;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(2px);
+}
+
+.info-wrap:hover .info-tooltip,
+.info-dot:focus + .info-tooltip {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .empty-state {

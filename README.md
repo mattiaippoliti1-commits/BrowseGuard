@@ -416,6 +416,11 @@ browserguard/
     ├── entity-resolver.test.js
     ├── manifest-paths.test.js
     ├── page-analysis-iframe.test.js
+    ├── page-analysis-links.test.js
+    ├── popup-assets.test.js
+    ├── popup-freshness-accessibility.test.js
+    ├── popup-ui.test.js
+    ├── snapshot-availability.test.js
     ├── runtime-monitor.test.js
     ├── tracker-matcher.test.js
     └── web-security-analyzer.test.js
@@ -444,6 +449,11 @@ node tests/background-runtime.test.js
 node tests/web-security-analyzer.test.js
 node tests/background-web-security.test.js
 node tests/page-analysis-iframe.test.js
+node tests/page-analysis-links.test.js
+node tests/popup-assets.test.js
+node tests/popup-ui.test.js
+node tests/snapshot-availability.test.js
+node tests/popup-freshness-accessibility.test.js
 node tests/manifest-paths.test.js
 node --check background/service-worker.js
 node --check popup/popup.js

@@ -37,13 +37,36 @@ function assessBrowserState(snapshot) {
     const normalizedSnapshot = snapshot || {};
     const missingSources = getMissingSources(normalizedSnapshot);
     const dataStatus = missingSources.length === 0 ? "complete" : "partial";
+    const availableSnapshot = getAvailableSnapshot(normalizedSnapshot);
 
     return {
         dataStatus: dataStatus,
         missingSources: missingSources,
-        security: assessSecurity(normalizedSnapshot, dataStatus),
-        privacy: assessPrivacy(normalizedSnapshot, dataStatus),
-        network: assessNetwork(normalizedSnapshot, dataStatus)
+        security: assessSecurity(availableSnapshot, dataStatus),
+        privacy: assessPrivacy(availableSnapshot, dataStatus),
+        network: assessNetwork(availableSnapshot, dataStatus)
+    };
+
+}
+
+function getAvailableSnapshot(snapshot) {
+
+    return {
+        urlAnalysis: isSourceAvailable(snapshot.urlAnalysis) ?
+            snapshot.urlAnalysis :
+            null,
+        pageAnalysis: isSourceAvailable(snapshot.pageAnalysis) ?
+            snapshot.pageAnalysis :
+            null,
+        networkActivity: isSourceAvailable(snapshot.networkActivity) ?
+            snapshot.networkActivity :
+            null,
+        runtimePrivacy: isSourceAvailable(snapshot.runtimePrivacy) ?
+            snapshot.runtimePrivacy :
+            null,
+        webSecurity: isSourceAvailable(snapshot.webSecurity) ?
+            snapshot.webSecurity :
+            null
     };
 
 }
@@ -58,11 +81,21 @@ function getMissingSources(snapshot) {
         ["webSecurity", snapshot.webSecurity]
     ]
         .filter(function ([, value]) {
-            return !value;
+            return !isSourceAvailable(value);
         })
         .map(function ([name]) {
             return name;
         });
+
+}
+
+function isSourceAvailable(value) {
+
+    if (!value) {
+        return false;
+    }
+
+    return value.available !== false;
 
 }
 
