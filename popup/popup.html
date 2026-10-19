@@ -40,21 +40,26 @@
                 </button>
             </div>
             <div class="site-strip">
-                <span class="site-identity-label">Current website</span>
-                <span class="site-host" id="hostname">Analyzing…</span>
-                <span class="protocol-badge" id="protocol">Loading...</span>
+                <span class="site-favicon" aria-hidden="true">
+                    <svg id="site-favicon-fallback" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c5 5 5 13 0 18-5-5-5-13 0-18z"/></svg>
+                    <img id="site-favicon" alt="" hidden>
+                </span>
+                <div class="site-identity">
+                    <span class="site-identity-label">Current website</span>
+                    <span class="site-host" id="hostname">—</span>
+                </div>
+                <span class="site-analysis-status" id="site-analysis-status" role="status">Analyzing…</span>
             </div>
         </header>
 
-        <section class="assessment-panel" aria-labelledby="assessment-title">
-            <div class="section-heading"><h2 id="assessment-title">Page assessment</h2><span>Observed signals</span></div>
+        <section class="assessment-panel" aria-busy="true" aria-labelledby="assessment-title">
+            <div class="section-heading"><h2 id="assessment-title">Page assessment</h2><span>Select a category</span></div>
             <div class="assessment-grid">
                 <button
                     class="assessment-card"
                     data-dimension="security"
                     type="button"
-                    aria-expanded="false"
-                    aria-controls="context-security"
+                    aria-controls="panel-security"
                     aria-describedby="description-security"
                 >
                     <div class="assessment-card-top">
@@ -64,15 +69,14 @@
                         <span class="assessment-label">Security</span>
                     </div>
                     <strong id="assessment-security">—</strong>
-                    <span class="assessment-description" hidden id="description-security"></span>
-                    <span class="card-disclosure">Details <span aria-hidden="true">⌄</span></span>
+                    <span class="assessment-description" id="description-security">Waiting for signals</span>
+                    <span class="card-disclosure">Details <span aria-hidden="true">→</span></span>
                 </button>
                 <button
                     class="assessment-card"
                     data-dimension="privacy"
                     type="button"
-                    aria-expanded="false"
-                    aria-controls="context-privacy"
+                    aria-controls="panel-privacy"
                     aria-describedby="description-privacy"
                 >
                     <div class="assessment-card-top">
@@ -83,15 +87,14 @@
                         <span class="assessment-label">Privacy</span>
                     </div>
                     <strong id="assessment-privacy">—</strong>
-                    <span class="assessment-description" hidden id="description-privacy"></span>
-                    <span class="card-disclosure">Details <span aria-hidden="true">⌄</span></span>
+                    <span class="assessment-description" id="description-privacy">Waiting for signals</span>
+                    <span class="card-disclosure">Details <span aria-hidden="true">→</span></span>
                 </button>
                 <button
                     class="assessment-card"
                     data-dimension="network"
                     type="button"
-                    aria-expanded="false"
-                    aria-controls="context-network"
+                    aria-controls="panel-network"
                     aria-describedby="description-network"
                 >
                     <div class="assessment-card-top">
@@ -104,24 +107,15 @@
                         <span class="assessment-label">Network</span>
                     </div>
                     <strong id="assessment-network">—</strong>
-                    <span class="assessment-description" hidden id="description-network"></span>
-                    <span class="card-disclosure">Details <span aria-hidden="true">⌄</span></span>
+                    <span class="assessment-description" id="description-network">Waiting for signals</span>
+                    <span class="card-disclosure">Details <span aria-hidden="true">→</span></span>
                 </button>
             </div>
-            <div class="assessment-context-panel" id="context-security" role="region" aria-label="Security assessment details" hidden></div>
-            <div class="assessment-context-panel" id="context-privacy" role="region" aria-label="Privacy assessment details" hidden></div>
-            <div class="assessment-context-panel" id="context-network" role="region" aria-label="Network assessment details" hidden></div>
         </section>
 
-        <section class="quick-insights" aria-label="Quick insights">
-            <div class="insight"><strong id="network-total-requests">—</strong><span>Total<br>requests</span></div>
-            <div class="insight"><strong id="tracker-known-count">—</strong><span>Tracking-associated<br>domains</span></div>
-            <div class="insight"><strong id="network-external-third-party" aria-describedby="external-count-note">—</strong><span>Confirmed external<br>requests</span></div>
-        </section>
-        <span class="sr-only" id="external-count-note">Counts only requests attributed to a different organization. A dash means the count cannot be established as zero.</span>
         <section class="technical-details">
             <button class="accordion-trigger" id="technical-details-trigger" type="button" aria-expanded="false" aria-controls="technical-details-content">
-                <span>Technical details</span><svg class="chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg>
+                <span>All details</span><svg class="chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg>
             </button>
             <div id="technical-details-content" hidden>
                 <div class="technical-tabs" role="tablist" aria-label="Technical categories">
@@ -130,7 +124,14 @@
                     <button type="button" role="tab" id="tab-privacy" aria-controls="panel-privacy" aria-selected="false" tabindex="-1" data-technical-tab="privacy">Privacy</button>
                     <button type="button" role="tab" id="tab-network" aria-controls="panel-network" aria-selected="false" tabindex="-1" data-technical-tab="network">Network</button>
                 </div>
-                <div class="technical-panel" role="tabpanel" id="panel-overview" aria-labelledby="tab-overview" tabindex="0"><p class="collection-context" id="assessment-data-status"></p><section class="card key-findings-card" aria-labelledby="findings-title">
+                <div class="technical-panel" role="tabpanel" id="panel-overview" aria-labelledby="tab-overview" tabindex="0">
+                    <section class="quick-insights" aria-label="Quick insights">
+                        <div class="insight"><strong id="network-total-requests">—</strong><span>Total<br>requests</span></div>
+                        <div class="insight"><strong id="tracker-known-count">—</strong><span>Tracking-associated<br>domains</span></div>
+                        <div class="insight"><strong id="network-external-third-party" aria-describedby="external-count-note">—</strong><span>Confirmed external<br>requests</span></div>
+                    </section>
+                    <span class="sr-only" id="external-count-note">Counts only requests attributed to a different organization. A dash means the count cannot be established as zero.</span>
+                    <p class="collection-context" id="assessment-data-status"></p><section class="card key-findings-card" aria-labelledby="findings-title">
                     <p class="eyebrow" id="findings-title">Key Findings</p>
                     <div class="assessment-reasons" id="assessment-reasons"></div>
                 </section><section
@@ -170,7 +171,7 @@
                         <span class="indicator-chip" id="punycode">Loading...</span>
                     </div>
                 </section></div>
-                <div class="technical-panel" role="tabpanel" id="panel-security" aria-labelledby="tab-security" tabindex="0" hidden><section class="dimension-findings" aria-label="Security findings"><h2>Assessment evidence</h2><div id="security-findings"></div></section><section class="detail-section" aria-labelledby="web-security-title">
+                <div class="technical-panel" role="tabpanel" id="panel-security" aria-labelledby="tab-security" tabindex="0" hidden><p class="collection-context" id="security-summary"></p><section class="dimension-findings" aria-label="Security findings"><h2 id="security-findings-title">Assessment evidence</h2><div id="security-findings"></div></section><section class="detail-section" aria-labelledby="web-security-title">
                     <h2 id="web-security-title">Web Security</h2>
                     <div class="definition-grid">
                         <div class="analysis-row"><span>HTTPS</span><span id="web-security-https">Loading...</span></div>
@@ -185,7 +186,7 @@
                     </div>
                     <div class="web-security-observations" id="web-security-observations"></div>
                 </section></div>
-                <div class="technical-panel" role="tabpanel" id="panel-privacy" aria-labelledby="tab-privacy" tabindex="0" hidden><section class="dimension-findings" aria-label="Privacy findings"><h2>Assessment evidence</h2><div id="privacy-findings"></div></section><section class="detail-section" aria-labelledby="privacy-signals-title">
+                <div class="technical-panel" role="tabpanel" id="panel-privacy" aria-labelledby="tab-privacy" tabindex="0" hidden><p class="collection-context" id="privacy-summary"></p><section class="dimension-findings" aria-label="Privacy findings"><h2 id="privacy-findings-title">Assessment evidence</h2><div id="privacy-findings"></div></section><section class="detail-section" aria-labelledby="privacy-signals-title">
                     <h2 id="privacy-signals-title">
                         Privacy Signals
                         <span class="info-wrap"><button class="info-dot" type="button" aria-label="About runtime privacy" aria-describedby="tip-runtime-privacy">i</button><span class="info-tooltip" id="tip-runtime-privacy" role="tooltip">Runtime privacy reports privacy-sensitive API activity and fingerprinting-related indicators without collecting fingerprint values.</span></span>
@@ -212,7 +213,7 @@
                         Show more
                     </button>
                 </section></div>
-                <div class="technical-panel" role="tabpanel" id="panel-network" aria-labelledby="tab-network" tabindex="0" hidden><p class="collection-context" id="network-attribution-status"></p><section class="dimension-findings" aria-label="Network findings"><h2>Assessment evidence</h2><div id="network-findings"></div></section><section class="detail-section" aria-labelledby="network-title">
+                <div class="technical-panel" role="tabpanel" id="panel-network" aria-labelledby="tab-network" tabindex="0" hidden><p class="collection-context" id="network-attribution-status"></p><p class="collection-context" id="network-summary"></p><section class="dimension-findings" aria-label="Network findings"><h2 id="network-findings-title">Assessment evidence</h2><div id="network-findings"></div></section><section class="detail-section" aria-labelledby="network-title">
                     <h2 id="network-title">Network Activity</h2>
                     <div class="definition-grid">
                         <div class="analysis-row"><span>Total requests</span><span id="network-total-requests-detail">Loading...</span></div>

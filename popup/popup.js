@@ -69,7 +69,6 @@ const visibleTrackerDomainLimit = 5;
 const visibleFindingLimit = 5;
 let currentNetworkActivity = null;
 let currentAssessment = null;
-let selectedAssessmentDimension = null;
 let showAllThirdPartyDomains = false;
 let showAllTrackerDomains = false;
 let showAllFindings = false;
@@ -95,6 +94,7 @@ async function loadFreshTabAnalysis() {
         const latestTab = await getActiveTab();
 
         if (isSameTabIdentity(identity, createTabIdentity(latestTab))) {
+            updateSiteFavicon(tab.favIconUrl);
             return {
                 tab: tab,
                 urlAnalysis: urlAnalysis,
@@ -108,6 +108,19 @@ async function loadFreshTabAnalysis() {
 
     return null;
 
+}
+
+
+// Use only the favicon already reported by the active tab; no favicon service or new permission.
+function updateSiteFavicon(source) {
+    const image = document.getElementById("site-favicon");
+    const fallback = document.getElementById("site-favicon-fallback");
+    image.hidden = true;
+    fallback.removeAttribute("hidden");
+    image.removeAttribute("src");
+    image.onload = function () { image.hidden = false; fallback.setAttribute("hidden", ""); };
+    image.onerror = function () { image.hidden = true; fallback.removeAttribute("hidden"); };
+    if (typeof source === "string" && /^(https?:|data:image\/)/i.test(source)) image.src = source;
 }
 
 
@@ -423,7 +436,6 @@ function analyzeURL(urlString) {
  */
 function updateAssessment(assessment) {
     currentAssessment = assessment;
-    selectedAssessmentDimension = null;
     showAllFindings = false;
     const view = BrowserGuardPresentation.present(assessment, currentNetworkActivity);
     updateText("assessment-data-status", view.limitation + (view.missing ? " Missing: " + view.missing + "." : ""));
@@ -434,13 +446,16 @@ function updateAssessment(assessment) {
         updateText("assessment-" + dimension, result.label);
         card.setAttribute("aria-label", dimension.charAt(0).toUpperCase() + dimension.slice(1) + ": " +
             (result.state === "unknown" ? "Unavailable" : result.label) + ". Show assessment details");
-        updateText("description-" + dimension, result.description + (result.limited ? " Some inputs are unavailable." : ""));
+        updateText("description-" + dimension, result.summary);
+        updateText(dimension + "-summary", result.description + (result.limited ? " Some inputs are unavailable." : ""));
     });
-    renderAssessmentContextPanel();
     document.getElementById("assessment-reasons").textContent = "";
     if (assessment) renderAssessmentReasons(assessment);
     renderPositiveSignals(assessment);
     renderDimensionFindings(assessment);
+    updateText("site-analysis-status", !assessment ? "No data" :
+        Object.values(view.cards).some(card => card.limited || card.state === "unknown") ? "Partial data" : "");
+    document.querySelector(".assessment-panel").setAttribute("aria-busy", "false");
     updateQuickInsights();
 }
 
@@ -489,49 +504,6 @@ function renderAssessmentReasons(assessment) {
         container.appendChild(button);
     }
 
-}
-
-
-function renderAssessmentContextPanel() {
-    updateAssessmentCardSelection();
-    const view = BrowserGuardPresentation.present(currentAssessment, currentNetworkActivity);
-    BrowserGuardPresentation.dimensions.forEach(function (dimension) {
-        const panel = document.getElementById("context-" + dimension);
-        panel.textContent = "";
-        panel.hidden = selectedAssessmentDimension !== dimension;
-        if (panel.hidden) return;
-        const result = currentAssessment && currentAssessment[dimension];
-        const heading = document.createElement("h3");
-        heading.textContent = dimension.charAt(0).toUpperCase() + dimension.slice(1) + " · " +
-            (view.cards[dimension].state === "unknown" ? "Unavailable" : view.cards[dimension].label);
-        panel.appendChild(heading);
-        const summary = document.createElement("p");
-        summary.textContent = view.cards[dimension].description;
-        panel.appendChild(summary);
-        const reasons = result && result.reasons || [];
-        const contributors = result && result.contributingFindings || reasons.filter(reason => ["high", "medium"].includes(reason.severity));
-        const selected = contributors.length ? contributors : reasons;
-        if (selected.length) {
-            const caption = document.createElement("p");
-            caption.className = "context-caption";
-            caption.textContent = contributors.length ? "Contributing findings" : "Observations and limitations";
-            panel.appendChild(caption);
-            const list = document.createElement("ul");
-            list.className = "context-findings";
-            selected.slice(0, 3).forEach(function (reason) {
-                const item = document.createElement("li");
-                item.textContent = BrowserGuardPresentation.explain(reason).observation;
-                list.appendChild(item);
-            });
-            panel.appendChild(list);
-        }
-        const action = document.createElement("button");
-        action.type = "button";
-        action.className = "assessment-context-action";
-        action.dataset.detailsTarget = dimension;
-        action.textContent = "View all " + dimension + " evidence";
-        panel.appendChild(action);
-    });
 }
 
 
@@ -706,19 +678,6 @@ document.addEventListener("keydown", function (event) {
     event.preventDefault();
     selectTechnicalTab(technicalTabNames[next], true);
 });
-
-function updateAssessmentCardSelection() {
-
-    document.querySelectorAll(".assessment-card").forEach(function (card) {
-        const isSelected =
-            card.dataset.dimension === selectedAssessmentDimension;
-
-        card.classList.toggle("is-selected", isSelected);
-        card.setAttribute("aria-expanded", String(isSelected));
-    });
-
-}
-
 
 function collectReasonFindings(assessment) {
 
@@ -1801,22 +1760,7 @@ document.addEventListener("click", function (event) {
         return;
     }
 
-    selectedAssessmentDimension =
-        selectedAssessmentDimension === dimension ? null : dimension;
-    renderAssessmentContextPanel();
-
-});
-
-
-document.addEventListener("click", function (event) {
-
-    const action = event.target.closest(".assessment-context-action");
-
-    if (!action) {
-        return;
-    }
-
-    focusTechnicalDetailsSection(action.dataset.detailsTarget);
+    focusTechnicalDetailsSection(dimension);
 
 });
 
@@ -2067,7 +2011,8 @@ function updateUrlUnavailable() {
 
     updateText("protocol", "Unavailable");
     updateText("protocol-detail", "Unavailable");
-    updateText("hostname", "Unavailable");
+    updateText("hostname", "—");
+    updateSiteFavicon(null);
     updateText("hostname-detail", "Unavailable");
 
     const protocol = document.getElementById("protocol");
@@ -2123,12 +2068,7 @@ function focusTechnicalDetailsSection(dimension) {
 
     const trigger = document.getElementById("technical-details-trigger");
     const content = document.getElementById("technical-details-content");
-    const targetIds = {
-        security: "web-security-title",
-        privacy: "privacy-signals-title",
-        network: "network-title"
-    };
-    const target = document.getElementById(targetIds[dimension]);
+    const target = document.getElementById(dimension + "-findings-title");
 
     if (!trigger || !content || !target) {
         return;

@@ -68,7 +68,7 @@ test('glossary click and keyboard-compatible close restore focus', async () => {
     assert.equal(h.document.activeElement, trigger);
     delete globalThis.BrowserGuardPresentation;
 });
-test('popup disclosures expose expansion, move focus to technical section, and preserve long hostnames', () => {
+test('category cards open evidence directly, move focus, and preserve long hostnames', () => {
     const h = harness(true);
     const context = vm.createContext({ document: h.document, window: { matchMedia: () => ({ matches: true }) }, console,
         BrowserGuardPresentation: presentation });
@@ -76,14 +76,9 @@ test('popup disclosures expose expansion, move focus to technical section, and p
     vm.runInContext('updateAssessment(null)', context);
     const card = h.cards[0];
     for (const fn of h.document.listeners.click) fn({ target: { closest: selector => selector === '.assessment-card' ? card : null } });
-    assert.equal(card.getAttribute('aria-expanded'), 'true');
-    assert.equal(h.el('context-security').hidden, false);
-    for (const fn of h.document.listeners.click) fn({ target: { closest: selector => selector === '.assessment-card' ? card : null } });
-    assert.equal(card.getAttribute('aria-expanded'), 'false');
-    vm.runInContext('focusTechnicalDetailsSection("security")', context);
     assert.equal(h.el('technical-details-content').hidden, false);
     assert.equal(h.el('technical-details-trigger').getAttribute('aria-expanded'), 'true');
-    assert.equal(h.document.activeElement.id, 'web-security-title');
+    assert.equal(h.document.activeElement.id, 'security-findings-title');
     const host = 'long-domain.'.repeat(30) + 'example.com'; context.host = host;
     vm.runInContext('updateText("hostname", host)', context);
     assert.equal(h.el('hostname').textContent, host);
@@ -109,8 +104,8 @@ test('real engine results render evidence and explanations without changing inpu
         BrowserGuardPresentation: presentation, assessment });
     vm.runInContext(fs.readFileSync('popup/popup.js', 'utf8'), context);
     const before = JSON.stringify(assessment);
-    vm.runInContext('updateAssessment(assessment); selectedAssessmentDimension = "privacy"; renderAssessmentContextPanel()', context);
-    assert.equal(h.el('context-privacy').hidden, false);
+    vm.runInContext('updateAssessment(assessment); focusTechnicalDetailsSection("privacy")', context);
+    assert.equal(h.el('panel-privacy').hidden, false);
     assert.equal(JSON.stringify(assessment), before);
     function allText(element) { return element.textContent + element.children.map(allText).join(' '); }
     assert.match(allText(h.el('assessment-reasons')), /Tracker domain count/i);

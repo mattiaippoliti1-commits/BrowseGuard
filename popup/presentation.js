@@ -111,7 +111,17 @@
             }
             if (dimension === 'network' && attribution.explanation) description = attribution.insufficient ?
                 attribution.explanation : description + ' ' + attribution.explanation;
-            cards[dimension] = { state, ...states[state], description, limited, findings };
+            // Short homepage copy uses the existing presentation state and observed findings only.
+            const summaries = {
+                security: { good: 'No major issues observed.', attention: 'Security signals to review.', significant: 'Security signals need attention.' },
+                privacy: { good: 'Low observed privacy activity.', attention: 'Privacy activity to review.', significant: 'Elevated privacy activity.' },
+                network: { good: 'Low confirmed external exposure.', attention: 'Moderate external exposure.', significant: 'High external exposure.' }
+            };
+            let summary = state === 'unknown' ?
+                (dimension === 'network' && attribution.poorCoverage ? 'External exposure unresolved.' : 'Not enough data.') : summaries[dimension][state];
+            if (limited && state !== 'unknown') summary += ' Partial data.';
+            else if (dimension === 'network' && state !== 'unknown' && attribution.unknown > 0) summary += ' Some ownership unknown.';
+            cards[dimension] = { state, ...states[state], description, summary, limited, findings };
         });
         const values = Object.values(cards);
         const confirmed = dimensions.filter(d => ['attention', 'significant'].includes(cards[d].state));

@@ -4,7 +4,7 @@
     const steps = [
         ['What BrowserGuard does', 'BrowserGuard analyzes observable technical signals from websites to help you better understand security, privacy, and network activity.'],
         ['Understanding results', 'Green: Low.\nYellow: Moderate.\nRed: High.\nGray: — (unavailable).\nResults are based only on signals BrowserGuard can observe. Missing information is shown alongside confirmed findings.'],
-        ['Important limitations', 'BrowserGuard does not certify that a website is safe or trustworthy and does not automatically block threats or tracking. Expand each category for explanations and open Technical Details for evidence.']
+        ['Important limitations', 'BrowserGuard does not certify that a website is safe or trustworthy and does not automatically block threats or tracking. Select a category for explanations and evidence. Open All details for the full analysis.']
     ];
     function setup(document, chrome) {
         const dialog = document.getElementById('onboarding');

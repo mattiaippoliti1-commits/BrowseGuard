@@ -75,11 +75,12 @@ document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>{
        }
      }
      const cards=[...document.querySelectorAll('.assessment-card')];
-     cards[0].click(); assert(byId('context-security').hidden===false,'Security disclosure did not open');
-     cards[1].click(); assert(byId('context-security').hidden&&byId('context-privacy').hidden===false,'Exclusive disclosure failed');
-     cards[1].click(); assert(byId('context-privacy').hidden,'Disclosure did not collapse');
-     byId('technical-details-trigger').click();
-     assert(!byId('technical-details-content').hidden,'Technical details did not expand');
+     for (const dimension of ['security','privacy','network']) {
+       cards.find(c=>c.dataset.dimension===dimension).click();
+       assert(!byId('technical-details-content').hidden,'Category did not open details');
+       assert(!byId('panel-'+dimension).hidden,'Wrong category opened');
+       assert(document.activeElement.id===dimension+'-findings-title','Category evidence not focused');
+     }
      for(const tab of ['overview','security','privacy','network']){
        byId('tab-'+tab).click();
        assert(byId('tab-'+tab).getAttribute('aria-selected')==='true','Selected tab missing');
@@ -92,9 +93,28 @@ document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>{
      assert(document.activeElement.id==='tab-network','End navigation failed');
      byId('tab-network').dispatchEvent(new KeyboardEvent('keydown',{key:'Home',bubbles:true}));
      assert(document.activeElement.id==='tab-overview','Home navigation failed');
-     focusTechnicalDetailsSection('privacy'); assert(!byId('panel-privacy').hidden&&document.activeElement.id==='privacy-signals-title','Evidence link focus failed');
+     focusTechnicalDetailsSection('privacy'); assert(!byId('panel-privacy').hidden&&document.activeElement.id==='privacy-findings-title','Evidence link focus failed');
      byId('technical-details-trigger').click();
    }
+   // Home stays compact, secondary metrics remain in details, and descriptions are visible.
+   assert(document.querySelector('.quick-insights').closest('#panel-overview'),'Metrics leaked onto homepage');
+   for (const scenario of layoutScenarios) {
+     mount(scenario);
+     byId('technical-details-content').hidden=true;
+     for (const width of [400,432,440]) {
+       document.body.style.width=width+'px';
+       assert(document.querySelector('main').getBoundingClientRect().height<=520,'Home exceeds compact popup height');
+       for (const description of document.querySelectorAll('.assessment-description')) {
+         assert(description.getBoundingClientRect().height>0,'Description hidden');
+         assert(description.scrollWidth<=description.clientWidth,'Description overflow');
+       }
+     }
+   }
+   updateSiteFavicon('data:image/png;base64,invalid');
+   byId('site-favicon').dispatchEvent(new Event('error'));
+   assert(byId('site-favicon').hidden&&!byId('site-favicon-fallback').hasAttribute('hidden'),'Favicon fallback missing');
+   updateUrlUnavailable();
+   assert(byId('hostname').textContent==='—','Unavailable hostname is not compact');
    mount(layoutScenarios[1]);
    assert(byId('network-external-third-party').textContent==='—','Unknown ownership shown as zero');
    assert(byId('network-external-third-party-detail').textContent==='0','Confirmed zero lower-bound missing from technical details');
