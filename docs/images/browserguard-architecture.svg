@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title description">
+<title id="title">BrowserGuard architecture</title>
+<desc id="description">A Chrome Manifest V3 extension with local analysis. Requests and main-document response headers feed a background service worker with tracker matching and entity resolution. A MAIN-world runtime monitor sends limited events through a validating isolated-world bridge to that worker. On opening, the popup requests worker snapshots, requests DOM analysis directly from a content script, parses the active URL, and invokes the rule-based Assessment Engine. A presentation layer displays independent Security, Privacy, and Network results. Worker state uses session storage. Signals may be partial; requests are not blocked and results do not certify safety.</desc>
+<defs>
+  <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#6CF7D8"/></marker>
+  <style>
+    text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; fill: #EAF6F1; }
+    .title { font-size: 38px; font-weight: 650; }
+    .subtitle { font-size: 22px; fill: #AAC6BC; }
+    .stage { font-size: 23px; font-weight: 600; }
+    .number { fill: #6CF7D8; font-size: 21px; font-weight: 600; }
+    .heading { font-size: 23px; font-weight: 600; }
+    .body { font-size: 21px; fill: #AAC6BC; }
+    .small { font-size: 19px; fill: #AAC6BC; }
+    .mint { fill: #6CF7D8; }
+    .line { fill: none; stroke: #6CF7D8; stroke-width: 2; marker-end: url(#arrow); stroke-linejoin: round; }
+  </style>
+</defs>
+<rect width="1600" height="900" fill="#03120E"/>
+
+<text x="48" y="65" class="title">BrowserGuard architecture</text>
+<text x="48" y="105" class="subtitle">Chrome Manifest V3 · Local processing · No remote analysis backend</text>
+<text x="48" y="170" class="number">01</text>
+<text x="88" y="170" class="stage">Web page</text>
+<text x="336" y="170" class="number">02</text>
+<text x="376" y="170" class="stage">Data collection</text>
+<text x="930" y="170" class="number">03</text>
+<text x="970" y="170" class="stage">Analysis &amp; assessment</text>
+<text x="1300" y="170" class="number">04</text>
+<text x="1340" y="170" class="stage">Popup results</text>
+<rect x="48" y="210" width="230" height="542" rx="10" fill="#071C16" stroke="#234237"/>
+<text x="70" y="249" class="heading">Visited website</text>
+<text x="70" y="280" class="body">HTTP / HTTPS</text>
+<text x="70" y="338" class="body">Loaded resources</text>
+<text x="70" y="369" class="small">Requests + headers</text>
+<text x="70" y="558" class="body">Runtime activity</text>
+<text x="70" y="589" class="small">Selected API usage</text>
+<text x="70" y="687" class="body">Page structure</text>
+<text x="70" y="718" class="small">Forms, links, iframes</text>
+<path class="line" d="M278 330 H336"/>
+<path class="line" d="M278 550 H336"/>
+<path class="line" d="M278 680 H336"/>
+<rect x="336" y="210" width="524" height="275" rx="10" fill="#071C16" stroke="#234237"/>
+<text x="358" y="247" class="heading">Background service worker</text>
+<text x="358" y="281" class="body">Network Request Monitoring</text>
+<text x="358" y="309" class="small">webRequest · counts, domains, resource types</text>
+<text x="358" y="347" class="body">Tracker Detection + entity resolution</text>
+<text x="358" y="375" class="small">Local Tracker Radar-derived dataset</text>
+<text x="358" y="413" class="body">Security Headers Analysis</text>
+<text x="358" y="441" class="small">Main-document headers + mixed-content attempts</text>
+<text x="358" y="470" class="small">Per-tab aggregates ↔ chrome.storage.session</text>
+<rect x="336" y="521" width="524" height="99" rx="10" fill="#09231B" stroke="#234237"/>
+<text x="358" y="556" class="heading">Runtime Privacy Monitoring</text>
+<text x="358" y="585" class="small">MAIN-world monitor → validating isolated bridge</text>
+<text x="358" y="610" class="small">API-access metadata only → worker</text>
+<path class="line" d="M830 521 V485"/>
+<rect x="336" y="653" width="524" height="99" rx="10" fill="#071C16" stroke="#234237"/>
+<text x="358" y="690" class="heading">DOM Analysis</text>
+<text x="358" y="722" class="body">Isolated content script · on popup request</text>
+<rect x="930" y="210" width="306" height="542" rx="10" fill="#071C16" stroke="#234237"/>
+<text x="950" y="246" class="small">Runs inside the popup</text>
+<rect x="950" y="266" width="266" height="70" rx="10" fill="#09231B" stroke="#234237"/>
+<text x="968" y="295" class="heading">Active URL analysis</text>
+<text x="968" y="322" class="small">Parsed from tab URL</text>
+<path class="line" d="M1083 336 V379"/>
+<rect x="950" y="382" width="266" height="135" rx="10" fill="#09231B" stroke="#6CF7D8"/>
+<text x="968" y="418" class="heading">Assessment Engine</text>
+<text x="968" y="451" class="body">Deterministic rules</text>
+<text x="968" y="483" class="body">5 input snapshots</text>
+<text x="968" y="508" class="small">Reasons + missing sources</text>
+<path class="line" d="M860 410 H950"/>
+<text x="867" y="375" class="small">Async</text>
+<text x="867" y="398" class="small">data</text>
+<path class="line" d="M860 700 H902 V485 H950"/>
+<path class="line" d="M1083 517 V558"/>
+<rect x="950" y="561" width="266" height="145" rx="10" fill="#09231B" stroke="#234237"/>
+<text x="968" y="597" class="heading">Presentation layer</text>
+<text x="968" y="630" class="body">Levels + explanations</text>
+<text x="968" y="661" class="body">Availability caveats</text>
+<text x="968" y="691" class="small">No global numeric score</text>
+<rect x="1300" y="210" width="252" height="542" rx="10" fill="#071C16" stroke="#234237"/>
+<text x="1320" y="249" class="heading">BrowserGuard</text>
+<text x="1320" y="280" class="body">Extension popup</text>
+<rect x="1320" y="326" width="212" height="71" rx="10" fill="#09231B" stroke="#234237"/>
+<circle cx="1340" cy="361" r="4" fill="#6CF7D8"/>
+<text x="1355" y="369" class="heading">Security</text>
+<rect x="1320" y="421" width="212" height="71" rx="10" fill="#09231B" stroke="#234237"/>
+<circle cx="1340" cy="456" r="4" fill="#6CF7D8"/>
+<text x="1355" y="464" class="heading">Privacy</text>
+<rect x="1320" y="516" width="212" height="71" rx="10" fill="#09231B" stroke="#234237"/>
+<circle cx="1340" cy="551" r="4" fill="#6CF7D8"/>
+<text x="1355" y="559" class="heading">Network</text>
+<text x="1320" y="636" class="body">Select a category</text>
+<text x="1320" y="667" class="body">to inspect evidence</text>
+<text x="1320" y="718" class="small">Partial / missing states</text>
+<path class="line" d="M1216 615 H1300"/>
+<path d="M48 793 H1552" stroke="#234237"/>
+<text x="48" y="831" class="body">Parallel observation paths · Snapshots requested when the popup opens · Coverage may be partial</text>
+<text x="48" y="868" class="body">Informational assessments only · No request blocking · No website safety certification</text>
+</svg>

@@ -1,28 +1,178 @@
 # BrowserGuard
 
-BrowserGuard is a Chrome Manifest V3 extension for local, privacy-preserving
-analysis of web page security and network activity.
+## Overview
 
-## Implemented Modules
+BrowserGuard is a Chrome Manifest V3 extension that helps you understand the
+observable security, privacy, and network signals of the website you are visiting.
+It inspects page structure, request metadata, selected response headers, and
+selected browser API usage, then presents three independent assessments.
 
-- URL Analysis: parses the active tab URL and shows protocol, hostname, length,
-  subdomain count, IP hostname detection, Punycode detection, HTTPS, long URL,
-  `@` usage, and URL encoding indicators.
-- Page Analysis: uses a content script to inspect forms, password fields,
-  external forms, insecure password form actions, links, mismatched visible
-  links, iframes, hidden iframes, and external scripts.
-- Network Activity: uses a Manifest V3 background service worker and
-  `chrome.webRequest.onBeforeRequest` to observe requests per tab without
-  blocking or modifying them.
-- Tracker Detection: identifies tracking-associated domains by matching
-  hostnames against a local Tracker Radar-derived dataset.
-- Runtime Privacy: observes selected runtime API usage associated with browser
-  fingerprinting indicators, without collecting fingerprint values.
-- Web Security Configuration: observes selected main document security headers,
-  mixed content, and iframe security configuration.
-- Assessment Engine: combines existing URL, DOM, network, runtime privacy, and
-  web security snapshots into separate Security, Privacy, and Network
-  assessments.
+Analysis runs locally in your browser, using a bundled tracker and entity dataset.
+There is no remote analysis backend. BrowserGuard is an observation tool: it does
+not block requests or content, remove malware, or certify that a website is safe.
+
+## How BrowserGuard Works
+
+![BrowserGuard architecture: parallel network, runtime, and DOM collection paths feed local assessments in the popup.](docs/images/browserguard-architecture.svg)
+
+[Open the full-size architecture diagram](docs/images/browserguard-architecture.svg).
+The diagram shows data flowing toward the interface; snapshot requests and
+responses use asynchronous Chrome extension messaging.
+
+1. **Visit a web page.** While supported HTTP/HTTPS pages load and run, the
+   service worker observes requests and main-document response headers. A
+   MAIN-world content script observes selected runtime API calls.
+2. **Collect observable signals.** The service worker aggregates network data,
+   matches cross-origin request domains against the local tracker dataset,
+   resolves entity relationships, and analyzes selected security headers and
+   mixed-content request attempts. The runtime monitor emits limited metadata
+   through a validating isolated-world bridge to the service worker.
+3. **Open BrowserGuard.** The popup parses the active URL, requests network,
+   runtime, and security snapshots from the service worker, and requests a fresh
+   DOM analysis directly from the page content script. It checks the active tab
+   identity again before accepting the collected result.
+4. **Assess the available evidence.** The popup invokes the local, deterministic
+   rule-based Assessment Engine with those five inputs. The engine returns
+   separate Security, Privacy, and Network results, including reasons and
+   missing-source information. These are observations, not a global safety score.
+5. **Read the results.** The popup presentation layer renders three category
+   cards and their detailed evidence. Collection paths run independently, so
+   snapshots may be partial or unavailable rather than one complete, synchronized
+   scan.
+
+The engine runs in the popup, not in a remote service or the background worker.
+Per-tab worker state is retained in `chrome.storage.session` so it can survive
+worker suspension; it is reset on observed main-frame requests and removed when
+Chrome reports a tab closing.
+
+## Features
+
+| Category | What BrowserGuard observes |
+| --- | --- |
+| **Security Analysis** | HTTP/HTTPS and URL indicators; password-form destinations; link mismatches; iframe configuration; selected CSP, HSTS, content-type, referrer, permissions, and anti-framing headers; mixed-content request attempts. |
+| **Privacy Analysis** | Cross-origin requests matching locally bundled tracking-associated domains, plus selected Canvas, WebGL, audio, navigator, and screen API usage indicators. Runtime output values and form field values are not collected. |
+| **Network Analysis** | Request counts, resource types, cross-origin domains, and same-entity, confirmed external, or unresolved ownership relationships. The Network assessment describes confirmed external exposure, not maliciousness. |
+
+The popup also includes explanations, supporting evidence, a glossary, a short
+introduction, and light/dark appearance preferences.
+
+## Installation
+
+No build, package installation, API key, or backend configuration is required.
+The repository already includes the runtime scripts and generated dataset.
+
+1. Download and extract this repository, or clone it with Git.
+2. Open `chrome://extensions` in Google Chrome.
+3. Enable **Developer mode**.
+4. Select **Load unpacked**.
+5. Select the extension root folder containing `manifest.json` (not its parent
+   folder or the `popup` subfolder).
+6. Confirm that **BrowserGuard** appears in the extension list without loading
+   errors. Optionally pin it using Chrome’s extensions menu.
+
+After installation or reloading the extension, reload the website you want to
+inspect. This lets request/header collection observe its load and installs the
+runtime monitor at `document_start`. Node.js is needed for development scripts
+and automated tests, not for loading the extension.
+
+## How to Use
+
+1. Open an HTTP or HTTPS website, and allow it to load.
+2. Open **BrowserGuard** from Chrome’s extensions toolbar/menu. Complete or skip
+   the introduction if it appears.
+3. Check the displayed domain and the **Security**, **Privacy**, and **Network**
+   cards. Security describes observable connection/page configuration signals;
+   Privacy describes privacy-related activity; Network describes external
+   exposure in the observed traffic.
+4. Interpret **Low**, **Moderate**, and **High** within each category. They are
+   independent descriptive levels, not a safety certificate. A favorable state
+   does not guarantee a safe or trustworthy site. A dash (**—**) means the
+   available evidence is insufficient; **Partial data** marks incomplete inputs.
+5. Select a category card to open its evidence directly. **All details** expands
+   or collapses the detailed area; its Overview, Security, Privacy, and Network
+   tabs retain metrics, findings, and observations. Supporting evidence can be
+   expanded where available.
+6. To read newer observations, close and reopen the popup: each opening requests
+   current snapshots and a new DOM analysis. There is no dedicated refresh
+   button or continuous popup refresh. Reload the website to start a new page
+   observation; requests missed before the extension was loaded cannot be
+   reconstructed.
+
+The domain is shortened visually when necessary; hover it to see the full value.
+Category buttons support keyboard activation, and detail tabs support the arrow
+keys, Home, and End. The header provides help and an appearance toggle.
+
+## Privacy & Permissions
+
+Collected analysis signals are processed locally and are not sent to an analysis
+API, telemetry service, or BrowserGuard backend. Tracker matching uses bundled
+data; the extension runtime does not contact DuckDuckGo. The popup may load the
+favicon URL reported by Chrome for the active tab; it does not use a separate
+favicon lookup service.
+
+BrowserGuard does use local Chrome storage:
+
+- `chrome.storage.session`: temporary per-tab network, runtime privacy, and
+  web-security state, including page/domain information needed for analysis.
+- `chrome.storage.local`: appearance preference and introduction-completion
+  preference. These may persist across browser restarts.
+- `chrome.storage.sync` is not used.
+
+| Permission / access | Purpose |
+| --- | --- |
+| `tabs` | Identify the active tab and its URL. |
+| `scripting` | Inject the page-analysis content script on supported pages if its listener is missing. |
+| `storage` | Retain temporary per-tab analysis state and local UI preferences. |
+| `webRequest` | Observe request metadata and selected main-document response headers, without blocking requests. |
+| `http://*/*`, `https://*/*` host access | Run content scripts and observe supported visited websites across HTTP and HTTPS. |
+
+BrowserGuard does not read passwords or form field values, request/response
+bodies, cookies, or Authorization headers. Runtime API observations retain access
+metadata rather than fingerprint output values. See the [privacy policy](PRIVACY.md)
+for the broader data-handling description. Its local-storage description mentions
+the theme preference; the current UI also stores introduction completion.
+
+## Limitations
+
+- BrowserGuard is not an antivirus, firewall, or vulnerability scanner. It does
+  not automatically block content, tracking, or network requests, and does not
+  certify that a website is safe, legitimate, or free of malicious behavior.
+- Observations can be incomplete, unavailable, or misleading. A missing signal
+  is not evidence of zero activity; loading timing, extension reloads, and browser
+  restrictions affect coverage. Chrome internal pages and Chrome Web Store pages
+  cannot be analyzed like ordinary websites.
+- Tracker detection covers matching cross-origin requests in the local dataset.
+  It cannot identify all tracking. First-party-hosted tracking and CNAME
+  cloaking may be missed; DNS resolution/uncloaking is not implemented.
+- A dataset match does not prove that an individual request tracked the user.
+  Third-party does not mean malicious, and same-entity does not mean safe or
+  privacy-preserving. Entity metadata coverage is incomplete.
+- Request grouping uses a registrable-domain heuristic, not a complete Public
+  Suffix List. The UI’s cross-origin label refers to this domain grouping, not
+  necessarily the browser’s exact scheme/host/port origin boundary.
+- Runtime monitoring covers selected APIs, and page scripts can spoof the event
+  bridge. Legitimate graphics, audio, and feature detection can trigger these
+  observations. Co-occurring API accesses do not prove fingerprinting or intent.
+- Content scripts are configured for the top frame, not every nested frame.
+  DOM analysis inspects iframe elements; it does not recursively inspect all
+  embedded documents.
+- Security-header parsing is lightweight. Missing hardening headers do not alone
+  establish a vulnerability. Mixed-content request attempts do not prove that
+  insecure resources loaded or executed, and redirect chains are not fully
+  reconstructed.
+- Cookie analysis, permission monitoring, WHOIS/domain reputation, and
+  malware/phishing blacklists are not implemented.
+
+## Technical Reference
+
+The following sections describe the existing collectors and assessment semantics.
+For the rule table, fixtures, and calibration limits, see the
+[assessment calibration report](ASSESSMENT_CALIBRATION.md). The
+[earlier popup redesign report](POPUP_REDESIGN_V2.md) records an earlier UI
+iteration; the usage instructions above describe the current interface.
+
+<details>
+<summary>Collector, dataset, and assessment reference</summary>
 
 ## Network Activity
 
@@ -73,7 +223,7 @@ The current dataset is a generated local compact dataset in
 `data/tracker-data.js`.
 
 - Source: DuckDuckGo Tracker Radar
-- Source repository: https://github.com/duckduckgo/tracker-radar
+- Source repository: [DuckDuckGo Tracker Radar](https://github.com/duckduckgo/tracker-radar)
 - Source license: Creative Commons Attribution-NonCommercial-ShareAlike 4.0
   International
 - Generated at: 2026-09-28T10:21:25.235Z
@@ -116,8 +266,8 @@ tracking-associated domains. It avoids substring matching such as
 
 ## Entity-aware Third-party Classification
 
-Raw first-party and third-party metrics keep their original browser-origin
-meaning. In the popup, these are presented as first-party and cross-origin so
+Raw first-party and third-party metrics retain their registrable-domain
+grouping. In the popup, these are presented as first-party and cross-origin so
 they are not confused with independent external organizations:
 
 - First-party: the request registrable domain matches the page registrable
@@ -142,24 +292,6 @@ The Network Assessment uses confirmed external third-party activity for
 escalation, while the raw UI counters still show all cross-origin requests.
 Tracking evidence remains independent: a same-entity third-party can still be
 tracking-associated if it appears in Tracker Radar.
-
-## Limitations
-
-- BrowserGuard detects only tracking-associated domains present in the local
-  dataset.
-- No match does not prove that a page has no tracking.
-- A tracking-associated domain does not imply malware, phishing, or that the
-  website is unsafe.
-- Third-party does not mean tracker.
-- Same-entity does not imply safe or privacy-preserving.
-- Entity resolution depends on Tracker Radar metadata coverage.
-- Tracker Detection is currently applied to third-party requests.
-- CNAME uncloaking and DNS resolution are not implemented.
-- First-party tracking and first-party-hosted tracker infrastructure may not be
-  detected.
-- Runtime fingerprinting indicators cover selected APIs only; cookie analysis,
-  permission monitoring, WHOIS, DNS intelligence, domain reputation,
-  malware/phishing blacklists, and request blocking are not implemented.
 
 ## Runtime Privacy / Fingerprinting Indicators
 
@@ -195,9 +327,10 @@ Runtime Privacy stores only that an API/property was accessed. It does not store
 canvas output, images, audio output, GPU renderer/vendor strings, user agent
 values, screen resolution, CPU count, device memory, or other fingerprint values.
 
-The popup shows `Multiple fingerprinting indicators detected` only when at least
-three runtime categories are observed in the current tab. This is a descriptive
-indicator, not a global risk score and not proof of malicious behavior.
+When at least three runtime categories are observed, the popup notes that multiple
+API categories were observed. This descriptive note is separate from the engine’s
+correlation of specific sensitive surfaces; API access alone does not establish
+fingerprinting.
 
 Runtime monitor limitations:
 
@@ -208,8 +341,9 @@ Runtime monitor limitations:
 - Browser APIs that are non-configurable or absent are skipped safely.
 - Legitimate graphics, audio, feature detection, or responsive design code can
   trigger API usage indicators.
-- BrowserGuard does not block, spoof, randomize, or modify fingerprint-related
-  APIs.
+- The monitor wraps selected APIs to observe access while forwarding calls to
+  their original implementations. It does not block calls, spoof outputs, or
+  randomize fingerprint values.
 
 ## Web Security Configuration
 
@@ -373,137 +507,72 @@ Assessment limitations:
 - It does not certify that a site is safe or unsafe.
 - It uses only BrowserGuard's existing local snapshots.
 - Incomplete snapshots reduce confidence and are surfaced explicitly.
-- The popup card is temporary and intentionally compact.
+- The popup presents compact summaries; detailed findings remain available by category.
+
+
+</details>
 
 ## Project Structure
 
 ```text
 browserguard/
-├── manifest.json
-├── README.md
-├── background/
-│   └── service-worker.js
-├── content/
-│   ├── page-analysis.js
-│   ├── runtime-bridge.js
-│   └── runtime-monitor.js
-├── data/
-│   ├── generated/
-│   │   └── tracker-radar-metadata.json
-│   └── tracker-data.js
+├── manifest.json               # MV3 entry points and permissions
+├── background/                 # Request/header collection and per-tab state
+├── content/                    # DOM analyzer, MAIN-world monitor, isolated bridge
 ├── modules/
-│   ├── assessment/
-│   │   └── assessment-engine.js
-│   ├── network/
-│   │   └── entity-resolver.js
-│   ├── security/
-│   │   └── web-security-analyzer.js
-│   └── trackers/
-│       └── tracker-matcher.js
-├── popup/
-│   ├── popup.html
-│   ├── popup.css
-│   └── popup.js
-├── test-pages/
-│   ├── dom-analysis-test.html
-│   ├── runtime-privacy-test.html
-│   └── web-security-test.html
-└── tests/
-    ├── assessment-engine.test.js
-    ├── background-network.test.js
-    ├── background-runtime.test.js
-    ├── background-web-security.test.js
-    ├── entity-resolver.test.js
-    ├── manifest-paths.test.js
-    ├── page-analysis-iframe.test.js
-    ├── page-analysis-links.test.js
-    ├── popup-assets.test.js
-    ├── popup-freshness-accessibility.test.js
-    ├── popup-ui.test.js
-    ├── snapshot-availability.test.js
-    ├── runtime-monitor.test.js
-    ├── tracker-matcher.test.js
-    └── web-security-analyzer.test.js
+│   ├── assessment/              # Pure, rule-based Assessment Engine
+│   ├── network/                 # Entity relationship resolution
+│   ├── security/                # Selected security-header analysis
+│   └── trackers/                # Domain-bound local tracker matching
+├── popup/                      # UI, snapshot orchestration, presentation, help
+├── data/                       # Bundled dataset and generation metadata
+├── docs/images/                # Architecture diagram
+├── scripts/                    # Dataset updater and Chrome rendering checks
+├── test-pages/                 # Manual DOM/runtime/security fixtures
+└── tests/                      # Automated tests and historical fixture
 ```
 
-`scripts/update-tracker-radar.js` regenerates the local tracker/entity dataset
-from DuckDuckGo Tracker Radar for development updates.
+## Development & Tests
 
-`background/` contains the Manifest V3 service worker. `content/` contains both
-isolated-world content scripts and the MAIN-world runtime monitor. `popup/`
-contains the extension UI. `data/` contains local datasets, while `modules/`
-contains reusable analysis/matching logic. Manual HTML fixtures live in
-`test-pages/`, separate from automated tests in `tests/`.
-
-## Tests
-
-Run the local tests with:
+Regenerate the self-contained vector diagram with Python 3 (standard library only):
 
 ```bash
-node tests/tracker-matcher.test.js
-node tests/entity-resolver.test.js
-node tests/assessment-engine.test.js
-node tests/background-network.test.js
-node tests/runtime-monitor.test.js
-node tests/background-runtime.test.js
-node tests/web-security-analyzer.test.js
-node tests/background-web-security.test.js
-node tests/page-analysis-iframe.test.js
-node tests/page-analysis-links.test.js
-node tests/popup-assets.test.js
-node tests/popup-ui.test.js
-node tests/snapshot-availability.test.js
-node tests/popup-freshness-accessibility.test.js
-node tests/manifest-paths.test.js
-node --check background/service-worker.js
-node --check popup/popup.js
-node --check content/page-analysis.js
-node --check content/runtime-monitor.js
-node --check content/runtime-bridge.js
-node --check modules/security/web-security-analyzer.js
-node --check modules/assessment/assessment-engine.js
-python3 -m json.tool manifest.json
+python3 docs/generate-architecture.py
 ```
 
+Run all local automated tests with a recent Node.js version supporting `node:test`:
 
-### Popup overview and accessibility
+```bash
+node --test tests/*.test.js
+```
 
-The redesigned 432 px popup presents separate Security, Privacy, and Network
-levels, followed by total requests, tracking-associated domains, and confirmed
-external requests. Cards show Low / Moderate / High, or a neutral dash for an
-unavailable assessment. Click a card to toggle its compact explanation; only one
-explanation is open at a time. There is no global safety verdict or numeric score.
+Check the popup layout and interactions in a locally installed Chrome/Chromium:
 
-Technical Details has Overview, Security, Privacy, and Network tabs. Overview
-retains the combined findings, positive signals, and URL/page metrics. Individual
-tabs expose the category findings and all existing header, API, domain, request,
-and resource-type details. Supporting evidence is rendered as nested labeled rows
-inside disclosures, rather than raw JSON.
+```bash
+node scripts/check-popup-layout.js
+```
 
-The assessment engine, collectors, entity resolver and tracker matcher are
-unchanged by the redesign. A narrowly scoped presentation rule in
-`popup/presentation.js` prevents a Low Network result from implying complete
-coverage when ownership is unresolved for at least 5 cross-origin requests and
-more than half of cross-origin traffic. Network then displays a dash and explains
-the limitation. Confirmed Moderate or High exposure remains visible as a lower
-bound. A quick external count of zero also becomes a dash whenever any unknown
-ownership remains; positive confirmed counts remain visible. Raw counters stay
-available in the Network tab. See [the redesign report](POPUP_REDESIGN_V2.md) for
-criteria, examples, reversibility, and limitations.
+Set `BROWSERGUARD_CHROME` to the browser executable if the default macOS Chrome
+path is unsuitable. The script uses mocked Chrome APIs with the real popup code,
+checks multiple data states, keyboard interaction, and light/dark layouts at
+400, 432, and 440 px, and writes screenshots/DOM reports to a temporary directory.
+A real loaded-extension check is still needed for live MV3 messaging and browser
+integration. Manual fixtures are in [test-pages](test-pages/).
 
-The existing help, skippable onboarding, local completion preference
-(`browserguard.onboarding.v1`), theme preference (`appearanceTheme`), glossary,
-and reduced-motion behavior are retained. Cards use native buttons and explicit
-accessible status labels; tabs support Arrow Left/Right, Home/End and a single
-Tab stop. Full hostnames remain available through text and a hover title while
-the visible hostname truncates with an ellipsis. No dependencies, remote fonts,
-external services, telemetry, permissions or storage keys were added.
+To regenerate the bundled tracker/entity dataset during development:
 
-Run `node --test tests/*.test.js` for all Node checks. Run
-`node scripts/check-popup-layout.js` for the Chrome rendering/interaction check;
-set `BROWSERGUARD_CHROME` to a local Chrome/Chromium executable if needed. The
-browser check mocks Chrome APIs and runs the actual popup initialization and DOM
-listeners, exercises all five required status combinations at 400, 432 and 440 px
-in light/dark themes, and saves screenshots and DOM reports to a temporary folder.
-A loaded-extension manual check is still needed for live MV3 messaging, real
-assistive technology and touch behavior.
+```bash
+node scripts/update-tracker-radar.js
+```
+
+This optional developer script downloads upstream Tracker Radar files; it is not
+part of installation or runtime analysis. Dataset metadata is recorded in
+[data/generated/tracker-radar-metadata.json](data/generated/tracker-radar-metadata.json).
+
+## License & Attribution
+
+BrowserGuard source code is distributed under the [MIT License](LICENSE).
+The bundled, transformed DuckDuckGo Tracker Radar dataset has a separate
+**CC BY-NC-SA 4.0** license; the source-code license does not replace its terms.
+See [Third-Party Notices](THIRD_PARTY_NOTICES.md) for attribution, transformation
+details, and upstream license references. DuckDuckGo does not endorse BrowserGuard.
