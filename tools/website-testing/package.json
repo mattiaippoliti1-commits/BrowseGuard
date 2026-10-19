@@ -1,0 +1,14 @@
+{
+  "name": "browserguard-website-testing",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Local Playwright field testing for the unmodified BrowserGuard extension",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "test": "node --test *.test.cjs",
+    "run": "node run.cjs",
+    "report": "node report.cjs",
+    "install-browser": "playwright install chromium"
+  },
+  "dependencies": { "playwright": "1.58.2" }
+}

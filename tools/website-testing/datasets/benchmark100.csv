@@ -1,0 +1,101 @@
+category,categoryLabel,url,name,selectionReason
+news,Informazione e giornali,https://www.bbc.com/,BBC,Broad international newsroom
+news,Informazione e giornali,https://www.reuters.com/,Reuters,International news agency
+news,Informazione e giornali,https://apnews.com/,Associated Press,Public news-agency homepage
+news,Informazione e giornali,https://www.theguardian.com/,The Guardian,Public international newspaper
+news,Informazione e giornali,https://www.nytimes.com/,The New York Times,Public newspaper homepage; no subscriber article
+news,Informazione e giornali,https://www.washingtonpost.com/,The Washington Post,Public newspaper homepage
+news,Informazione e giornali,https://www.cnn.com/,CNN,Public television newsroom
+news,Informazione e giornali,https://www.npr.org/,NPR,Public radio newsroom
+news,Informazione e giornali,https://www.dw.com/,Deutsche Welle,International public broadcaster
+news,Informazione e giornali,https://www.aljazeera.com/,Al Jazeera,International broadcaster
+news,Informazione e giornali,https://www.france24.com/,France 24,International public newsroom
+news,Informazione e giornali,https://www.ansa.it/,ANSA,Italian news agency
+news,Informazione e giornali,https://www.corriere.it/,Corriere della Sera,Italian newspaper homepage
+news,Informazione e giornali,https://www.repubblica.it/,La Repubblica,Italian newspaper homepage
+news,Informazione e giornali,https://www.ilpost.it/,Il Post,Italian digital newspaper
+commerce,E-commerce,https://www.ikea.com/,IKEA,Public home-furnishing catalog homepage
+commerce,E-commerce,https://www.amazon.com/,Amazon,Public general retail homepage
+commerce,E-commerce,https://www.ebay.com/,eBay,Public marketplace homepage
+commerce,E-commerce,https://www.walmart.com/,Walmart,Public retail catalog homepage
+commerce,E-commerce,https://www.target.com/,Target,Public retail homepage
+commerce,E-commerce,https://www.bestbuy.com/,Best Buy,Public electronics retailer
+commerce,E-commerce,https://www.etsy.com/,Etsy,Public independent-seller marketplace
+commerce,E-commerce,https://www.zalando.it/,Zalando,Public apparel storefront
+commerce,E-commerce,https://www.decathlon.it/,Decathlon,Public sporting goods storefront
+commerce,E-commerce,https://www.nike.com/,Nike,Public apparel catalog
+commerce,E-commerce,https://www.adidas.com/,Adidas,Public sportswear catalog
+commerce,E-commerce,https://www.hm.com/,H&M,Public clothing storefront
+commerce,E-commerce,https://www.uniqlo.com/,Uniqlo,Public clothing catalog
+commerce,E-commerce,https://www.leroymerlin.it/,Leroy Merlin,Public home-improvement retailer
+commerce,E-commerce,https://www.carrefour.it/,Carrefour,Public grocery retailer homepage
+software,Tecnologia e software,https://opencv.org/,OpenCV,Public open-source computer vision project
+software,Tecnologia e software,https://www.microsoft.com/,Microsoft,Public software vendor homepage
+software,Tecnologia e software,https://www.apple.com/,Apple,Public device/software vendor homepage
+software,Tecnologia e software,https://www.google.com/,Google,Public search homepage; no submitted queries
+software,Tecnologia e software,https://github.com/,GitHub,Public software collaboration homepage
+software,Tecnologia e software,https://about.gitlab.com/,GitLab,Public software platform information
+software,Tecnologia e software,https://www.docker.com/,Docker,Public container tooling homepage
+software,Tecnologia e software,https://nodejs.org/,Node.js,Public JavaScript runtime project
+software,Tecnologia e software,https://www.python.org/,Python,Public language project homepage
+software,Tecnologia e software,https://www.rust-lang.org/,Rust,Public systems-language project
+software,Tecnologia e software,https://go.dev/,Go,Public language project homepage
+software,Tecnologia e software,https://www.debian.org/,Debian,Public Linux distribution project
+software,Tecnologia e software,https://ubuntu.com/,Ubuntu,Public Linux distribution homepage
+software,Tecnologia e software,https://www.cloudflare.com/,Cloudflare,Public network/software provider homepage
+software,Tecnologia e software,https://www.postgresql.org/,PostgreSQL,Public database project homepage
+education,Università e istruzione,https://www.mit.edu/,MIT,Public university homepage
+education,Università e istruzione,https://www.stanford.edu/,Stanford,Public university homepage
+education,Università e istruzione,https://www.harvard.edu/,Harvard,Public university homepage
+education,Università e istruzione,https://www.berkeley.edu/,UC Berkeley,Public university homepage
+education,Università e istruzione,https://www.ox.ac.uk/,Oxford,Public UK university homepage
+education,Università e istruzione,https://www.cam.ac.uk/,Cambridge,Public UK university homepage
+education,Università e istruzione,https://www.unibo.it/,Università di Bologna,Public Italian university homepage
+education,Università e istruzione,https://www.uniroma1.it/,Sapienza,Public Italian university homepage
+education,Università e istruzione,https://www.edx.org/,edX,Public education platform information
+education,Università e istruzione,https://www.coursera.org/,Coursera,Public course platform homepage; no enrollment
+government,Pubblica amministrazione,https://www.gov.uk/,GOV.UK,Public UK government portal
+government,Pubblica amministrazione,https://www.usa.gov/,USA.gov,Public US government portal
+government,Pubblica amministrazione,https://europa.eu/,European Union,Public EU portal
+government,Pubblica amministrazione,https://www.governo.it/,Governo italiano,Public Italian government portal
+government,Pubblica amministrazione,https://www.agid.gov.it/,AgID,Public digital-government agency
+government,Pubblica amministrazione,https://www.inps.it/,INPS,Public social-security information; no account access
+government,Pubblica amministrazione,https://www.inail.it/,INAIL,Public national insurance information
+government,Pubblica amministrazione,https://www.comune.roma.it/,Roma Capitale,Public municipality portal
+government,Pubblica amministrazione,https://www.esteri.it/,MAECI,Public foreign affairs ministry
+government,Pubblica amministrazione,https://www.whitehouse.gov/,The White House,Public US executive branch website
+finance,Banche e servizi finanziari,https://www.hsbc.com/,HSBC,Public corporate bank information; no online banking
+finance,Banche e servizi finanziari,https://www.chase.com/,Chase,Public banking information homepage
+finance,Banche e servizi finanziari,https://www.bankofamerica.com/,Bank of America,Public bank information homepage
+finance,Banche e servizi finanziari,https://www.wellsfargo.com/,Wells Fargo,Public bank information homepage
+finance,Banche e servizi finanziari,https://www.citigroup.com/,Citigroup,Public corporate financial information
+finance,Banche e servizi finanziari,https://home.barclays/,Barclays,Public corporate banking website
+finance,Banche e servizi finanziari,https://www.santander.com/,Santander,Public corporate banking information
+finance,Banche e servizi finanziari,https://www.intesasanpaolo.com/,Intesa Sanpaolo,Public retail bank information; no sign-in
+finance,Banche e servizi finanziari,https://www.unicreditgroup.eu/,UniCredit,Public corporate banking website
+finance,Banche e servizi finanziari,https://wise.com/,Wise,Public financial service information; no transfer
+community,Social network e community,https://stackoverflow.com/,Stack Overflow,Public programming community homepage
+community,Social network e community,https://www.reddit.com/,Reddit,Public community homepage
+community,Social network e community,https://news.ycombinator.com/,Hacker News,Public discussion listing
+community,Social network e community,https://www.quora.com/,Quora,Public community landing page; no sign-in
+community,Social network e community,https://medium.com/,Medium,Public publishing platform homepage
+community,Social network e community,https://dev.to/,DEV Community,Public developer community
+community,Social network e community,https://lobste.rs/,Lobsters,Public technical discussion listing
+community,Social network e community,https://lemmy.world/,Lemmy World,Public federated discussion community
+community,Social network e community,https://mastodon.social/,Mastodon Social,Public federated social landing page
+community,Social network e community,https://www.discourse.org/,Discourse,Public community platform information
+entertainment,Intrattenimento e streaming,https://open.spotify.com/,Spotify,Public music platform landing page; no playback
+entertainment,Intrattenimento e streaming,https://www.youtube.com/,YouTube,Public video platform homepage; no selected video
+entertainment,Intrattenimento e streaming,https://www.netflix.com/,Netflix,Public streaming information; no sign-in or playback
+entertainment,Intrattenimento e streaming,https://vimeo.com/,Vimeo,Public video platform information
+entertainment,Intrattenimento e streaming,https://www.twitch.tv/,Twitch,Public streaming homepage; no interaction
+travel,Viaggi e turismo,https://www.lonelyplanet.com/,Lonely Planet,Public travel information homepage
+travel,Viaggi e turismo,https://www.booking.com/,Booking.com,Public accommodation platform; no booking
+travel,Viaggi e turismo,https://www.expedia.com/,Expedia,Public travel homepage; no search or purchase
+travel,Viaggi e turismo,https://www.tripadvisor.com/,Tripadvisor,Public destination/review homepage
+travel,Viaggi e turismo,https://www.visitbritain.com/,VisitBritain,Public tourism information portal
+reference,Siti tecnici di riferimento,https://www.iana.org/,IANA,Public internet identifier registry
+reference,Siti tecnici di riferimento,https://developer.mozilla.org/,MDN,Public web-platform documentation
+reference,Siti tecnici di riferimento,https://www.ietf.org/,IETF,Public internet standards organization
+reference,Siti tecnici di riferimento,https://www.rfc-editor.org/,RFC Editor,Public internet specification archive
+reference,Siti tecnici di riferimento,https://www.w3schools.com/,W3Schools,Public web-development reference

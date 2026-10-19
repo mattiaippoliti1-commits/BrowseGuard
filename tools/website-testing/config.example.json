@@ -1,0 +1,15 @@
+{
+  "urlsFile": "websites.txt",
+  "output": "runs/poc",
+  "limit": 10,
+  "concurrency": 1,
+  "navigationTimeoutMs": 25000,
+  "analysisTimeoutMs": 15000,
+  "minObserveMs": 3000,
+  "quietMs": 1000,
+  "maxObserveMs": 10000,
+  "delayMs": 2000,
+  "maxRequests": 5000,
+  "headless": true,
+  "recycleEvery": 25
+}

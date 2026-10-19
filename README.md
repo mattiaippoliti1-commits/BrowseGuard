@@ -534,6 +534,11 @@ browserguard/
 
 ## Development & Tests
 
+For real-browser tests across 10, 100, or 1,000 websites, see the separate
+[automated website testing framework](tools/website-testing/README.md). It uses
+isolated Playwright Chromium profiles, captures real extension results, and
+produces local JSON/CSV/HTML reports without changing extension behavior.
+
 Regenerate the self-contained vector diagram with Python 3 (standard library only):
 
 ```bash

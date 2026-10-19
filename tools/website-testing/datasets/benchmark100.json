@@ -1,0 +1,731 @@
+{
+  "name": "BrowserGuard public 100-site benchmark",
+  "preparedDate": "2026-10-19",
+  "selection": "Purposive convenience sample; no claim of statistical representativeness or preverified reachability. Availability is measured only by actual browser visits.",
+  "categoryCounts": {
+    "news": 15,
+    "commerce": 15,
+    "software": 15,
+    "education": 10,
+    "government": 10,
+    "finance": 10,
+    "community": 10,
+    "entertainment": 5,
+    "travel": 5,
+    "reference": 5
+  },
+  "smokeUrls": [
+    "https://www.bbc.com/",
+    "https://www.ikea.com/",
+    "https://opencv.org/",
+    "https://www.mit.edu/",
+    "https://www.gov.uk/",
+    "https://www.hsbc.com/",
+    "https://stackoverflow.com/",
+    "https://open.spotify.com/",
+    "https://www.lonelyplanet.com/",
+    "https://www.iana.org/"
+  ],
+  "sites": [
+    {
+      "category": "news",
+      "categoryLabel": "Informazione e giornali",
+      "url": "https://www.bbc.com/",
+      "name": "BBC",
+      "selectionReason": "Broad international newsroom"
+    },
+    {
+      "category": "news",
+      "categoryLabel": "Informazione e giornali",
+      "url": "https://www.reuters.com/",
+      "name": "Reuters",
+      "selectionReason": "International news agency"
+    },
+    {
+      "category": "news",
+      "categoryLabel": "Informazione e giornali",
+      "url": "https://apnews.com/",
+      "name": "Associated Press",
+      "selectionReason": "Public news-agency homepage"
+    },
+    {
+      "category": "news",
+      "categoryLabel": "Informazione e giornali",
+      "url": "https://www.theguardian.com/",
+      "name": "The Guardian",
+      "selectionReason": "Public international newspaper"
+    },
+    {
+      "category": "news",
+      "categoryLabel": "Informazione e giornali",
+      "url": "https://www.nytimes.com/",
+      "name": "The New York Times",
+      "selectionReason": "Public newspaper homepage; no subscriber article"
+    },
+    {
+      "category": "news",
+      "categoryLabel": "Informazione e giornali",
+      "url": "https://www.washingtonpost.com/",
+      "name": "The Washington Post",
+      "selectionReason": "Public newspaper homepage"
+    },
+    {
+      "category": "news",
+      "categoryLabel": "Informazione e giornali",
+      "url": "https://www.cnn.com/",
+      "name": "CNN",
+      "selectionReason": "Public television newsroom"
+    },
+    {
+      "category": "news",
+      "categoryLabel": "Informazione e giornali",
+      "url": "https://www.npr.org/",
+      "name": "NPR",
+      "selectionReason": "Public radio newsroom"
+    },
+    {
+      "category": "news",
+      "categoryLabel": "Informazione e giornali",
+      "url": "https://www.dw.com/",
+      "name": "Deutsche Welle",
+      "selectionReason": "International public broadcaster"
+    },
+    {
+      "category": "news",
+      "categoryLabel": "Informazione e giornali",
+      "url": "https://www.aljazeera.com/",
+      "name": "Al Jazeera",
+      "selectionReason": "International broadcaster"
+    },
+    {
+      "category": "news",
+      "categoryLabel": "Informazione e giornali",
+      "url": "https://www.france24.com/",
+      "name": "France 24",
+      "selectionReason": "International public newsroom"
+    },
+    {
+      "category": "news",
+      "categoryLabel": "Informazione e giornali",
+      "url": "https://www.ansa.it/",
+      "name": "ANSA",
+      "selectionReason": "Italian news agency"
+    },
+    {
+      "category": "news",
+      "categoryLabel": "Informazione e giornali",
+      "url": "https://www.corriere.it/",
+      "name": "Corriere della Sera",
+      "selectionReason": "Italian newspaper homepage"
+    },
+    {
+      "category": "news",
+      "categoryLabel": "Informazione e giornali",
+      "url": "https://www.repubblica.it/",
+      "name": "La Repubblica",
+      "selectionReason": "Italian newspaper homepage"
+    },
+    {
+      "category": "news",
+      "categoryLabel": "Informazione e giornali",
+      "url": "https://www.ilpost.it/",
+      "name": "Il Post",
+      "selectionReason": "Italian digital newspaper"
+    },
+    {
+      "category": "commerce",
+      "categoryLabel": "E-commerce",
+      "url": "https://www.ikea.com/",
+      "name": "IKEA",
+      "selectionReason": "Public home-furnishing catalog homepage"
+    },
+    {
+      "category": "commerce",
+      "categoryLabel": "E-commerce",
+      "url": "https://www.amazon.com/",
+      "name": "Amazon",
+      "selectionReason": "Public general retail homepage"
+    },
+    {
+      "category": "commerce",
+      "categoryLabel": "E-commerce",
+      "url": "https://www.ebay.com/",
+      "name": "eBay",
+      "selectionReason": "Public marketplace homepage"
+    },
+    {
+      "category": "commerce",
+      "categoryLabel": "E-commerce",
+      "url": "https://www.walmart.com/",
+      "name": "Walmart",
+      "selectionReason": "Public retail catalog homepage"
+    },
+    {
+      "category": "commerce",
+      "categoryLabel": "E-commerce",
+      "url": "https://www.target.com/",
+      "name": "Target",
+      "selectionReason": "Public retail homepage"
+    },
+    {
+      "category": "commerce",
+      "categoryLabel": "E-commerce",
+      "url": "https://www.bestbuy.com/",
+      "name": "Best Buy",
+      "selectionReason": "Public electronics retailer"
+    },
+    {
+      "category": "commerce",
+      "categoryLabel": "E-commerce",
+      "url": "https://www.etsy.com/",
+      "name": "Etsy",
+      "selectionReason": "Public independent-seller marketplace"
+    },
+    {
+      "category": "commerce",
+      "categoryLabel": "E-commerce",
+      "url": "https://www.zalando.it/",
+      "name": "Zalando",
+      "selectionReason": "Public apparel storefront"
+    },
+    {
+      "category": "commerce",
+      "categoryLabel": "E-commerce",
+      "url": "https://www.decathlon.it/",
+      "name": "Decathlon",
+      "selectionReason": "Public sporting goods storefront"
+    },
+    {
+      "category": "commerce",
+      "categoryLabel": "E-commerce",
+      "url": "https://www.nike.com/",
+      "name": "Nike",
+      "selectionReason": "Public apparel catalog"
+    },
+    {
+      "category": "commerce",
+      "categoryLabel": "E-commerce",
+      "url": "https://www.adidas.com/",
+      "name": "Adidas",
+      "selectionReason": "Public sportswear catalog"
+    },
+    {
+      "category": "commerce",
+      "categoryLabel": "E-commerce",
+      "url": "https://www.hm.com/",
+      "name": "H&M",
+      "selectionReason": "Public clothing storefront"
+    },
+    {
+      "category": "commerce",
+      "categoryLabel": "E-commerce",
+      "url": "https://www.uniqlo.com/",
+      "name": "Uniqlo",
+      "selectionReason": "Public clothing catalog"
+    },
+    {
+      "category": "commerce",
+      "categoryLabel": "E-commerce",
+      "url": "https://www.leroymerlin.it/",
+      "name": "Leroy Merlin",
+      "selectionReason": "Public home-improvement retailer"
+    },
+    {
+      "category": "commerce",
+      "categoryLabel": "E-commerce",
+      "url": "https://www.carrefour.it/",
+      "name": "Carrefour",
+      "selectionReason": "Public grocery retailer homepage"
+    },
+    {
+      "category": "software",
+      "categoryLabel": "Tecnologia e software",
+      "url": "https://opencv.org/",
+      "name": "OpenCV",
+      "selectionReason": "Public open-source computer vision project"
+    },
+    {
+      "category": "software",
+      "categoryLabel": "Tecnologia e software",
+      "url": "https://www.microsoft.com/",
+      "name": "Microsoft",
+      "selectionReason": "Public software vendor homepage"
+    },
+    {
+      "category": "software",
+      "categoryLabel": "Tecnologia e software",
+      "url": "https://www.apple.com/",
+      "name": "Apple",
+      "selectionReason": "Public device/software vendor homepage"
+    },
+    {
+      "category": "software",
+      "categoryLabel": "Tecnologia e software",
+      "url": "https://www.google.com/",
+      "name": "Google",
+      "selectionReason": "Public search homepage; no submitted queries"
+    },
+    {
+      "category": "software",
+      "categoryLabel": "Tecnologia e software",
+      "url": "https://github.com/",
+      "name": "GitHub",
+      "selectionReason": "Public software collaboration homepage"
+    },
+    {
+      "category": "software",
+      "categoryLabel": "Tecnologia e software",
+      "url": "https://about.gitlab.com/",
+      "name": "GitLab",
+      "selectionReason": "Public software platform information"
+    },
+    {
+      "category": "software",
+      "categoryLabel": "Tecnologia e software",
+      "url": "https://www.docker.com/",
+      "name": "Docker",
+      "selectionReason": "Public container tooling homepage"
+    },
+    {
+      "category": "software",
+      "categoryLabel": "Tecnologia e software",
+      "url": "https://nodejs.org/",
+      "name": "Node.js",
+      "selectionReason": "Public JavaScript runtime project"
+    },
+    {
+      "category": "software",
+      "categoryLabel": "Tecnologia e software",
+      "url": "https://www.python.org/",
+      "name": "Python",
+      "selectionReason": "Public language project homepage"
+    },
+    {
+      "category": "software",
+      "categoryLabel": "Tecnologia e software",
+      "url": "https://www.rust-lang.org/",
+      "name": "Rust",
+      "selectionReason": "Public systems-language project"
+    },
+    {
+      "category": "software",
+      "categoryLabel": "Tecnologia e software",
+      "url": "https://go.dev/",
+      "name": "Go",
+      "selectionReason": "Public language project homepage"
+    },
+    {
+      "category": "software",
+      "categoryLabel": "Tecnologia e software",
+      "url": "https://www.debian.org/",
+      "name": "Debian",
+      "selectionReason": "Public Linux distribution project"
+    },
+    {
+      "category": "software",
+      "categoryLabel": "Tecnologia e software",
+      "url": "https://ubuntu.com/",
+      "name": "Ubuntu",
+      "selectionReason": "Public Linux distribution homepage"
+    },
+    {
+      "category": "software",
+      "categoryLabel": "Tecnologia e software",
+      "url": "https://www.cloudflare.com/",
+      "name": "Cloudflare",
+      "selectionReason": "Public network/software provider homepage"
+    },
+    {
+      "category": "software",
+      "categoryLabel": "Tecnologia e software",
+      "url": "https://www.postgresql.org/",
+      "name": "PostgreSQL",
+      "selectionReason": "Public database project homepage"
+    },
+    {
+      "category": "education",
+      "categoryLabel": "Università e istruzione",
+      "url": "https://www.mit.edu/",
+      "name": "MIT",
+      "selectionReason": "Public university homepage"
+    },
+    {
+      "category": "education",
+      "categoryLabel": "Università e istruzione",
+      "url": "https://www.stanford.edu/",
+      "name": "Stanford",
+      "selectionReason": "Public university homepage"
+    },
+    {
+      "category": "education",
+      "categoryLabel": "Università e istruzione",
+      "url": "https://www.harvard.edu/",
+      "name": "Harvard",
+      "selectionReason": "Public university homepage"
+    },
+    {
+      "category": "education",
+      "categoryLabel": "Università e istruzione",
+      "url": "https://www.berkeley.edu/",
+      "name": "UC Berkeley",
+      "selectionReason": "Public university homepage"
+    },
+    {
+      "category": "education",
+      "categoryLabel": "Università e istruzione",
+      "url": "https://www.ox.ac.uk/",
+      "name": "Oxford",
+      "selectionReason": "Public UK university homepage"
+    },
+    {
+      "category": "education",
+      "categoryLabel": "Università e istruzione",
+      "url": "https://www.cam.ac.uk/",
+      "name": "Cambridge",
+      "selectionReason": "Public UK university homepage"
+    },
+    {
+      "category": "education",
+      "categoryLabel": "Università e istruzione",
+      "url": "https://www.unibo.it/",
+      "name": "Università di Bologna",
+      "selectionReason": "Public Italian university homepage"
+    },
+    {
+      "category": "education",
+      "categoryLabel": "Università e istruzione",
+      "url": "https://www.uniroma1.it/",
+      "name": "Sapienza",
+      "selectionReason": "Public Italian university homepage"
+    },
+    {
+      "category": "education",
+      "categoryLabel": "Università e istruzione",
+      "url": "https://www.edx.org/",
+      "name": "edX",
+      "selectionReason": "Public education platform information"
+    },
+    {
+      "category": "education",
+      "categoryLabel": "Università e istruzione",
+      "url": "https://www.coursera.org/",
+      "name": "Coursera",
+      "selectionReason": "Public course platform homepage; no enrollment"
+    },
+    {
+      "category": "government",
+      "categoryLabel": "Pubblica amministrazione",
+      "url": "https://www.gov.uk/",
+      "name": "GOV.UK",
+      "selectionReason": "Public UK government portal"
+    },
+    {
+      "category": "government",
+      "categoryLabel": "Pubblica amministrazione",
+      "url": "https://www.usa.gov/",
+      "name": "USA.gov",
+      "selectionReason": "Public US government portal"
+    },
+    {
+      "category": "government",
+      "categoryLabel": "Pubblica amministrazione",
+      "url": "https://europa.eu/",
+      "name": "European Union",
+      "selectionReason": "Public EU portal"
+    },
+    {
+      "category": "government",
+      "categoryLabel": "Pubblica amministrazione",
+      "url": "https://www.governo.it/",
+      "name": "Governo italiano",
+      "selectionReason": "Public Italian government portal"
+    },
+    {
+      "category": "government",
+      "categoryLabel": "Pubblica amministrazione",
+      "url": "https://www.agid.gov.it/",
+      "name": "AgID",
+      "selectionReason": "Public digital-government agency"
+    },
+    {
+      "category": "government",
+      "categoryLabel": "Pubblica amministrazione",
+      "url": "https://www.inps.it/",
+      "name": "INPS",
+      "selectionReason": "Public social-security information; no account access"
+    },
+    {
+      "category": "government",
+      "categoryLabel": "Pubblica amministrazione",
+      "url": "https://www.inail.it/",
+      "name": "INAIL",
+      "selectionReason": "Public national insurance information"
+    },
+    {
+      "category": "government",
+      "categoryLabel": "Pubblica amministrazione",
+      "url": "https://www.comune.roma.it/",
+      "name": "Roma Capitale",
+      "selectionReason": "Public municipality portal"
+    },
+    {
+      "category": "government",
+      "categoryLabel": "Pubblica amministrazione",
+      "url": "https://www.esteri.it/",
+      "name": "MAECI",
+      "selectionReason": "Public foreign affairs ministry"
+    },
+    {
+      "category": "government",
+      "categoryLabel": "Pubblica amministrazione",
+      "url": "https://www.whitehouse.gov/",
+      "name": "The White House",
+      "selectionReason": "Public US executive branch website"
+    },
+    {
+      "category": "finance",
+      "categoryLabel": "Banche e servizi finanziari",
+      "url": "https://www.hsbc.com/",
+      "name": "HSBC",
+      "selectionReason": "Public corporate bank information; no online banking"
+    },
+    {
+      "category": "finance",
+      "categoryLabel": "Banche e servizi finanziari",
+      "url": "https://www.chase.com/",
+      "name": "Chase",
+      "selectionReason": "Public banking information homepage"
+    },
+    {
+      "category": "finance",
+      "categoryLabel": "Banche e servizi finanziari",
+      "url": "https://www.bankofamerica.com/",
+      "name": "Bank of America",
+      "selectionReason": "Public bank information homepage"
+    },
+    {
+      "category": "finance",
+      "categoryLabel": "Banche e servizi finanziari",
+      "url": "https://www.wellsfargo.com/",
+      "name": "Wells Fargo",
+      "selectionReason": "Public bank information homepage"
+    },
+    {
+      "category": "finance",
+      "categoryLabel": "Banche e servizi finanziari",
+      "url": "https://www.citigroup.com/",
+      "name": "Citigroup",
+      "selectionReason": "Public corporate financial information"
+    },
+    {
+      "category": "finance",
+      "categoryLabel": "Banche e servizi finanziari",
+      "url": "https://home.barclays/",
+      "name": "Barclays",
+      "selectionReason": "Public corporate banking website"
+    },
+    {
+      "category": "finance",
+      "categoryLabel": "Banche e servizi finanziari",
+      "url": "https://www.santander.com/",
+      "name": "Santander",
+      "selectionReason": "Public corporate banking information"
+    },
+    {
+      "category": "finance",
+      "categoryLabel": "Banche e servizi finanziari",
+      "url": "https://www.intesasanpaolo.com/",
+      "name": "Intesa Sanpaolo",
+      "selectionReason": "Public retail bank information; no sign-in"
+    },
+    {
+      "category": "finance",
+      "categoryLabel": "Banche e servizi finanziari",
+      "url": "https://www.unicreditgroup.eu/",
+      "name": "UniCredit",
+      "selectionReason": "Public corporate banking website"
+    },
+    {
+      "category": "finance",
+      "categoryLabel": "Banche e servizi finanziari",
+      "url": "https://wise.com/",
+      "name": "Wise",
+      "selectionReason": "Public financial service information; no transfer"
+    },
+    {
+      "category": "community",
+      "categoryLabel": "Social network e community",
+      "url": "https://stackoverflow.com/",
+      "name": "Stack Overflow",
+      "selectionReason": "Public programming community homepage"
+    },
+    {
+      "category": "community",
+      "categoryLabel": "Social network e community",
+      "url": "https://www.reddit.com/",
+      "name": "Reddit",
+      "selectionReason": "Public community homepage"
+    },
+    {
+      "category": "community",
+      "categoryLabel": "Social network e community",
+      "url": "https://news.ycombinator.com/",
+      "name": "Hacker News",
+      "selectionReason": "Public discussion listing"
+    },
+    {
+      "category": "community",
+      "categoryLabel": "Social network e community",
+      "url": "https://www.quora.com/",
+      "name": "Quora",
+      "selectionReason": "Public community landing page; no sign-in"
+    },
+    {
+      "category": "community",
+      "categoryLabel": "Social network e community",
+      "url": "https://medium.com/",
+      "name": "Medium",
+      "selectionReason": "Public publishing platform homepage"
+    },
+    {
+      "category": "community",
+      "categoryLabel": "Social network e community",
+      "url": "https://dev.to/",
+      "name": "DEV Community",
+      "selectionReason": "Public developer community"
+    },
+    {
+      "category": "community",
+      "categoryLabel": "Social network e community",
+      "url": "https://lobste.rs/",
+      "name": "Lobsters",
+      "selectionReason": "Public technical discussion listing"
+    },
+    {
+      "category": "community",
+      "categoryLabel": "Social network e community",
+      "url": "https://lemmy.world/",
+      "name": "Lemmy World",
+      "selectionReason": "Public federated discussion community"
+    },
+    {
+      "category": "community",
+      "categoryLabel": "Social network e community",
+      "url": "https://mastodon.social/",
+      "name": "Mastodon Social",
+      "selectionReason": "Public federated social landing page"
+    },
+    {
+      "category": "community",
+      "categoryLabel": "Social network e community",
+      "url": "https://www.discourse.org/",
+      "name": "Discourse",
+      "selectionReason": "Public community platform information"
+    },
+    {
+      "category": "entertainment",
+      "categoryLabel": "Intrattenimento e streaming",
+      "url": "https://open.spotify.com/",
+      "name": "Spotify",
+      "selectionReason": "Public music platform landing page; no playback"
+    },
+    {
+      "category": "entertainment",
+      "categoryLabel": "Intrattenimento e streaming",
+      "url": "https://www.youtube.com/",
+      "name": "YouTube",
+      "selectionReason": "Public video platform homepage; no selected video"
+    },
+    {
+      "category": "entertainment",
+      "categoryLabel": "Intrattenimento e streaming",
+      "url": "https://www.netflix.com/",
+      "name": "Netflix",
+      "selectionReason": "Public streaming information; no sign-in or playback"
+    },
+    {
+      "category": "entertainment",
+      "categoryLabel": "Intrattenimento e streaming",
+      "url": "https://vimeo.com/",
+      "name": "Vimeo",
+      "selectionReason": "Public video platform information"
+    },
+    {
+      "category": "entertainment",
+      "categoryLabel": "Intrattenimento e streaming",
+      "url": "https://www.twitch.tv/",
+      "name": "Twitch",
+      "selectionReason": "Public streaming homepage; no interaction"
+    },
+    {
+      "category": "travel",
+      "categoryLabel": "Viaggi e turismo",
+      "url": "https://www.lonelyplanet.com/",
+      "name": "Lonely Planet",
+      "selectionReason": "Public travel information homepage"
+    },
+    {
+      "category": "travel",
+      "categoryLabel": "Viaggi e turismo",
+      "url": "https://www.booking.com/",
+      "name": "Booking.com",
+      "selectionReason": "Public accommodation platform; no booking"
+    },
+    {
+      "category": "travel",
+      "categoryLabel": "Viaggi e turismo",
+      "url": "https://www.expedia.com/",
+      "name": "Expedia",
+      "selectionReason": "Public travel homepage; no search or purchase"
+    },
+    {
+      "category": "travel",
+      "categoryLabel": "Viaggi e turismo",
+      "url": "https://www.tripadvisor.com/",
+      "name": "Tripadvisor",
+      "selectionReason": "Public destination/review homepage"
+    },
+    {
+      "category": "travel",
+      "categoryLabel": "Viaggi e turismo",
+      "url": "https://www.visitbritain.com/",
+      "name": "VisitBritain",
+      "selectionReason": "Public tourism information portal"
+    },
+    {
+      "category": "reference",
+      "categoryLabel": "Siti tecnici di riferimento",
+      "url": "https://www.iana.org/",
+      "name": "IANA",
+      "selectionReason": "Public internet identifier registry"
+    },
+    {
+      "category": "reference",
+      "categoryLabel": "Siti tecnici di riferimento",
+      "url": "https://developer.mozilla.org/",
+      "name": "MDN",
+      "selectionReason": "Public web-platform documentation"
+    },
+    {
+      "category": "reference",
+      "categoryLabel": "Siti tecnici di riferimento",
+      "url": "https://www.ietf.org/",
+      "name": "IETF",
+      "selectionReason": "Public internet standards organization"
+    },
+    {
+      "category": "reference",
+      "categoryLabel": "Siti tecnici di riferimento",
+      "url": "https://www.rfc-editor.org/",
+      "name": "RFC Editor",
+      "selectionReason": "Public internet specification archive"
+    },
+    {
+      "category": "reference",
+      "categoryLabel": "Siti tecnici di riferimento",
+      "url": "https://www.w3schools.com/",
+      "name": "W3Schools",
+      "selectionReason": "Public web-development reference"
+    }
+  ]
+}
