@@ -65,3 +65,8 @@ assert.doesNotMatch(
 );
 
 console.log("Popup UI tests passed");
+
+assert.doesNotMatch(popupHtml, /class="summary-panel"|id="summary-title"/,
+    "The generic overall banner must remain removed");
+assert.match(popupCss, /grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/,
+    "Assessments must retain three compact columns");

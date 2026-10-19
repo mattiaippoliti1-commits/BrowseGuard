@@ -1,0 +1,38 @@
+Assessment engine tests passed
+✔ tests/assessment-engine.test.js (90.750291ms)
+Background network/tracker tests passed
+✔ tests/background-network.test.js (172.455542ms)
+Background runtime privacy tests passed
+✔ tests/background-runtime.test.js (157.980625ms)
+Background web security tests passed
+✔ tests/background-web-security.test.js (165.036625ms)
+Entity resolver tests passed
+✔ tests/entity-resolver.test.js (142.384584ms)
+Manifest path tests passed
+✔ tests/manifest-paths.test.js (67.870917ms)
+Page analysis iframe tests passed
+✔ tests/page-analysis-iframe.test.js (65.368208ms)
+Page analysis link tests passed
+✔ tests/page-analysis-links.test.js (67.139542ms)
+Popup asset tests passed
+✔ tests/popup-assets.test.js (68.990667ms)
+Popup freshness/accessibility tests passed
+✔ tests/popup-freshness-accessibility.test.js (57.501ms)
+Popup UI tests passed
+✔ tests/popup-ui.test.js (48.558917ms)
+Runtime monitor wrapper tests passed
+✔ tests/runtime-monitor.test.js (46.117ms)
+Snapshot availability tests passed
+✔ tests/snapshot-availability.test.js (87.850417ms)
+Tracker matcher tests passed
+✔ tests/tracker-matcher.test.js (70.052584ms)
+Web security analyzer tests passed
+✔ tests/web-security-analyzer.test.js (42.234208ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 250.198125

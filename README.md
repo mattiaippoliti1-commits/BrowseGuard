@@ -138,7 +138,7 @@ Unknown is conservative: missing entity data is not treated as external and is
 not treated as trusted. Same-entity does not imply safe or privacy-preserving.
 Third-party does not imply tracker or malicious.
 
-The Network Assessment uses external plus unknown third-party activity for
+The Network Assessment uses confirmed external third-party activity for
 escalation, while the raw UI counters still show all cross-origin requests.
 Tracking evidence remains independent: a same-entity third-party can still be
 tracking-associated if it appears in Tracker Radar.
@@ -258,8 +258,7 @@ vulnerability.
 The Assessment Engine is implemented in
 `modules/assessment/assessment-engine.js`. It is a deterministic, UI-independent
 module with no DOM or Chrome API dependency. The popup passes the snapshots that
-BrowserGuard already collects and renders the returned summaries in a temporary
-Assessment card.
+BrowserGuard already collects and renders separate Security, Privacy, and Network assessment cards.
 
 Input snapshot:
 
@@ -275,7 +274,8 @@ Output shape:
 - `dataStatus`: `complete` or `partial`.
 - `missingSources`: ordered list of unavailable input sources.
 - `security`, `privacy`, `network`: independent dimension objects with
-  `level`, `summary`, `reasons`, and `positiveSignals`.
+  `level`, `summary`, `reasons`, `positiveSignals`, `contributingFindings`,
+  `informationalObservations`, and `uncertainties`.
 
 BrowserGuard intentionally does not calculate a global numeric score. The three
 dimensions are separate so that security hardening, privacy-related activity,
@@ -287,15 +287,15 @@ Security levels:
 - `observations`
 - `attention`
 
-Security combines strong, moderate, and weak observations. Strong observations
-such as an HTTP main page, mixed content, or insecure password forms produce
-`attention`. Two moderate observations also produce `attention`. Weak
-observations produce at most `observations`, even when multiple weak hardening
-observations are present. Hidden iframes and third-party iframes without sandbox
-are kept as informational evidence and do not affect escalation. When CSP is
-completely absent and no `X-Frame-Options` header is observed, anti-framing
-absence is kept as informational evidence instead of adding a second weak signal
-for escalation.
+Security displays Low (`no-major-issues`), Moderate (`observations`), or High
+(`attention`). HTTP main pages, HTTP password-form targets, and active mixed
+content request attempts produce High. Other mixed content attempts, HTTP iframe
+markup, external password-form targets, and explicitly suspicious link mismatches
+produce Moderate. Moderate findings do not accumulate into High. Missing or
+permissive hardening headers, broad URL heuristics, ordinary mismatched links,
+hidden iframes, and unsandboxed third-party iframes are informational observations.
+They remain visible and do not escalate the level. A request attempt does not
+confirm successful insecure loading or execution.
 
 Privacy levels:
 
@@ -308,17 +308,15 @@ Tracking-associated domain activity becomes moderate at 2 matched domains or
 requests when at least 2 matched domains are involved. Tracker Radar categories
 such as Analytics, Advertising, and Social are descriptive evidence only; they
 are not weighted.
-Runtime privacy activity is considered multiple when at least 3 monitored
-categories are observed. WebGL hardware information alone does not create a
-significant escalation, but WebGL hardware information combined with Canvas or
-Device Information is treated as combined fingerprinting-related indicators.
-Weak device/screen observations alone, such as `navigator.userAgent`,
-`navigator.maxTouchPoints`, `screen.width`, `screen.height`, and
-`screen.colorDepth`, remain visible evidence but are not treated the same as
-stronger fingerprinting indicators. They do not combine with one
-tracking-associated domain to produce Moderate privacy activity.
-Moderate tracker activity combined with multiple runtime categories is treated
-as elevated privacy-related activity.
+Runtime privacy activity is considered correlated when at least two specific
+sensitive surfaces co-occur: Canvas readback/export, unmasked WebGL hardware
+queries, or OfflineAudioContext construction. Navigator/Screen access, generic
+WebGL parameters, and ordinary AudioContext construction remain informational.
+A single sensitive surface also remains informational. Co-occurrence does not
+establish a common script or prove fingerprinting. Moderate tracker-associated
+activity combined with correlated sensitive surfaces produces High Privacy.
+A domain match associates requests with the dataset domain, without proving
+that individual requests performed tracking. Dataset categories remain descriptive.
 
 Network levels:
 
@@ -326,23 +324,25 @@ Network levels:
 - `moderate-third-party-activity`
 - `high-third-party-activity`
 
-External third-party exposure becomes moderate at a 25% external/unknown
-third-party request ratio, 5 external/unknown third-party domains, or 20
-external/unknown third-party requests. It becomes high at a 50%
-external/unknown third-party request ratio only when at least 10 such requests
-were observed. It also becomes high at 15 external/unknown third-party domains
-when either at least 15 external/unknown third-party requests or at least 30
-total requests were observed, or at 75 external/unknown third-party requests
-when the ratio is also at least 25%.
+Only confirmed external attribution contributes to the Network level. Unknown
+attribution remains visible as uncertainty; it is neither confirmed external nor
+first-party. Moderate requires a ratio of at least 25% and at least 5 external
+requests, at least 5 external domains and 5 external requests, or at least 20
+external requests with a ratio of at least 10%. High retains the previous
+thresholds: at least 50% and 10 external requests; at least 15 external domains
+with 15 external requests or 30 total requests; or at least 75 external requests
+with a ratio of at least 25%. These are exposure thresholds, not maliciousness
+thresholds. See [the calibration report](ASSESSMENT_CALIBRATION.md) for the
+before/after rule table, historical fixture results, sensitivity changes, and limits.
 
 `high-third-party-activity` means elevated external third-party exposure. It
 does not mean high security risk, a dangerous website, or an unsafe website.
 
 Mismatched visible links are reported when visible link text looks like a URL or
 domain but points to a different hostname. One isolated mismatch is not treated
-as evidence of phishing. Multiple mismatches, proportionally significant
-mismatches, or an explicit URL displayed to the user that points to a different
-external host can produce a Security observation.
+as evidence of phishing. Multiple or proportionally significant mismatches remain
+informational. A mismatch explicitly classified as suspicious by the collector
+(displayed URL pointing to a different external host) produces Moderate Security.
 
 The engine avoids double counting by keeping related URL heuristics in one
 reason, keeping tracker classification in Privacy, and keeping third-party
@@ -464,3 +464,46 @@ node --check modules/security/web-security-analyzer.js
 node --check modules/assessment/assessment-engine.js
 python3 -m json.tool manifest.json
 ```
+
+
+### Popup overview and accessibility
+
+The redesigned 432 px popup presents separate Security, Privacy, and Network
+levels, followed by total requests, tracking-associated domains, and confirmed
+external requests. Cards show Low / Moderate / High, or a neutral dash for an
+unavailable assessment. Click a card to toggle its compact explanation; only one
+explanation is open at a time. There is no global safety verdict or numeric score.
+
+Technical Details has Overview, Security, Privacy, and Network tabs. Overview
+retains the combined findings, positive signals, and URL/page metrics. Individual
+tabs expose the category findings and all existing header, API, domain, request,
+and resource-type details. Supporting evidence is rendered as nested labeled rows
+inside disclosures, rather than raw JSON.
+
+The assessment engine, collectors, entity resolver and tracker matcher are
+unchanged by the redesign. A narrowly scoped presentation rule in
+`popup/presentation.js` prevents a Low Network result from implying complete
+coverage when ownership is unresolved for at least 5 cross-origin requests and
+more than half of cross-origin traffic. Network then displays a dash and explains
+the limitation. Confirmed Moderate or High exposure remains visible as a lower
+bound. A quick external count of zero also becomes a dash whenever any unknown
+ownership remains; positive confirmed counts remain visible. Raw counters stay
+available in the Network tab. See [the redesign report](POPUP_REDESIGN_V2.md) for
+criteria, examples, reversibility, and limitations.
+
+The existing help, skippable onboarding, local completion preference
+(`browserguard.onboarding.v1`), theme preference (`appearanceTheme`), glossary,
+and reduced-motion behavior are retained. Cards use native buttons and explicit
+accessible status labels; tabs support Arrow Left/Right, Home/End and a single
+Tab stop. Full hostnames remain available through text and a hover title while
+the visible hostname truncates with an ellipsis. No dependencies, remote fonts,
+external services, telemetry, permissions or storage keys were added.
+
+Run `node --test tests/*.test.js` for all Node checks. Run
+`node scripts/check-popup-layout.js` for the Chrome rendering/interaction check;
+set `BROWSERGUARD_CHROME` to a local Chrome/Chromium executable if needed. The
+browser check mocks Chrome APIs and runs the actual popup initialization and DOM
+listeners, exercises all five required status combinations at 400, 432 and 440 px
+in light/dark themes, and saves screenshots and DOM reports to a temporary folder.
+A loaded-extension manual check is still needed for live MV3 messaging, real
+assistive technology and touch behavior.

@@ -1,0 +1,115 @@
+{
+  "urlAnalysis": {
+    "protocol": "https",
+    "hostname": "www.governo.it",
+    "urlLength": 26,
+    "subdomainCount": 0,
+    "isIPAddress": false,
+    "hasPunycode": false,
+    "usesHTTPS": true,
+    "isLongURL": false,
+    "hasManySubdomains": false,
+    "hasAtSymbol": false,
+    "hasURLEncoding": false
+  },
+  "pageAnalysis": {
+    "externalForms": 0,
+    "externalPasswordForms": 0,
+    "insecurePasswordForms": 0,
+    "hiddenIframeCount": 0,
+    "thirdPartyUnsandboxedIframeCount": 0,
+    "httpsPageHttpIframeCount": 0,
+    "passwordFieldCount": 0
+  },
+  "networkActivity": {
+    "totalRequests": 71,
+    "thirdPartyRequests": 10,
+    "thirdPartyDomainCount": 4,
+    "trackerRequests": 7,
+    "trackerDomainCount": 1,
+    "trackerDomains": [
+      {
+        "category": "Advertising",
+        "requestCount": 7
+      }
+    ],
+    "firstPartyRequests": 61,
+    "externalThirdPartyRequests": 0,
+    "externalThirdPartyDomainCount": 0,
+    "sameEntityThirdPartyRequests": 0,
+    "sameEntityThirdPartyDomainCount": 0,
+    "unknownThirdPartyRequests": 10,
+    "unknownThirdPartyDomainCount": 4,
+    "assessmentThirdPartyRequests": 10,
+    "assessmentThirdPartyDomainCount": 4
+  },
+  "runtimePrivacy": {
+    "categories": {
+      "canvas": {
+        "detected": false,
+        "eventCount": 0,
+        "apis": [],
+        "details": []
+      },
+      "webgl": {
+        "detected": false,
+        "eventCount": 0,
+        "apis": [],
+        "details": []
+      },
+      "audio": {
+        "detected": false,
+        "eventCount": 0,
+        "apis": [],
+        "details": []
+      },
+      "navigator": {
+        "detected": true,
+        "eventCount": 3,
+        "apis": [],
+        "details": []
+      },
+      "screen": {
+        "detected": true,
+        "eventCount": 2,
+        "apis": [],
+        "details": []
+      }
+    }
+  },
+  "webSecurity": {
+    "https": {
+      "enabled": true
+    },
+    "headers": {
+      "csp": {
+        "present": false,
+        "reportOnly": false,
+        "status": "Missing",
+        "observations": [],
+        "frameAncestors": "'self'"
+      },
+      "hsts": {
+        "present": false,
+        "status": "Missing",
+        "maxAge": 31536000,
+        "includeSubDomains": true,
+        "preload": false,
+        "observations": []
+      },
+      "contentTypeOptions": {
+        "present": true,
+        "status": "nosniff",
+        "value": "nosniff"
+      },
+      "antiFraming": {
+        "status": "Observed",
+        "observed": true
+      }
+    },
+    "mixedContent": {
+      "requestCount": 0,
+      "types": {}
+    }
+  }
+}

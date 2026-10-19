@@ -154,7 +154,7 @@ snapshot.webSecurity.headers.hsts.status = "Missing";
 snapshot.webSecurity.headers.antiFraming.status =
     "No explicit anti-framing policy detected";
 assessment = assessBrowserState(snapshot);
-assert.strictEqual(assessment.security.level, "observations");
+assert.strictEqual(assessment.security.level, "no-major-issues");
 assert.strictEqual(
     assessment.security.reasons.find(function (reason) {
         return reason.id === "anti-framing-missing";
@@ -189,7 +189,7 @@ assert.strictEqual(assessment.security.level, "attention");
 snapshot = completeCleanSnapshot();
 snapshot.urlAnalysis.isLongURL = true;
 assessment = assessBrowserState(snapshot);
-assert.strictEqual(assessment.security.level, "observations");
+assert.strictEqual(assessment.security.level, "no-major-issues");
 
 snapshot = completeCleanSnapshot();
 snapshot.urlAnalysis.isLongURL = true;
@@ -202,7 +202,7 @@ snapshot.webSecurity.headers.antiFraming.status =
     "No explicit anti-framing policy detected";
 snapshot.webSecurity.headers.contentTypeOptions.status = "missing";
 assessment = assessBrowserState(snapshot);
-assert.strictEqual(assessment.security.level, "observations");
+assert.strictEqual(assessment.security.level, "no-major-issues");
 
 snapshot = completeCleanSnapshot();
 snapshot.webSecurity.headers.csp.present = false;
@@ -213,7 +213,7 @@ snapshot.webSecurity.headers.contentTypeOptions.status = "missing";
 snapshot.webSecurity.headers.antiFraming.status = "No independent policy";
 snapshot.urlAnalysis.isLongURL = true;
 assessment = assessBrowserState(snapshot);
-assert.strictEqual(assessment.security.level, "observations");
+assert.strictEqual(assessment.security.level, "no-major-issues");
 
 snapshot = completeCleanSnapshot();
 snapshot.pageAnalysis.hiddenIframeCount = 1;
@@ -253,7 +253,7 @@ snapshot = completeCleanSnapshot();
 snapshot.pageAnalysis.externalPasswordForms = 1;
 snapshot.pageAnalysis.httpsPageHttpIframeCount = 1;
 assessment = assessBrowserState(snapshot);
-assert.strictEqual(assessment.security.level, "attention");
+assert.strictEqual(assessment.security.level, "observations");
 
 snapshot = completeCleanSnapshot();
 snapshot.networkActivity.trackerDomainCount = 1;
@@ -377,7 +377,7 @@ assert.strictEqual(assessment.privacy.level, "low-activity");
 assert.ok(assessment.privacy.reasons.some(function (reason) {
     return reason.id === "runtime-privacy-api-usage" &&
         reason.severity === "info" &&
-        reason.evidence.weakDeviceScreenOnly;
+        reason.evidence.sensitiveSurfaces.length === 0;
 }));
 
 snapshot = completeCleanSnapshot();
@@ -390,8 +390,8 @@ assessment = assessBrowserState(snapshot);
 assert.strictEqual(assessment.privacy.level, "low-activity");
 assert.ok(assessment.privacy.reasons.some(function (reason) {
     return reason.id === "runtime-privacy-api-usage" &&
-        reason.severity === "low" &&
-        !reason.evidence.weakDeviceScreenOnly;
+        reason.severity === "info" &&
+        reason.evidence.sensitiveSurfaces.length === 0;
 }));
 
 snapshot = completeCleanSnapshot();
@@ -418,38 +418,50 @@ assert.strictEqual(assessment.privacy.level, "elevated-activity");
 snapshot = completeCleanSnapshot();
 snapshot.networkActivity.totalRequests = 100;
 snapshot.networkActivity.thirdPartyRequests = 10;
+snapshot.networkActivity.externalThirdPartyRequests = 10;
 snapshot.networkActivity.thirdPartyDomainCount = 2;
+snapshot.networkActivity.externalThirdPartyDomainCount = 2;
 assessment = assessBrowserState(snapshot);
 assert.strictEqual(assessment.network.level, "low-third-party-activity");
 
 snapshot.networkActivity.thirdPartyRequests = 30;
+snapshot.networkActivity.externalThirdPartyRequests = 30;
 snapshot.networkActivity.thirdPartyDomainCount = 5;
+snapshot.networkActivity.externalThirdPartyDomainCount = 5;
 assessment = assessBrowserState(snapshot);
 assert.strictEqual(assessment.network.level, "moderate-third-party-activity");
 
 snapshot.networkActivity.thirdPartyRequests = 60;
+snapshot.networkActivity.externalThirdPartyRequests = 60;
 snapshot.networkActivity.thirdPartyDomainCount = 16;
+snapshot.networkActivity.externalThirdPartyDomainCount = 16;
 assessment = assessBrowserState(snapshot);
 assert.strictEqual(assessment.network.level, "high-third-party-activity");
 
 snapshot = completeCleanSnapshot();
 snapshot.networkActivity.totalRequests = 6;
 snapshot.networkActivity.thirdPartyRequests = 3;
-snapshot.networkActivity.thirdPartyDomainCount = 6;
+snapshot.networkActivity.externalThirdPartyRequests = 3;
+snapshot.networkActivity.thirdPartyDomainCount = 3;
+snapshot.networkActivity.externalThirdPartyDomainCount = 3;
 assessment = assessBrowserState(snapshot);
-assert.strictEqual(assessment.network.level, "moderate-third-party-activity");
+assert.strictEqual(assessment.network.level, "low-third-party-activity");
 
 snapshot = completeCleanSnapshot();
 snapshot.networkActivity.totalRequests = 5;
 snapshot.networkActivity.thirdPartyRequests = 4;
+snapshot.networkActivity.externalThirdPartyRequests = 4;
 snapshot.networkActivity.thirdPartyDomainCount = 4;
+snapshot.networkActivity.externalThirdPartyDomainCount = 4;
 assessment = assessBrowserState(snapshot);
-assert.strictEqual(assessment.network.level, "moderate-third-party-activity");
+assert.strictEqual(assessment.network.level, "low-third-party-activity");
 
 snapshot = completeCleanSnapshot();
 snapshot.networkActivity.totalRequests = 1000;
 snapshot.networkActivity.thirdPartyRequests = 100;
+snapshot.networkActivity.externalThirdPartyRequests = 100;
 snapshot.networkActivity.thirdPartyDomainCount = 3;
+snapshot.networkActivity.externalThirdPartyDomainCount = 3;
 assessment = assessBrowserState(snapshot);
 assert.strictEqual(assessment.network.level, "moderate-third-party-activity");
 
@@ -495,13 +507,15 @@ assert.strictEqual(
 assert.ok(assessment.network.reasons.some(function (reason) {
     return reason.evidence.thirdPartyRequests === 228 &&
         reason.evidence.sameEntityThirdPartyRequests === 225 &&
-        reason.evidence.assessmentThirdPartyRequests === 3;
+        reason.evidence.assessmentThirdPartyRequests === 2;
 }));
 
 snapshot = completeCleanSnapshot();
 snapshot.networkActivity.totalRequests = 0;
 snapshot.networkActivity.thirdPartyRequests = 0;
+snapshot.networkActivity.externalThirdPartyRequests = 0;
 snapshot.networkActivity.thirdPartyDomainCount = 0;
+snapshot.networkActivity.externalThirdPartyDomainCount = 0;
 assessment = assessBrowserState(snapshot);
 assert.strictEqual(assessment.network.level, "low-third-party-activity");
 
@@ -521,11 +535,11 @@ snapshot.pageAnalysis.externalLinks = 12;
 snapshot.pageAnalysis.mismatchedLinks = 3;
 snapshot.pageAnalysis.suspiciousMismatchedLinks = 0;
 assessment = assessBrowserState(snapshot);
-assert.strictEqual(assessment.security.level, "observations");
+assert.strictEqual(assessment.security.level, "no-major-issues");
 assert.ok(assessment.security.reasons.some(function (reason) {
     return reason.id === "mismatched-link-destinations" &&
-        reason.severity === "low" &&
-        reason.evidence.countedForEscalation;
+        reason.severity === "info" &&
+        !reason.evidence.countedForEscalation;
 }));
 
 snapshot = completeCleanSnapshot();
@@ -550,7 +564,7 @@ assessment = assessBrowserState(snapshot);
 assert.strictEqual(assessment.security.level, "observations");
 assert.ok(assessment.security.reasons.some(function (reason) {
     return reason.id === "mismatched-link-destinations" &&
-        reason.severity === "low" &&
+        reason.severity === "medium" &&
         reason.evidence.suspiciousMismatchedLinks === 1;
 }));
 
@@ -585,7 +599,9 @@ snapshot.webSecurity.headers.antiFraming.status =
 snapshot.networkActivity.totalRequests = 272;
 snapshot.networkActivity.firstPartyRequests = 40;
 snapshot.networkActivity.thirdPartyRequests = 232;
+snapshot.networkActivity.externalThirdPartyRequests = 232;
 snapshot.networkActivity.thirdPartyDomainCount = 93;
+snapshot.networkActivity.externalThirdPartyDomainCount = 93;
 snapshot.networkActivity.trackerDomainCount = 7;
 snapshot.networkActivity.trackerRequests = 40;
 snapshot.networkActivity.trackerDomains = [
@@ -619,7 +635,7 @@ snapshot.runtimePrivacy.categories.screen = detectedRuntimeCategory([
     "width:"
 ]);
 assessment = assessBrowserState(snapshot);
-assert.strictEqual(assessment.security.level, "observations");
+assert.strictEqual(assessment.security.level, "no-major-issues");
 assert.strictEqual(assessment.privacy.level, "elevated-activity");
 assert.strictEqual(assessment.network.level, "high-third-party-activity");
 assert.deepStrictEqual(
@@ -627,11 +643,13 @@ assert.deepStrictEqual(
         return reason.id + ":" + reason.severity;
     }),
     [
-        "content-type-options-not-nosniff:low",
-        "csp-missing:low",
-        "hsts-missing:low",
         "anti-framing-missing:info",
+        "content-type-options-not-nosniff:info",
+        "csp-missing:info",
         "hidden-iframes:info",
+        "hsts-missing:info",
+        "permissions-policy-missing:info",
+        "referrer-policy-missing:info",
         "third-party-unsandboxed-iframes:info"
     ]
 );

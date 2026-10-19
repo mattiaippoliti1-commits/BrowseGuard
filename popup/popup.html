@@ -5,13 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BrowserGuard</title>
-    <script>
-        document.documentElement.dataset.theme =
-            window.matchMedia &&
-            window.matchMedia("(prefers-color-scheme: dark)").matches ?
-                "dark" :
-                "light";
-    </script>
+
     <link rel="stylesheet" href="popup.css">
 </head>
 
@@ -27,8 +21,8 @@
                 >
                 <div>
                     <h1>BrowserGuard</h1>
-                    <p class="subtitle">Web Security Monitor</p>
                 </div>
+                <button class="help-button" id="help-button" type="button" aria-label="About BrowserGuard"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.25"/><path d="M10 9v5m0-8v.5"/></svg></button>
                 <button
                     class="theme-toggle"
                     id="theme-toggle"
@@ -46,20 +40,22 @@
                 </button>
             </div>
             <div class="site-strip">
-                <span class="site-host" id="hostname">Loading...</span>
+                <span class="site-identity-label">Current website</span>
+                <span class="site-host" id="hostname">Analyzing…</span>
                 <span class="protocol-badge" id="protocol">Loading...</span>
             </div>
         </header>
 
         <section class="assessment-panel" aria-labelledby="assessment-title">
-            <p class="eyebrow" id="assessment-title">Assessment</p>
+            <div class="section-heading"><h2 id="assessment-title">Page assessment</h2><span>Observed signals</span></div>
             <div class="assessment-grid">
                 <button
                     class="assessment-card"
                     data-dimension="security"
                     type="button"
                     aria-expanded="false"
-                    aria-controls="assessment-context-panel"
+                    aria-controls="context-security"
+                    aria-describedby="description-security"
                 >
                     <div class="assessment-card-top">
                         <svg class="assessment-icon" aria-hidden="true" viewBox="0 0 24 24">
@@ -67,14 +63,17 @@
                         </svg>
                         <span class="assessment-label">Security</span>
                     </div>
-                    <strong id="assessment-security">Loading...</strong>
+                    <strong id="assessment-security">—</strong>
+                    <span class="assessment-description" hidden id="description-security"></span>
+                    <span class="card-disclosure">Details <span aria-hidden="true">⌄</span></span>
                 </button>
                 <button
                     class="assessment-card"
                     data-dimension="privacy"
                     type="button"
                     aria-expanded="false"
-                    aria-controls="assessment-context-panel"
+                    aria-controls="context-privacy"
+                    aria-describedby="description-privacy"
                 >
                     <div class="assessment-card-top">
                         <svg class="assessment-icon" aria-hidden="true" viewBox="0 0 24 24">
@@ -83,14 +82,17 @@
                         </svg>
                         <span class="assessment-label">Privacy</span>
                     </div>
-                    <strong id="assessment-privacy">Loading...</strong>
+                    <strong id="assessment-privacy">—</strong>
+                    <span class="assessment-description" hidden id="description-privacy"></span>
+                    <span class="card-disclosure">Details <span aria-hidden="true">⌄</span></span>
                 </button>
                 <button
                     class="assessment-card"
                     data-dimension="network"
                     type="button"
                     aria-expanded="false"
-                    aria-controls="assessment-context-panel"
+                    aria-controls="context-network"
+                    aria-describedby="description-network"
                 >
                     <div class="assessment-card-top">
                         <svg class="assessment-icon" aria-hidden="true" viewBox="0 0 24 24">
@@ -101,66 +103,45 @@
                         </svg>
                         <span class="assessment-label">Network</span>
                     </div>
-                    <strong id="assessment-network">Loading...</strong>
+                    <strong id="assessment-network">—</strong>
+                    <span class="assessment-description" hidden id="description-network"></span>
+                    <span class="card-disclosure">Details <span aria-hidden="true">⌄</span></span>
                 </button>
             </div>
-            <div
-                class="assessment-context-panel"
-                id="assessment-context-panel"
-                aria-live="polite"
-                hidden
-            ></div>
-            <p class="assessment-data-status" id="assessment-data-status"></p>
+            <div class="assessment-context-panel" id="context-security" role="region" aria-label="Security assessment details" hidden></div>
+            <div class="assessment-context-panel" id="context-privacy" role="region" aria-label="Privacy assessment details" hidden></div>
+            <div class="assessment-context-panel" id="context-network" role="region" aria-label="Network assessment details" hidden></div>
         </section>
 
-        <section class="card key-findings-card" aria-labelledby="findings-title">
-            <p class="eyebrow" id="findings-title">Key Findings</p>
-            <div class="assessment-reasons" id="assessment-reasons"></div>
+        <section class="quick-insights" aria-label="Quick insights">
+            <div class="insight"><strong id="network-total-requests">—</strong><span>Total<br>requests</span></div>
+            <div class="insight"><strong id="tracker-known-count">—</strong><span>Tracking-associated<br>domains</span></div>
+            <div class="insight"><strong id="network-external-third-party" aria-describedby="external-count-note">—</strong><span>Confirmed external<br>requests</span></div>
         </section>
-
-        <section
-            class="positive-signals-card"
-            id="positive-signals-card"
-            aria-labelledby="positive-signals-title"
-            hidden
-        >
-            <p class="eyebrow" id="positive-signals-title">Positive Signals</p>
-            <div class="positive-signal-list" id="positive-signals"></div>
-        </section>
-
-        <section class="quick-stats" aria-label="Quick stats">
-            <div class="stat-card">
-                <strong id="network-total-requests">Loading...</strong>
-                <span>Requests</span>
-            </div>
-            <div class="stat-card">
-                <strong id="tracker-known-count">Loading...</strong>
-                <span>Tracking domains</span>
-            </div>
-            <div class="stat-card">
-                <strong id="network-external-third-party">Loading...</strong>
-                <span>External requests</span>
-            </div>
-            <div class="stat-card">
-                <strong id="network-same-entity-third-party">Loading...</strong>
-                <span>Same-entity cross-origin</span>
-            </div>
-        </section>
-
+        <span class="sr-only" id="external-count-note">Counts only requests attributed to a different organization. A dash means the count cannot be established as zero.</span>
         <section class="technical-details">
-            <button
-                class="accordion-trigger"
-                id="technical-details-trigger"
-                type="button"
-                aria-expanded="false"
-                aria-controls="technical-details-content"
-            >
-                <span>Technical Details</span>
-                <span class="chevron" aria-hidden="true"></span>
+            <button class="accordion-trigger" id="technical-details-trigger" type="button" aria-expanded="false" aria-controls="technical-details-content">
+                <span>Technical details</span><svg class="chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg>
             </button>
-
-            <div class="accordion-content" id="technical-details-content" hidden>
-                <section class="detail-section" aria-labelledby="url-page-title">
+            <div id="technical-details-content" hidden>
+                <div class="technical-tabs" role="tablist" aria-label="Technical categories">
+                    <button type="button" role="tab" id="tab-overview" aria-controls="panel-overview" aria-selected="true" tabindex="0" data-technical-tab="overview">Overview</button>
+                    <button type="button" role="tab" id="tab-security" aria-controls="panel-security" aria-selected="false" tabindex="-1" data-technical-tab="security">Security</button>
+                    <button type="button" role="tab" id="tab-privacy" aria-controls="panel-privacy" aria-selected="false" tabindex="-1" data-technical-tab="privacy">Privacy</button>
+                    <button type="button" role="tab" id="tab-network" aria-controls="panel-network" aria-selected="false" tabindex="-1" data-technical-tab="network">Network</button>
+                </div>
+                <div class="technical-panel" role="tabpanel" id="panel-overview" aria-labelledby="tab-overview" tabindex="0"><p class="collection-context" id="assessment-data-status"></p><section class="card key-findings-card" aria-labelledby="findings-title">
+                    <p class="eyebrow" id="findings-title">Key Findings</p>
+                    <div class="assessment-reasons" id="assessment-reasons"></div>
+                </section><section
+                    class="positive-signals-card"
+                    id="positive-signals-card"
+                    aria-labelledby="positive-signals-title"
+                    hidden
+                >
+                    <p class="eyebrow" id="positive-signals-title">Positive Signals</p>
+                    <div class="positive-signal-list" id="positive-signals"></div>
+                </section><section class="detail-section" aria-labelledby="url-page-title">
                     <h2 id="url-page-title">URL &amp; Page</h2>
                     <div class="definition-grid">
                         <div class="analysis-row"><span>Protocol</span><span id="protocol-detail">Loading...</span></div>
@@ -188,9 +169,8 @@
                         <span class="indicator-chip" id="ip-address">Loading...</span>
                         <span class="indicator-chip" id="punycode">Loading...</span>
                     </div>
-                </section>
-
-                <section class="detail-section" aria-labelledby="web-security-title">
+                </section></div>
+                <div class="technical-panel" role="tabpanel" id="panel-security" aria-labelledby="tab-security" tabindex="0" hidden><section class="dimension-findings" aria-label="Security findings"><h2>Assessment evidence</h2><div id="security-findings"></div></section><section class="detail-section" aria-labelledby="web-security-title">
                     <h2 id="web-security-title">Web Security</h2>
                     <div class="definition-grid">
                         <div class="analysis-row"><span>HTTPS</span><span id="web-security-https">Loading...</span></div>
@@ -204,22 +184,19 @@
                         <div class="analysis-row"><span>Iframe Security</span><span id="web-security-iframes">Loading...</span></div>
                     </div>
                     <div class="web-security-observations" id="web-security-observations"></div>
-                </section>
-
-                <section class="detail-section" aria-labelledby="privacy-signals-title">
+                </section></div>
+                <div class="technical-panel" role="tabpanel" id="panel-privacy" aria-labelledby="tab-privacy" tabindex="0" hidden><section class="dimension-findings" aria-label="Privacy findings"><h2>Assessment evidence</h2><div id="privacy-findings"></div></section><section class="detail-section" aria-labelledby="privacy-signals-title">
                     <h2 id="privacy-signals-title">
                         Privacy Signals
                         <span class="info-wrap"><button class="info-dot" type="button" aria-label="About runtime privacy" aria-describedby="tip-runtime-privacy">i</button><span class="info-tooltip" id="tip-runtime-privacy" role="tooltip">Runtime privacy reports privacy-sensitive API activity and fingerprinting-related indicators without collecting fingerprint values.</span></span>
                     </h2>
                     <p class="runtime-indicator-note" id="runtime-indicator-note" hidden>
-                        Multiple fingerprinting-related indicators observed.
+                        Multiple API categories observed. API access alone does not establish fingerprinting.
                     </p>
                     <div class="runtime-category-list" id="runtime-category-list">
                         <p class="empty-state">Loading...</p>
                     </div>
-                </section>
-
-                <section class="detail-section" aria-labelledby="tracking-title">
+                </section><section class="detail-section" aria-labelledby="tracking-title">
                     <h2 id="tracking-title">
                         Tracking-associated Activity
                         <span class="info-wrap"><button class="info-dot" type="button" aria-label="About tracking-associated activity" aria-describedby="tip-tracking-associated">i</button><span class="info-tooltip" id="tip-tracking-associated" role="tooltip">Domain associated with tracking-related categories in the local Tracker Radar-derived dataset. This does not prove that the individual request performs tracking.</span></span>
@@ -234,9 +211,8 @@
                     <button class="show-more-button" id="tracker-show-more" type="button" hidden>
                         Show more
                     </button>
-                </section>
-
-                <section class="detail-section" aria-labelledby="network-title">
+                </section></div>
+                <div class="technical-panel" role="tabpanel" id="panel-network" aria-labelledby="tab-network" tabindex="0" hidden><p class="collection-context" id="network-attribution-status"></p><section class="dimension-findings" aria-label="Network findings"><h2>Assessment evidence</h2><div id="network-findings"></div></section><section class="detail-section" aria-labelledby="network-title">
                     <h2 id="network-title">Network Activity</h2>
                     <div class="definition-grid">
                         <div class="analysis-row"><span>Total requests</span><span id="network-total-requests-detail">Loading...</span></div>
@@ -244,10 +220,10 @@
                         <div class="analysis-row"><span>Cross-origin requests <span class="info-wrap"><button class="info-dot" type="button" aria-label="About cross-origin requests" aria-describedby="tip-cross-origin">i</button><span class="info-tooltip" id="tip-cross-origin" role="tooltip">Browser-origin classification: the request registrable domain differs from the page registrable domain. Cross-origin does not necessarily mean an external organization.</span></span></span><span id="network-third-party-requests">Loading...</span></div>
                         <div class="analysis-row"><span>Cross-origin domains</span><span id="network-third-party-domains">Loading...</span></div>
                         <div class="analysis-row"><span>Same-entity cross-origin <span class="info-wrap"><button class="info-dot" type="button" aria-label="About same-entity cross-origin requests" aria-describedby="tip-same-entity">i</button><span class="info-tooltip" id="tip-same-entity" role="tooltip">Cross-origin domain associated with the same organization as the current site using local entity metadata.</span></span></span><span id="network-same-entity-third-party-detail">Loading...</span></div>
-                        <div class="analysis-row"><span>External third-party <span class="info-wrap"><button class="info-dot" type="button" aria-label="About external third-party requests" aria-describedby="tip-external-third-party">i</button><span class="info-tooltip" id="tip-external-third-party" role="tooltip">Cross-origin domain associated with a known different organization. The Network assessment is based on external plus unknown exposure, not raw cross-origin volume.</span></span></span><span id="network-external-third-party-detail">Loading...</span></div>
+                        <div class="analysis-row"><span>External third-party <span class="info-wrap"><button class="info-dot" type="button" aria-label="About external third-party requests" aria-describedby="tip-external-third-party">i</button><span class="info-tooltip" id="tip-external-third-party" role="tooltip">Cross-origin domain associated with a known different organization. The Network assessment is based on confirmed external exposure. Unknown attribution is shown separately.</span></span></span><span id="network-external-third-party-detail">Loading...</span></div>
                         <div class="analysis-row"><span>Unknown third-party <span class="info-wrap"><button class="info-dot" type="button" aria-label="About unknown third-party requests" aria-describedby="tip-unknown-third-party">i</button><span class="info-tooltip" id="tip-unknown-third-party" role="tooltip">Cross-origin domain that could not be associated with the site owner using local entity metadata.</span></span></span><span id="network-unknown-third-party">Loading...</span></div>
                     </div>
-                    <h3>Resource Types</h3>
+                    <p class="network-count-note">Confirmed same-entity requests <strong id="network-same-entity-third-party">—</strong></p><h3>Resource Types</h3>
                     <div class="network-types" id="network-resource-types"></div>
                     <h3>Top Cross-origin Domains</h3>
                     <div class="network-domain-list" id="network-domain-list">
@@ -256,12 +232,31 @@
                     <button class="show-more-button" id="network-show-more" type="button" hidden>
                         Show more
                     </button>
-                </section>
+                </section></div>
             </div>
         </section>
+        <p class="scope-note">Local analysis of observed signals. No safety certification.</p>
     </main>
+    <dialog id="onboarding" aria-labelledby="onboarding-title" aria-describedby="onboarding-copy">
+        <p id="onboarding-progress"></p>
+        <h2 id="onboarding-title"></h2>
+        <div id="onboarding-copy"></div>
+        <p id="onboarding-storage-status" role="status"></p>
+        <div class="dialog-actions">
+            <button type="button" id="onboarding-skip">Skip introduction</button>
+            <button type="button" id="onboarding-back">Back</button>
+            <button type="button" id="onboarding-next">Next</button>
+        </div>
+    </dialog>
+    <dialog id="glossary-dialog" aria-labelledby="glossary-title" aria-describedby="glossary-copy">
+        <h2 id="glossary-title"></h2>
+        <p id="glossary-copy"></p>
+        <button id="glossary-close" type="button">Close explanation</button>
+    </dialog>
 
     <script src="../modules/assessment/assessment-engine.js"></script>
+    <script src="presentation.js"></script>
+    <script src="experience.js"></script>
     <script src="popup.js"></script>
 </body>
 

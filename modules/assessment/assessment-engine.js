@@ -7,7 +7,6 @@
 
 const ASSESSMENT_THRESHOLDS = {
     security: {
-        moderateSignalsForAttention: 2,
         mismatchedLinkMinimumCount: 3,
         mismatchedLinkMinimumRatio: 0.25
     },
@@ -17,10 +16,12 @@ const ASSESSMENT_THRESHOLDS = {
         moderateTrackerRequests: 10,
         elevatedTrackerRequests: 30,
         elevatedTrackerRequestMinimumDomains: 2,
-        multipleRuntimeCategories: 3
+        correlatedRuntimeSurfaces: 2
     },
     network: {
         moderateThirdPartyRatio: 0.25,
+        moderateRatioMinimumRequests: 5,
+        moderateVolumeMinimumRatio: 0.1,
         highThirdPartyRatio: 0.5,
         highThirdPartyRatioMinimumRequests: 10,
         moderateThirdPartyDomains: 5,
@@ -39,12 +40,23 @@ function assessBrowserState(snapshot) {
     const dataStatus = missingSources.length === 0 ? "complete" : "partial";
     const availableSnapshot = getAvailableSnapshot(normalizedSnapshot);
 
+    const securityPartial = missingSources.some(function (source) {
+        return ["urlAnalysis", "pageAnalysis", "webSecurity"].includes(source);
+    });
+    const privacyPartial = !availableSnapshot.networkActivity || !availableSnapshot.runtimePrivacy;
+
     return {
         dataStatus: dataStatus,
         missingSources: missingSources,
-        security: assessSecurity(availableSnapshot, dataStatus),
-        privacy: assessPrivacy(availableSnapshot, dataStatus),
-        network: assessNetwork(availableSnapshot, dataStatus)
+        security: finalizeAssessment(assessSecurity(
+            availableSnapshot, securityPartial ? "partial" : "complete"
+        )),
+        privacy: finalizeAssessment(assessPrivacy(
+            availableSnapshot, privacyPartial ? "partial" : "complete"
+        )),
+        network: finalizeAssessment(assessNetwork(
+            availableSnapshot, !availableSnapshot.networkActivity ? "partial" : "complete"
+        ))
     };
 
 }
@@ -133,8 +145,9 @@ function assessSecurity(snapshot, dataStatus) {
 
         if (
             web.headers.antiFraming &&
-            web.headers.antiFraming.status !==
-                "No explicit anti-framing policy detected"
+            (web.headers.antiFraming.observed === true ||
+                web.headers.antiFraming.status === "X-Frame-Options" ||
+                (web.headers.antiFraming.status === "CSP frame-ancestors" && web.headers.csp && web.headers.csp.present))
         ) {
             addPositive(
                 positiveSignals,
@@ -154,29 +167,33 @@ function assessSecurity(snapshot, dataStatus) {
 
     let strongCount = 0;
     let moderateCount = 0;
-    let weakCount = 0;
 
-    if (url && !url.usesHTTPS) {
+    if ((url && url.usesHTTPS === false) || (web && typeof web.pageUrl === "string" && web.pageUrl.startsWith("http:"))) {
         strongCount++;
         reasons.push(createReason(
             "main-page-http",
             "high",
             "Main page is not using HTTPS",
             {
-                protocol: url.protocol
+                protocol: url ? url.protocol : "http"
             }
         ));
     }
 
     if (web && web.mixedContent && web.mixedContent.requestCount > 0) {
-        strongCount++;
+        // onBeforeRequest observes attempts, not successful loads or execution.
+        const activeTypes = ["script", "stylesheet", "sub_frame", "xmlhttprequest", "object", "websocket"];
+        const active = activeTypes.some(type => (web.mixedContent.types || {})[type] > 0);
+        if (active) strongCount++; else moderateCount++;
         reasons.push(createReason(
             "mixed-content",
-            "high",
-            "Mixed content requests were observed",
+            active ? "high" : "medium",
+            active ? "Active mixed content request attempts were observed" : "Mixed content request attempts were observed",
             {
                 requestCount: web.mixedContent.requestCount,
-                types: web.mixedContent.types
+                types: web.mixedContent.types,
+                activeResourceTypes: active,
+                successfulLoadConfirmed: false
             }
         ));
     }
@@ -186,7 +203,7 @@ function assessSecurity(snapshot, dataStatus) {
         reasons.push(createReason(
             "insecure-password-forms",
             "high",
-            "Password form submission over HTTP was observed",
+            "A password form targeting HTTP was observed",
             {
                 formCount: page.insecurePasswordForms
             }
@@ -209,28 +226,25 @@ function assessSecurity(snapshot, dataStatus) {
         const csp = web.headers.csp;
 
         if (csp.reportOnly) {
-            weakCount++;
             reasons.push(createReason(
                 "csp-report-only",
-                "low",
+                "info",
                 "CSP is present only in report-only mode",
                 {}
             ));
         } else if (!csp.present) {
-            weakCount++;
             reasons.push(createReason(
                 "csp-missing",
-                "low",
+                "info",
                 "No enforced CSP header was observed",
                 {}
             ));
         }
 
         if (csp.observations && csp.observations.length > 0) {
-            moderateCount++;
             reasons.push(createReason(
                 "csp-permissive-observations",
-                "medium",
+                "info",
                 "CSP contains potentially permissive directives",
                 {
                     observations: csp.observations
@@ -243,20 +257,18 @@ function assessSecurity(snapshot, dataStatus) {
         const hsts = web.headers.hsts;
 
         if (web.https && web.https.enabled && !hsts.present) {
-            weakCount++;
             reasons.push(createReason(
                 "hsts-missing",
-                "low",
+                "info",
                 "No HSTS header was observed on an HTTPS page",
                 {}
             ));
         }
 
         if (hsts.observations && hsts.observations.length > 0) {
-            weakCount++;
             reasons.push(createReason(
                 "hsts-observations",
-                "low",
+                "info",
                 "HSTS configuration observations were found",
                 {
                     observations: hsts.observations
@@ -271,10 +283,9 @@ function assessSecurity(snapshot, dataStatus) {
         web.headers.contentTypeOptions &&
         web.headers.contentTypeOptions.status !== "nosniff"
     ) {
-        weakCount++;
         reasons.push(createReason(
             "content-type-options-not-nosniff",
-            "low",
+            "info",
             "X-Content-Type-Options nosniff was not observed",
             {
                 status: web.headers.contentTypeOptions.status
@@ -289,25 +300,19 @@ function assessSecurity(snapshot, dataStatus) {
         web.headers.antiFraming.status ===
             "No explicit anti-framing policy detected"
     ) {
-        const csp = web.headers.csp;
-        const isMissingBecauseCspIsAbsent =
-            csp &&
-            !csp.present &&
-            !csp.reportOnly &&
-            !web.headers.antiFraming.xFrameOptions;
-
-        if (!isMissingBecauseCspIsAbsent) {
-            weakCount++;
-        }
-
         reasons.push(createReason(
-            "anti-framing-missing",
-            isMissingBecauseCspIsAbsent ? "info" : "low",
-            "No explicit anti-framing policy was observed",
-            {
-                countedForEscalation: !isMissingBecauseCspIsAbsent
-            }
+            "anti-framing-missing", "info",
+            "No explicit anti-framing policy was observed", {}
         ));
+    }
+
+    for (const [key, id, label] of [
+        ["referrerPolicy", "referrer-policy-missing", "Referrer-Policy"],
+        ["permissionsPolicy", "permissions-policy-missing", "Permissions-Policy"]
+    ]) {
+        if (web && web.headers && web.headers[key] && !web.headers[key].present) {
+            reasons.push(createReason(id, "info", "No explicit " + label + " header was observed", {}));
+        }
     }
 
     if (page && page.httpsPageHttpIframeCount > 0) {
@@ -361,16 +366,8 @@ function assessSecurity(snapshot, dataStatus) {
                 ASSESSMENT_THRESHOLDS.security.mismatchedLinkMinimumRatio;
 
         if (shouldReportMismatchedLinks) {
-            const severity =
-                suspiciousMismatchedLinks > 0 ||
-                page.mismatchedLinks >=
-                    ASSESSMENT_THRESHOLDS.security.mismatchedLinkMinimumCount ?
-                    "low" :
-                    "info";
-
-            if (severity === "low") {
-                weakCount++;
-            }
+            const severity = suspiciousMismatchedLinks > 0 ? "medium" : "info";
+            if (severity === "medium") moderateCount++;
 
             reasons.push(createReason(
                 "mismatched-link-destinations",
@@ -382,7 +379,7 @@ function assessSecurity(snapshot, dataStatus) {
                     totalLinks: totalLinks,
                     mismatchedLinkRatio:
                         Number(mismatchedLinkRatio.toFixed(3)),
-                    countedForEscalation: severity === "low"
+                    countedForEscalation: severity === "medium"
                 }
             ));
         }
@@ -416,16 +413,19 @@ function assessSecurity(snapshot, dataStatus) {
         }
 
         if (urlObservationIds.length > 0) {
-            weakCount++;
             reasons.push(createReason(
                 "url-heuristics",
-                "low",
+                "info",
                 "URL heuristic observations were found",
                 {
                     observations: urlObservationIds
                 }
             ));
         }
+    }
+
+    if (page && page.passwordFieldCount === 0) {
+        addPositive(positiveSignals, "no-password-fields", "No password fields observed");
     }
 
     if (dataStatus === "partial") {
@@ -445,9 +445,7 @@ function assessSecurity(snapshot, dataStatus) {
 
     const level = determineSecurityLevel(
         strongCount,
-        moderateCount,
-        weakCount,
-        dataStatus
+        moderateCount
     );
 
     return {
@@ -459,24 +457,10 @@ function assessSecurity(snapshot, dataStatus) {
 
 }
 
-function determineSecurityLevel(strongCount, moderateCount, weakCount, dataStatus) {
-
-    if (strongCount > 0) {
-        return "attention";
-    }
-
-    if (
-        moderateCount >= ASSESSMENT_THRESHOLDS.security.moderateSignalsForAttention
-    ) {
-        return "attention";
-    }
-
-    if (moderateCount > 0 || weakCount > 0 || dataStatus === "partial") {
-        return "observations";
-    }
-
+function determineSecurityLevel(strongCount, moderateCount) {
+    if (strongCount > 0) return "attention";
+    if (moderateCount > 0) return "observations";
     return "no-major-issues";
-
 }
 
 function getSecuritySummary(level, dataStatus) {
@@ -530,7 +514,7 @@ function assessPrivacy(snapshot, dataStatus) {
             reasons.push(createReason(
                 "known-trackers",
                 trackerActivity === "elevated" ? "high" :
-                    trackerActivity === "moderate" ? "medium" : "low",
+                    trackerActivity === "moderate" ? "medium" : "info",
                 "Activity from tracking-associated domains was observed",
                 {
                     trackerDomainCount: trackerDomains,
@@ -543,52 +527,20 @@ function assessPrivacy(snapshot, dataStatus) {
 
     if (runtime) {
         const detectedCategories = getDetectedRuntimeCategories(runtime);
-        const weakDeviceScreenOnly =
-            hasOnlyWeakDeviceScreenRuntimeIndicators(runtime, detectedCategories);
-        const webglHardware = hasRuntimeDetail(
-            runtime,
-            "webgl",
-            "UNMASKED_RENDERER_WEBGL"
-        ) || hasRuntimeDetail(runtime, "webgl", "UNMASKED_VENDOR_WEBGL");
-        const hasCombinedRuntimeIndicators =
-            webglHardware &&
-            (
-                detectedCategories.includes("canvas") ||
-                detectedCategories.includes("navigator")
-            );
-
-        if (
-            detectedCategories.length >=
-                ASSESSMENT_THRESHOLDS.privacy.multipleRuntimeCategories ||
-            hasCombinedRuntimeIndicators
-        ) {
-            runtimeActivity = "multiple";
+        const webglHardware = hasRuntimeDetail(runtime, "webgl", "UNMASKED_RENDERER_WEBGL") ||
+            hasRuntimeDetail(runtime, "webgl", "UNMASKED_VENDOR_WEBGL");
+        const canvasReadback = ["toDataURL", "toBlob", "getImageData"].some(api => hasRuntimeDetail(runtime, "canvas", api));
+        const offlineAudio = hasRuntimeDetail(runtime, "audio", "OfflineAudioContext");
+        const sensitiveSurfaces = [canvasReadback && "canvas-readback", webglHardware && "webgl-hardware", offlineAudio && "offline-audio"].filter(Boolean);
+        const combined = sensitiveSurfaces.length >= ASSESSMENT_THRESHOLDS.privacy.correlatedRuntimeSurfaces;
+        if (detectedCategories.length > 0) {
+            runtimeActivity = combined ? "multiple" : "informational";
             reasons.push(createReason(
-                "multiple-runtime-privacy-indicators",
-                "medium",
-                hasCombinedRuntimeIndicators ?
-                    "Combined fingerprinting-related indicators were observed" :
-                    "Multiple fingerprinting-related indicators were observed",
-                {
-                    categories: detectedCategories,
-                    webglHardware: webglHardware,
-                    combinedRuntimeIndicators: hasCombinedRuntimeIndicators
-                }
-            ));
-        } else if (detectedCategories.length > 0) {
-            runtimeActivity = weakDeviceScreenOnly ? "weak" : "limited";
-            reasons.push(createReason(
-                "runtime-privacy-api-usage",
-                weakDeviceScreenOnly ? "info" : "low",
-                weakDeviceScreenOnly ?
-                    "Weak device or screen information access was observed" :
-                    "Privacy-sensitive API usage was observed",
-                {
-                    categories: detectedCategories,
-                    weakDeviceScreenOnly: weakDeviceScreenOnly,
-                    webglHardware: webglHardware,
-                    combinedRuntimeIndicators: false
-                }
+                combined ? "multiple-runtime-privacy-indicators" : "runtime-privacy-api-usage",
+                combined ? "medium" : "info",
+                combined ? "Co-occurring fingerprinting-related API surfaces were observed; purpose is unknown" : "Browser API access was observed; purpose is unknown",
+                { categories: detectedCategories, sensitiveSurfaces, webglHardware,
+                    combinedRuntimeIndicators: combined, sameScriptAttributionConfirmed: false }
             ));
         }
     }
@@ -629,19 +581,9 @@ function determinePrivacyLevel(trackerActivity, runtimeActivity, dataStatus) {
 
     if (
         trackerActivity === "moderate" ||
-        runtimeActivity === "multiple" ||
-        (trackerActivity === "limited" && runtimeActivity === "limited")
+        runtimeActivity === "multiple"
     ) {
         return "moderate-activity";
-    }
-
-    if (
-        trackerActivity === "limited" ||
-        runtimeActivity === "limited" ||
-        runtimeActivity === "weak" ||
-        dataStatus === "partial"
-    ) {
-        return "low-activity";
     }
 
     return "low-activity";
@@ -690,13 +632,18 @@ function assessNetwork(snapshot, dataStatus) {
     }
 
     const totalRequests = network.totalRequests || 0;
-    const thirdPartyRequests = typeof network.assessmentThirdPartyRequests === "number" ?
-        network.assessmentThirdPartyRequests :
-        network.thirdPartyRequests || 0;
-    const thirdPartyDomainCount =
-        typeof network.assessmentThirdPartyDomainCount === "number" ?
-            network.assessmentThirdPartyDomainCount :
-            network.thirdPartyDomainCount || 0;
+    const thirdPartyRequests = network.externalThirdPartyRequests || 0;
+    const thirdPartyDomainCount = network.externalThirdPartyDomainCount || 0;
+    const unknownRequests = typeof network.unknownThirdPartyRequests === "number" ? network.unknownThirdPartyRequests :
+        Math.max(0, (network.thirdPartyRequests || 0) - (network.sameEntityThirdPartyRequests || 0) - thirdPartyRequests);
+    if (unknownRequests > 0) {
+        reasons.push(createReason("unknown-network-attribution", "info",
+            "Cross-origin requests have unresolved entity attribution", {
+                unknownThirdPartyRequests: unknownRequests,
+                unknownThirdPartyDomainCount: network.unknownThirdPartyDomainCount ?? network.thirdPartyDomainCount ?? 0,
+                confirmedExternal: false
+            }));
+    }
     const thirdPartyRatio = totalRequests > 0 ?
         thirdPartyRequests / totalRequests :
         0;
@@ -731,21 +678,22 @@ function assessNetwork(snapshot, dataStatus) {
     ) {
         level = "high-third-party-activity";
     } else if (
-        thirdPartyRatio >= ASSESSMENT_THRESHOLDS.network.moderateThirdPartyRatio ||
-        thirdPartyDomainCount >=
-            ASSESSMENT_THRESHOLDS.network.moderateThirdPartyDomains ||
-        thirdPartyRequests >=
-            ASSESSMENT_THRESHOLDS.network.moderateThirdPartyRequests
+        (thirdPartyRatio >= ASSESSMENT_THRESHOLDS.network.moderateThirdPartyRatio &&
+            thirdPartyRequests >= ASSESSMENT_THRESHOLDS.network.moderateRatioMinimumRequests) ||
+        (thirdPartyDomainCount >= ASSESSMENT_THRESHOLDS.network.moderateThirdPartyDomains &&
+            thirdPartyRequests >= ASSESSMENT_THRESHOLDS.network.moderateRatioMinimumRequests) ||
+        (thirdPartyRequests >= ASSESSMENT_THRESHOLDS.network.moderateThirdPartyRequests &&
+            thirdPartyRatio >= ASSESSMENT_THRESHOLDS.network.moderateVolumeMinimumRatio)
     ) {
         level = "moderate-third-party-activity";
     }
 
-    if (thirdPartyRequests > 0 || thirdPartyDomainCount > 0) {
+    if ((network.thirdPartyRequests || 0) > 0 || thirdPartyRequests > 0 || thirdPartyDomainCount > 0) {
         reasons.push(createReason(
             "third-party-network-activity",
             level === "high-third-party-activity" ? "high" :
-                level === "moderate-third-party-activity" ? "medium" : "low",
-            "External third-party network exposure was observed",
+                level === "moderate-third-party-activity" ? "medium" : "info",
+            "Network request composition was observed; only confirmed external attribution contributes to the level",
             {
                 totalRequests: totalRequests,
                 thirdPartyRequests: network.thirdPartyRequests || 0,
@@ -756,8 +704,7 @@ function assessNetwork(snapshot, dataStatus) {
                     network.sameEntityThirdPartyRequests || 0,
                 externalThirdPartyRequests:
                     network.externalThirdPartyRequests || 0,
-                unknownThirdPartyRequests:
-                    network.unknownThirdPartyRequests || 0,
+                unknownThirdPartyRequests: unknownRequests,
                 thirdPartyRatio: Number(rawThirdPartyRatio.toFixed(3)),
                 assessmentThirdPartyRatio: Number(thirdPartyRatio.toFixed(3))
             }
@@ -785,6 +732,17 @@ function getNetworkSummary(level) {
 
 }
 
+function finalizeAssessment(result) {
+    result.contributingFindings = result.reasons.filter(reason => ["high", "medium"].includes(reason.severity));
+    result.informationalObservations = result.reasons.filter(reason => !["high", "medium"].includes(reason.severity));
+    result.uncertainties = result.reasons.filter(reason => /data-(incomplete|unavailable)$/.test(reason.id) || reason.id === "unknown-network-attribution" ||
+        reason.evidence.successfulLoadConfirmed === false || reason.evidence.sameScriptAttributionConfirmed === false);
+    result.reasons.forEach(reason => {
+        reason.evidence.countedForEscalation = result.contributingFindings.includes(reason);
+    });
+    return result;
+}
+
 function getDetectedRuntimeCategories(runtime) {
 
     return Object.entries(runtime.categories || {})
@@ -798,36 +756,6 @@ function getDetectedRuntimeCategories(runtime) {
 
 }
 
-function hasOnlyWeakDeviceScreenRuntimeIndicators(runtime, detectedCategories) {
-
-    if (detectedCategories.length === 0) {
-        return false;
-    }
-
-    const weakCategories = new Set([
-        "navigator",
-        "screen"
-    ]);
-
-    if (!detectedCategories.every(function (category) {
-        return weakCategories.has(category);
-    })) {
-        return false;
-    }
-
-    const strongerNavigatorDetails = [
-        "deviceMemory",
-        "hardwareConcurrency",
-        "languages",
-        "platform"
-    ];
-
-    return !strongerNavigatorDetails.some(function (detailName) {
-        return hasRuntimeDetail(runtime, "navigator", detailName);
-    });
-
-}
-
 function hasRuntimeDetail(runtime, categoryName, detailName) {
 
     const category = runtime.categories && runtime.categories[categoryName];
@@ -837,7 +765,7 @@ function hasRuntimeDetail(runtime, categoryName, detailName) {
     }
 
     return category.details.some(function (detail) {
-        return detail.includes(detailName);
+        return typeof detail === "string" && detail.includes(detailName);
     });
 
 }

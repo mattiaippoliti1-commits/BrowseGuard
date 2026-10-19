@@ -1,0 +1,268 @@
+% BrowserGuard — sistema visivo bianco, 16:9, compatibile con pdflatex.
+% Compilare due volte dalla directory presentation/; nessuno shell escape.
+\documentclass[aspectratio=169,12pt]{beamer}
+\geometry{paperwidth=18cm,paperheight=10.125cm}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[italian]{babel}
+\usepackage{tgheros}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\renewcommand{\familydefault}{\sfdefault}
+\definecolor{Paper}{HTML}{FFFFFF}
+\definecolor{Ink}{HTML}{172522}
+\definecolor{Muted}{HTML}{667570}
+\definecolor{Accent}{HTML}{18EEC1}
+\definecolor{Mint}{HTML}{6CF7D8}
+\definecolor{Forest}{HTML}{09231B}
+\definecolor{MintSurface}{HTML}{EAFBF5}
+\definecolor{GraySurface}{HTML}{F5F7F6}
+\setbeamercolor{normal text}{fg=Ink,bg=Paper}
+\setbeamercolor{structure}{fg=Forest}
+\setbeamercolor{frametitle}{fg=Ink,bg=Paper}
+\setbeamerfont{normal text}{size=\fontsize{13}{18}\selectfont}
+\setbeamerfont{frametitle}{size=\fontsize{25}{29}\selectfont,series=\bfseries}
+\setbeamersize{text margin left=12mm,text margin right=12mm}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{frametitle}{\vspace{5mm}\insertframetitle\par\vspace{2mm}}
+\setbeamertemplate{footline}{%
+  \begin{tikzpicture}[remember picture,overlay]
+  \draw[Muted!18,line width=.4pt] ([xshift=12mm,yshift=8mm]current page.south west)--([xshift=-12mm,yshift=8mm]current page.south east);
+  \node[anchor=west,font=\fontsize{8}{10}\selectfont,text=Muted] at ([xshift=12mm,yshift=4.5mm]current page.south west) {BrowserGuard\quad /\quad Sicurezza nelle Reti};
+  \node[anchor=east,font=\fontsize{8}{10}\selectfont,text=Muted] at ([xshift=-12mm,yshift=4.5mm]current page.south east) {\insertframenumber\,/\,\inserttotalframenumber};
+  \end{tikzpicture}\vspace{9mm}}
+\setbeameroption{hide notes}
+
+% Componenti condivisi: titoli intermedi, concetti numerati, separatori.
+\newcommand{\labeltext}[1]{{\fontsize{10}{13}\selectfont\color{Muted}#1\par}}
+\newcommand{\heading}[1]{{\fontsize{15}{19}\selectfont\bfseries#1\par}}
+\newcommand{\concept}[3]{%
+  \noindent\begin{minipage}[t]{.12\linewidth}{\color{Muted}\fontsize{11}{15}\selectfont#1}\end{minipage}%
+  \begin{minipage}[t]{.85\linewidth}\raggedright\heading{#2}\vspace{1mm}{\color{Muted}#3\par}\end{minipage}\par\vspace{4mm}}
+\newcommand{\accentline}{\begin{tikzpicture}\draw[Accent,line width=1.2pt] (0,0)--(1,0);\end{tikzpicture}\par}
+
+% Segnaposto a dimensioni fisse; descrizione breve, senza diagrammi simulati.
+% Sostituire con \graphicasset[altezza]{assets/file.png}{descrizione}:
+% mantiene identici ingombro, allineamento e proporzioni dell'immagine.
+\newcommand{\graphicplaceholder}[2][4cm]{%
+  \begin{tikzpicture}
+  \path[fill=GraySurface,draw=Muted!35,line width=.5pt,dash pattern=on 3pt off 3pt,rounded corners=2pt]
+    (0,0) rectangle (\dimexpr\linewidth-1pt\relax,#1);
+  \node[align=center,text=Muted,font=\fontsize{10}{14}\selectfont,text width=.78\linewidth]
+    at (.5\linewidth,.5*#1) {#2};
+  \end{tikzpicture}}
+\newcommand{\graphicasset}[3][4cm]{%
+  \IfFileExists{#2}{%
+    \begin{minipage}[c][#1][c]{\linewidth}\centering
+    \includegraphics[width=\linewidth,height=#1,keepaspectratio]{#2}
+    \end{minipage}%
+  }{\graphicplaceholder[#1]{#3}}}
+
+\title{BrowserGuard}
+\author{Mattia Ippoliti}
+\date{}
+\begin{document}
+\raggedright
+
+% 1 — Copertina: logo originale, geometria discreta fuori dal testo.
+\begin{frame}[plain]
+\begin{tikzpicture}[remember picture,overlay]
+\draw[MintSurface,line width=1pt] ([xshift=-18mm,yshift=-16mm]current page.north east) circle (25mm);
+\draw[Mint,line width=.7pt] ([xshift=-18mm,yshift=-16mm]current page.north east) circle (20mm);
+\fill[Accent] ([xshift=12mm,yshift=8mm]current page.south west) circle (1.2mm);
+\end{tikzpicture}
+\vspace{9mm}
+\labeltext{PROGETTO UNIVERSITARIO\quad /\quad MANIFEST V3}
+\vspace{8mm}
+\begin{columns}[c,onlytextwidth]
+\begin{column}{.70\textwidth}
+{\fontsize{38}{42}\selectfont\bfseries BrowserGuard\par}
+\vspace{4mm}
+{\fontsize{18}{24}\selectfont Sicurezza, privacy e rete.\\Segnali locali, risultati spiegabili.\par}
+\vspace{8mm}\accentline\vspace{4mm}
+\heading{Mattia Ippoliti}
+\labeltext{Sicurezza nelle Reti · Laurea magistrale}
+\end{column}
+\begin{column}{.23\textwidth}
+\includegraphics[width=\linewidth]{assets/browserguard-logo.png}
+\end{column}
+\end{columns}
+\note{Tempo: 40 secondi. Presentare BrowserGuard come progetto di osservazione locale di segnali tecnici, con tre dimensioni distinte. Il progetto non implementa antivirus, classificazione malware, reputazione dei domini o certificazione della sicurezza di un sito. La versione del manifest analizzato è 1.0.0.}
+\end{frame}
+
+% 2 — Motivazione, con un'area secondaria per un'illustrazione facoltativa.
+\begin{frame}[t]{Il problema}
+\vspace{6mm}
+\begin{columns}[c,onlytextwidth]
+\begin{column}{.57\textwidth}
+\concept{01}{Visibilità limitata}{Comportamento poco visibile.}
+\concept{02}{Interazioni con terze parti}{Più infrastrutture per una pagina.}
+\concept{03}{Segnali difficili da interpretare}{Segnali tecnici senza contesto.}
+\end{column}
+\begin{column}{.34\textwidth}
+% Inserire assets/illustrazione.png; ingombro fisso 3,3 cm.
+\graphicasset[3.3cm]{assets/illustrazione.png}{Illustrazione del comportamento\\di una pagina web}
+\end{column}
+\end{columns}
+\note{Tempo: 60 secondi. Motivazione ingegneristica: l'utente vede la pagina ma non la composizione della rete o l'uso delle API. Un'estensione può associare le osservazioni alla scheda senza un proxy esterno. I segnali richiedono interpretazione: una terza parte può essere un servizio necessario, una API grafica può avere un uso legittimo. La slide 4 riserva spazio al diagramma architetturale personalizzato; spiegare oralmente i flussi implementati.}
+\end{frame}
+
+% 3 — Tre righe, nessuna griglia di card.
+\begin{frame}[t]{La soluzione: BrowserGuard}
+\vspace{5mm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{.33\textwidth}
+{\fontsize{23}{29}\selectfont Analisi locale.\\Valutazioni\\spiegabili.\par}
+\vspace{5mm}\accentline
+\end{column}
+\begin{column}{.61\textwidth}
+\concept{01}{Security}{Trasporto e configurazione della pagina.}
+\concept{02}{Privacy}{Tracking associato ai domini e API sensibili.}
+\concept{03}{Network}{Esposizione verso entità esterne o ignote.}
+\end{column}
+\end{columns}
+\vspace{1mm}\labeltext{Tre dimensioni indipendenti. Nessuna certificazione di sicurezza del sito.}
+\note{Tempo: 60 secondi. Le categorie di Security sono no-major-issues, observations e attention; Privacy usa low, moderate ed elevated activity; Network usa low, moderate e high third-party activity. I livelli di attività non sono probabilità di rischio. La scelta di tre dimensioni evita di confondere hardening, tracking e volume di rete.}
+\end{frame}
+
+% 4 — Diagramma architetturale da inserire manualmente.
+\begin{frame}[t]{Architettura del sistema}
+\labeltext{Raccolta per scheda nel Service Worker; Assessment Engine nel popup.}
+\vspace{5mm}
+% Inserire assets/architettura.png; preservare i flussi documentati nelle note.
+\graphicasset[4.75cm]{assets/architettura.png}{Diagramma architetturale\\Pagina · Service Worker · Popup}
+\note{Tempo: 2 minuti. Il segnaposto è destinato a un diagramma personalizzato. Rappresentare dati e risposte distinguendoli dalle richieste del popup. Il service worker importa dataset, matcher, resolver e analyzer; non importa l'Assessment Engine. La pagina emette CustomEvent da MAIN, il bridge isolato sanitizza e inoltra i metadati con runtime.sendMessage. Il worker valida categoria e API e aggrega per tabId ricavato dal mittente. Il DOM viene letto su richiesta dal popup, non inviato al worker. Il popup analizza l'URL, richiede tre snapshot al worker e il DOM al content script; poi invoca il motore puro caricato da popup.html. storage.session permette ripristino dopo sospensione del worker. Non è presente un backend.}
+\end{frame}
+
+% 5 — Fonti essenziali, flusso da personalizzare.
+\begin{frame}[t]{Raccolta e analisi dei dati}
+\vspace{6mm}
+\begin{columns}[c,onlytextwidth]
+\begin{column}{.35\textwidth}
+\heading{Quattro sorgenti}
+\vspace{4mm}
+DOM e URL\par\vspace{4mm}
+Richieste di rete\par\vspace{4mm}
+Header di sicurezza HTTP\par\vspace{4mm}
+API runtime del browser
+\end{column}
+\begin{column}{.58\textwidth}
+% Inserire assets/flusso-dati.png; altezza fissa 4,2 cm.
+\graphicasset[4.2cm]{assets/flusso-dati.png}{Flusso di raccolta ed elaborazione\\Sorgenti · Segnali · Snapshot}
+\end{column}
+\end{columns}
+\vspace{5mm}\labeltext{Si osservano metadati e uso delle API; non i valori dei fingerprint.}
+\note{Tempo: 90 secondi. onBeforeRequest osserva senza blocking e senza modificare richieste. Il confronto di rete accorpa sottodomini dello stesso sito; la stima usa un elenco limitato di suffissi composti, non una PSL completa. L'origin del browser comprende schema, host e porta: non confonderla con questa euristica, anche se la UI usa cross-origin. Il matcher cerca suffissi per etichette: tracker.example.com può corrispondere a example.com, notexample.com e example.com.evil.test no. Il parser CSP segnala wildcard, unsafe-inline e unsafe-eval; HSTS segnala max-age inferiore a 15.552.000 secondi (180 giorni). Il monitor deduplica API/dettaglio e limita i report a 128 per pagina: i conteggi non sono il totale delle chiamate native. Il manifest non imposta all_frames: il monitor non copre ogni iframe. URL: HTTPS, IP, Punycode, carattere @, codifica percentuale, lunghezza oltre 100 caratteri e almeno 3 sottodomini. Il DOM rileva form password HTTP o esterni, link con hostname mostrato diverso dalla destinazione, script esterni, iframe nascosti, sandbox e iframe HTTP su HTTPS. Header selezionati: CSP e report-only, HSTS, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, X-Frame-Options; anti-framing anche da frame-ancestors. Nessun valore di form viene letto.}
+\end{frame}
+
+% 6 — Una sola regola visibile; le altre soglie sono nelle note.
+\begin{frame}[t]{Assessment Engine}
+\labeltext{Regole deterministiche e soglie euristiche; risultati motivati per ogni dimensione.}
+\vspace{5mm}
+\begin{columns}[c,onlytextwidth]
+\begin{column}{.59\textwidth}
+% Inserire assets/assessment.png; non rappresentare probabilità di rischio.
+\graphicasset[4.25cm]{assets/assessment.png}{Visualizzazione dell'Assessment Engine\\Snapshot · Regole · Valutazioni indipendenti}
+\end{column}
+\begin{column}{.34\textwidth}
+\heading{Una regola reale}
+\vspace{4mm}
+Pagina HTTP\par\vspace{2mm}
+{\color{Forest}$\longrightarrow$ \texttt{attention}}\par
+\vspace{7mm}
+\labeltext{Dati mancanti?\\Analisi dichiarata parziale.}
+\end{column}
+\end{columns}
+\note{Tempo: 2 minuti. Regole e soglie sono euristiche, non probabilità validate. Sicurezza: segnali moderati includono form password verso host esterni, osservazioni CSP e iframe HTTP in pagina HTTPS. Iframe nascosti o third-party senza sandbox restano informativi. Non si sommano CSP assente e anti-framing assente come due segnali deboli separati quando l'assenza anti-framing deriva dalla stessa mancanza CSP. Privacy: runtime multiplo significa almeno 3 categorie oppure WebGL hardware insieme a Canvas o navigator. Tracking moderato o runtime multiplo produce moderate-activity; tracking limited insieme a runtime limited produce moderate-activity; i soli segnali deboli device/screen non fanno questa combinazione. Network: le altre condizioni high sono D_e almeno 15 con E almeno 15 oppure T almeno 30; oppure E almeno 75 con r almeno 25 per cento. Se presenti usa assessmentThirdPartyRequests e assessmentThirdPartyDomainCount, altrimenti i contatori raw come fallback. Esempio puramente didattico: 10 richieste esterne su 20 totali soddisfano high; 1 su 2 non soddisfa questa regola high e ricade nel moderato. missingSources copre tutte e cinque le sorgenti: complete significa disponibilità dei dati, non completezza della copertura o prova di sicurezza. Soglie da preservare: tracking moderato con D_t almeno 2 o R_t almeno 10; elevato con D_t almeno 5 oppure R_t almeno 30 insieme a D_t almeno 2. Network moderato con r almeno 25 per cento oppure D_e almeno 5 oppure E almeno 20. Definizioni: E richieste esterne più ignote, T richieste totali, r=E/T, D_e hostname esterni/ignoti distinti. Security attention con almeno un segnale forte o due moderati; segnali deboli da soli producono al massimo observations.}
+\end{frame}
+
+% 7 — Layout testuale senza pannelli, ciclo di vita separato dalla minimizzazione.
+\begin{frame}[t]{Privacy by Design}
+\vspace{6mm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{.47\textwidth}
+\heading{Elaborazione locale}
+\vspace{3mm}
+Nessun backend di analisi\\o telemetria esterna.\par
+\vspace{7mm}
+\heading{Dati minimizzati}
+\vspace{3mm}
+Metadati e nomi delle API.\\Nessun valore di fingerprint.
+\end{column}
+\begin{column}{.47\textwidth}
+\heading{Stato temporaneo}
+\vspace{3mm}
+\texttt{storage.session}: dati per scheda.\\Rimozione alla chiusura.\par
+\vspace{7mm}
+\heading{Preferenze locali}
+\vspace{3mm}
+\texttt{storage.local}: tema del popup.
+\end{column}
+\end{columns}
+\vspace{7mm}\labeltext{Limite di fiducia: la pagina può falsificare gli eventi runtime del bridge.}
+\note{Tempo: 90 secondi. Lo stato di sessione include URL della pagina e domini, quindi locale non significa privo di dati sensibili. Il worker mantiene Map in memoria e le serializza nella sessione per sopravvivere alle sospensioni MV3. I nuovi main_frame azzerano lo stato della scheda. L'accesso ampio serve a osservare i siti visitati ma aumenta l'importanza della minimizzazione e del confine tra pagina ed estensione. Il bridge filtra categoria, API e dettaglio; il worker ricontrolla categoria/API. La pagina può emettere falsi eventi conformi allo schema. Dataset generato il 28 settembre 2026 dalla regione US e dal riferimento main: è una fotografia incorporata, non una query live. Solo scripts/update-tracker-radar.js scarica l'upstream, eseguito dallo sviluppatore; non fa parte del runtime dell'estensione. Attribuzione Duck Duck Go, Inc., senza endorsement. Permessi: tabs, scripting, storage, webRequest e host HTTP/HTTPS. storage.local conserva la sola preferenza del tema. Non vengono conservati valori password, cookie, body o valori dei fingerprint. Nessuna telemetria o API di analisi esterna nel runtime.}
+\end{frame}
+
+% 8 — Area ampia per una cattura vera, senza popup simulato.
+\begin{frame}[t]{BrowserGuard in azione}
+\vspace{4mm}
+\begin{columns}[c,onlytextwidth]
+\begin{column}{.62\textwidth}
+% Inserire una cattura REALE in assets/popup-screenshot.png.
+% Il contenitore conserva altezza 5,1 cm anche in assenza del file.
+\graphicasset[5.1cm]{assets/popup-screenshot.png}{Screenshot reale del popup\\Security · Privacy · Network}
+\end{column}
+\begin{column}{.31\textwidth}
+\concept{01}{Sintesi}{Tre dimensioni.}
+\concept{02}{Motivazioni}{Evidenze e lacune.}
+\concept{03}{Dettagli}{Domini e segnali.}
+\end{column}
+\end{columns}
+\note{Tempo: 90 secondi inclusa demo. Servire test-pages da localhost via HTTP: file:// non corrisponde agli host del manifest. Ricaricare la pagina dopo aver caricato l'estensione, così document_start installa il monitor. runtime-privacy-test.html esercita le categorie supportate; dom-analysis-test.html mostra moduli, link e iframe. web-security-test.html deve essere servita con HTTPS e header configurati per una demo di hardening; l'HTML da solo non imposta header di risposta. Le richieste mixed content possono essere bloccate o aggiornate da Chrome prima di un'osservazione utile: non promettere conteggi. Il popup raccoglie i dati all'apertura e verifica nuovamente identità e URL della scheda, con al massimo due tentativi: non è un cruscotto live con aggiornamento continuo. Non è disponibile una cattura reale nel repository; il riquadro è dichiaratamente un segnaposto.}
+\end{frame}
+
+% 9 — Risultato reale, non un benchmark o una misura di precisione.
+\begin{frame}[t]{Testing e limiti}
+\vspace{2mm}
+\begin{columns}[c,onlytextwidth]
+\begin{column}{.43\textwidth}
+{\fontsize{38}{42}\selectfont\bfseries 15/15\par}
+\labeltext{File di test superati · 0 fallimenti}
+\vspace{3mm}
+\heading{Verificato}
+\vspace{1mm}{\color{Muted}Regole, raccolta e moduli;\\controlli statici dell'interfaccia.\par}
+\vspace{2mm}\heading{Da validare}
+\vspace{1mm}{\color{Muted}Chrome end-to-end,\\accuratezza e prestazioni.\par}
+\end{column}
+\begin{column}{.51\textwidth}
+% Inserire assets/test-risultati.png usando solo risultati verificati.
+\graphicasset[3.75cm]{assets/test-risultati.png}{Risultati dei test e copertura\\Ambienti simulati · Controlli statici}
+\end{column}
+\end{columns}
+\vspace{3mm}\labeltext{Limiti: dataset e API parziali; falsi positivi e negativi possibili.}
+\note{Tempo: 90 secondi. I 15 risultati del runner sono file di test, non 15 casi atomici e non 15 suite dichiarate; contengono numerose assert. Il registro dell'esecuzione è allegato. Test UI e freshness/accessibilità cercano pattern nel sorgente: non provano interazione reale con assistive technology né l'assenza di race di navigazione. I mock VM coprono flussi del worker ma non il lifecycle reale di Chrome. L'osservazione è limitata alle richieste rese visibili da webRequest dopo l'avvio e alle API supportate: dato disponibile non implica osservazione completa. Il mixed content usa URL onBeforeRequest, senza ricostruzione completa dei redirect. CSP è interpretata con un parser leggero, non con la semantica completa del browser. Un match dominio non prova tracking della singola richiesta; un'entità condivisa non garantisce comportamento rispettoso della privacy. Moduli verificati: matcher, entity resolver, parser header e assessment; worker per separazione schede, reset, rimozione e snapshot assenti; DOM per link/iframe; wrapper per ritorni, callback ed eccezioni; manifest, asset e controlli statici UI. Limiti ulteriori: PSL incompleta, nessun CNAME uncloaking, tracking first-party escluso, monitor nel frame principale. Nessuna misura di precisione, recall o overhead.}
+\end{frame}
+
+% 10 — Conclusione sobria, contributi e futuro distinti.
+\begin{frame}[t]{Conclusioni}
+\vspace{3mm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{.56\textwidth}
+\concept{01}{Osservare}{Integrare segnali della pagina e della rete.}
+\concept{02}{Distinguere}{Tre valutazioni indipendenti.}
+\concept{03}{Spiegare}{Esplicitare evidenze e dati mancanti.}
+\end{column}
+\begin{column}{.36\textwidth}
+\labeltext{SVILUPPI FUTURI}
+\vspace{4mm}
+Calibrazione delle soglie.\par\vspace{3mm}
+Test reali in Chrome.\par\vspace{3mm}
+Copertura e prestazioni.
+\end{column}
+\end{columns}
+\vspace{3mm}\accentline\vspace{2mm}
+\heading{Valutare segnali osservabili, con limiti espliciti.}
+\note{Tempo: 50 secondi. Il valore del progetto è collegare architettura MV3, osservazione di rete e interpretazione esplicita dei segnali. Presentare tutti gli elementi della colonna destra come proposte non implementate. Prima di usare le soglie come misura di rischio servono dati etichettati, calibrazione e valutazione degli errori; prima di rivendicare leggerezza servono misure di memoria, latenza e costo dei wrapper/storage. Durata prevista totale con demo: circa 14 minuti.}
+\end{frame}
+\end{document}

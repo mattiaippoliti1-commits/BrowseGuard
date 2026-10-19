@@ -17,6 +17,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     try {
 
         setupThemeToggle();
+        BrowserGuardExperience.setup(document, chrome);
+        setupContextualGlossary();
 
         const analysis = await loadFreshTabAnalysis();
 
@@ -420,51 +422,26 @@ function analyzeURL(urlString) {
  * @param {object|null} assessment - Assessment Engine output.
  */
 function updateAssessment(assessment) {
-
-    const unavailable = "Unavailable";
-    const dataStatus = document.getElementById("assessment-data-status");
-    const reasons = document.getElementById("assessment-reasons");
-
     currentAssessment = assessment;
     selectedAssessmentDimension = null;
     showAllFindings = false;
-    reasons.textContent = "";
-    dataStatus.textContent = "";
+    const view = BrowserGuardPresentation.present(assessment, currentNetworkActivity);
+    updateText("assessment-data-status", view.limitation + (view.missing ? " Missing: " + view.missing + "." : ""));
+    BrowserGuardPresentation.dimensions.forEach(function (dimension) {
+        const card = document.querySelector(".assessment-card[data-dimension='" + dimension + "']");
+        const result = view.cards[dimension];
+        card.dataset.state = result.state;
+        updateText("assessment-" + dimension, result.label);
+        card.setAttribute("aria-label", dimension.charAt(0).toUpperCase() + dimension.slice(1) + ": " +
+            (result.state === "unknown" ? "Unavailable" : result.label) + ". Show assessment details");
+        updateText("description-" + dimension, result.description + (result.limited ? " Some inputs are unavailable." : ""));
+    });
     renderAssessmentContextPanel();
-    renderPositiveSignals(null);
-
-    if (!assessment) {
-        updateAssessmentCard("security", null, unavailable);
-        updateAssessmentCard("privacy", null, unavailable);
-        updateAssessmentCard("network", null, unavailable);
-        dataStatus.textContent = "Analysis incomplete.";
-        return;
-    }
-
-    updateAssessmentCard(
-        "security",
-        assessment.security.level,
-        formatAssessmentLabel("security", assessment.security.level)
-    );
-    updateAssessmentCard(
-        "privacy",
-        assessment.privacy.level,
-        formatAssessmentLabel("privacy", assessment.privacy.level)
-    );
-    updateAssessmentCard(
-        "network",
-        assessment.network.level,
-        formatAssessmentLabel("network", assessment.network.level)
-    );
-
-    if (assessment.dataStatus === "partial") {
-        dataStatus.textContent =
-            "Analysis incomplete: " + assessment.missingSources.join(", ");
-    }
-
-    renderAssessmentReasons(assessment);
+    document.getElementById("assessment-reasons").textContent = "";
+    if (assessment) renderAssessmentReasons(assessment);
     renderPositiveSignals(assessment);
-
+    renderDimensionFindings(assessment);
+    updateQuickInsights();
 }
 
 
@@ -516,76 +493,84 @@ function renderAssessmentReasons(assessment) {
 
 
 function renderAssessmentContextPanel() {
-
-    const panel = document.getElementById("assessment-context-panel");
-
-    if (!panel) {
-        return;
-    }
-
-    panel.textContent = "";
     updateAssessmentCardSelection();
+    const view = BrowserGuardPresentation.present(currentAssessment, currentNetworkActivity);
+    BrowserGuardPresentation.dimensions.forEach(function (dimension) {
+        const panel = document.getElementById("context-" + dimension);
+        panel.textContent = "";
+        panel.hidden = selectedAssessmentDimension !== dimension;
+        if (panel.hidden) return;
+        const result = currentAssessment && currentAssessment[dimension];
+        const heading = document.createElement("h3");
+        heading.textContent = dimension.charAt(0).toUpperCase() + dimension.slice(1) + " · " +
+            (view.cards[dimension].state === "unknown" ? "Unavailable" : view.cards[dimension].label);
+        panel.appendChild(heading);
+        const summary = document.createElement("p");
+        summary.textContent = view.cards[dimension].description;
+        panel.appendChild(summary);
+        const reasons = result && result.reasons || [];
+        const contributors = result && result.contributingFindings || reasons.filter(reason => ["high", "medium"].includes(reason.severity));
+        const selected = contributors.length ? contributors : reasons;
+        if (selected.length) {
+            const caption = document.createElement("p");
+            caption.className = "context-caption";
+            caption.textContent = contributors.length ? "Contributing findings" : "Observations and limitations";
+            panel.appendChild(caption);
+            const list = document.createElement("ul");
+            list.className = "context-findings";
+            selected.slice(0, 3).forEach(function (reason) {
+                const item = document.createElement("li");
+                item.textContent = BrowserGuardPresentation.explain(reason).observation;
+                list.appendChild(item);
+            });
+            panel.appendChild(list);
+        }
+        const action = document.createElement("button");
+        action.type = "button";
+        action.className = "assessment-context-action";
+        action.dataset.detailsTarget = dimension;
+        action.textContent = "View all " + dimension + " evidence";
+        panel.appendChild(action);
+    });
+}
 
-    if (!currentAssessment || !selectedAssessmentDimension) {
-        panel.hidden = true;
-        return;
-    }
 
-    const result = currentAssessment[selectedAssessmentDimension];
-    const reasons = result && result.reasons ? result.reasons : [];
-    const dimensionLabel = formatDimensionLabel(selectedAssessmentDimension);
+function createGlossaryButton(term) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "glossary-button";
+    button.dataset.glossary = term;
+    button.textContent = "About " + term;
+    button.setAttribute("aria-haspopup", "dialog");
+    return button;
+}
 
-    panel.setAttribute(
-        "aria-label",
-        dimensionLabel + " assessment details"
-    );
-
-    const heading = document.createElement("div");
-    heading.className = "assessment-context-heading";
-    heading.textContent =
-        dimensionLabel + " · " +
-        formatAssessmentLabel(selectedAssessmentDimension, result.level);
-
-    const subtitle = document.createElement("p");
-    subtitle.className = "assessment-context-subtitle";
-    subtitle.textContent = "Why this assessment?";
-
-    panel.appendChild(heading);
-    panel.appendChild(subtitle);
-
-    if (reasons.length === 0) {
-        const emptyState = document.createElement("p");
-        emptyState.className = "empty-state";
-        emptyState.textContent =
-            "No specific assessment findings to display.";
-        panel.appendChild(emptyState);
-    } else {
-        const list = document.createElement("div");
-        list.className = "assessment-context-list";
-
-        reasons.forEach(function (reason) {
-            list.appendChild(renderFindingItem({
-                dimension: dimensionLabel,
-                message: reason.message,
-                severity: reason.severity,
-                type: "reason"
-            }, false));
+function setupContextualGlossary() {
+    const terms = { "web-security-https": "HTTPS", "web-security-csp": "Content Security Policy", "web-security-hsts": "HSTS", "web-security-mixed-content": "Mixed content", "tracker-domain-count-detail": "Tracker", "network-third-party-requests": "Third-party request", "network-total-requests-detail": "Network activity", "web-security-content-type": "Security header" };
+    Object.entries(terms).forEach(function ([id, term]) {
+        const row = document.getElementById(id)?.parentElement;
+        if (row) row.firstElementChild.appendChild(createGlossaryButton(term));
+    });
+    // Existing supplemental tooltips also support explicit touch/click and Escape dismissal.
+    document.querySelectorAll(".info-dot").forEach(function (button) {
+        button.setAttribute("aria-expanded", "false");
+        button.addEventListener("click", function () {
+            const open = button.getAttribute("aria-expanded") !== "true";
+            button.setAttribute("aria-expanded", String(open));
+            button.parentElement.classList.toggle("is-open", open);
         });
-
-        panel.appendChild(list);
-    }
-
-    const action = document.createElement("button");
-    action.className = "assessment-context-action";
-    action.type = "button";
-    action.dataset.detailsTarget = selectedAssessmentDimension;
-    action.textContent = "View " +
-        selectedAssessmentDimension +
-        " details";
-    panel.appendChild(action);
-
-    panel.hidden = false;
-
+        button.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+                button.setAttribute("aria-expanded", "false");
+                button.parentElement.classList.add("is-dismissed");
+                button.parentElement.classList.remove("is-open");
+            }
+        });
+        button.addEventListener("blur", function () {
+            button.setAttribute("aria-expanded", "false");
+            button.parentElement.classList.remove("is-open", "is-dismissed");
+        });
+    });
 }
 
 
@@ -595,7 +580,7 @@ function renderFindingItem(finding, includeDimensionLabel) {
     item.className =
         "finding-item " + getFindingClassName(finding);
 
-    const text = document.createElement("span");
+    const text = document.createElement("div");
     text.className = "finding-text";
 
     if (includeDimensionLabel) {
@@ -612,10 +597,115 @@ function renderFindingItem(finding, includeDimensionLabel) {
     text.appendChild(message);
     item.appendChild(text);
 
+    if (finding.evidence && Object.keys(finding.evidence).length) {
+        const evidence = document.createElement("details");
+        evidence.className = "evidence-disclosure";
+        const summary = document.createElement("summary");
+        summary.textContent = "Supporting evidence";
+        evidence.appendChild(summary);
+        evidence.appendChild(renderEvidenceRows(finding.evidence));
+        text.appendChild(evidence);
+    }
+
     return item;
 
 }
 
+
+function renderDimensionFindings(assessment) {
+    BrowserGuardPresentation.dimensions.forEach(function (dimension) {
+        const container = document.getElementById(dimension + "-findings");
+        container.textContent = "";
+        const reasons = assessment && assessment[dimension]?.reasons || [];
+        reasons.forEach(function (reason) {
+            container.appendChild(renderFindingItem({ ...reason, dimension: dimension, type: "reason" }, false));
+        });
+        if (!reasons.length) {
+            const empty = document.createElement("p");
+            empty.className = "empty-state";
+            empty.textContent = assessment ? "No specific findings in the available signals." : "Collection data is unavailable.";
+            container.appendChild(empty);
+        }
+    });
+}
+
+function evidenceLabel(key) {
+    const labels = { countedForEscalation: "Contributes to level", assessmentThirdPartyRequests: "Assessed external requests",
+        assessmentThirdPartyDomainCount: "Assessed external domains", thirdPartyRequests: "Cross-origin requests",
+        thirdPartyDomainCount: "Cross-origin domains", externalThirdPartyRequests: "Confirmed external requests",
+        sameEntityThirdPartyRequests: "Confirmed same-entity requests", unknownThirdPartyRequests: "Unknown attribution requests", thirdPartyRatio: "Cross-origin ratio",
+        assessmentThirdPartyRatio: "Assessed external ratio", combinedRuntimeIndicators: "Correlated API surfaces" };
+    return labels[key] || key.replace(/([a-z0-9])([A-Z])/g, "$1 $2").replace(/^./, function (letter) { return letter.toUpperCase(); });
+}
+
+function renderEvidenceRows(value) {
+    const container = document.createElement("div");
+    container.className = "evidence-rows";
+    Object.entries(value).forEach(function ([key, entry]) {
+        if (entry && typeof entry === "object") {
+            const label = document.createElement("p");
+            label.className = "evidence-group-label";
+            label.textContent = evidenceLabel(key);
+            container.appendChild(label);
+            if (Object.keys(entry).length) container.appendChild(renderEvidenceRows(entry));
+            else {
+                const empty = document.createElement("p");
+                empty.className = "empty-state";
+                empty.textContent = "None observed";
+                container.appendChild(empty);
+            }
+        } else {
+            const row = document.createElement("div");
+            row.className = "analysis-row";
+            const label = document.createElement("span");
+            label.textContent = /^\d+$/.test(key) ? "Observation " + (Number(key) + 1) : evidenceLabel(key);
+            const text = document.createElement("span");
+            text.textContent = entry === true ? "Yes" : entry === false ? "No" : entry == null ? "Not available" : String(entry);
+            row.appendChild(label); row.appendChild(text); container.appendChild(row);
+        }
+    });
+    return container;
+}
+
+function updateQuickInsights() {
+    const activity = currentNetworkActivity;
+    const available = isSnapshotAvailable(activity);
+    const count = key => available && Number.isFinite(activity[key]) ? String(activity[key]) : "—";
+    updateText("network-total-requests", count("totalRequests"));
+    updateText("tracker-known-count", count("trackerDomainCount"));
+    const attribution = BrowserGuardPresentation.networkAttribution(currentAssessment, activity);
+    updateText("network-external-third-party", available ? attribution.externalMetric : "—");
+    updateText("external-count-note", attribution.explanation || "Counts only requests attributed to a different organization.");
+    updateText("network-attribution-status", attribution.explanation);
+}
+
+let selectedTechnicalTab = "overview";
+const technicalTabNames = ["overview", "security", "privacy", "network"];
+function selectTechnicalTab(name, focus) {
+    if (!technicalTabNames.includes(name)) return;
+    selectedTechnicalTab = name;
+    technicalTabNames.forEach(function (tab) {
+        const button = document.getElementById("tab-" + tab);
+        button.setAttribute("aria-selected", String(tab === name));
+        button.setAttribute("tabindex", tab === name ? "0" : "-1");
+        document.getElementById("panel-" + tab).hidden = tab !== name;
+    });
+    if (focus) document.getElementById("tab-" + name).focus();
+}
+document.addEventListener("click", function (event) {
+    const tab = event.target.closest("[data-technical-tab]");
+    if (tab) selectTechnicalTab(tab.dataset.technicalTab, false);
+});
+document.addEventListener("keydown", function (event) {
+    const tab = event.target.closest("[data-technical-tab]");
+    if (!tab) return;
+    const index = technicalTabNames.indexOf(tab.dataset.technicalTab);
+    const next = event.key === "ArrowRight" ? (index + 1) % 4 : event.key === "ArrowLeft" ? (index + 3) % 4 :
+        event.key === "Home" ? 0 : event.key === "End" ? 3 : null;
+    if (next === null) return;
+    event.preventDefault();
+    selectTechnicalTab(technicalTabNames[next], true);
+});
 
 function updateAssessmentCardSelection() {
 
@@ -637,11 +727,13 @@ function collectReasonFindings(assessment) {
         ["Privacy", assessment.privacy],
         ["Network", assessment.network]
     ].flatMap(function ([dimension, result]) {
-        return (result.reasons || []).map(function (reason) {
+        return (result?.reasons || []).map(function (reason) {
             return {
                 dimension: dimension,
                 message: reason.message,
                 severity: reason.severity,
+                id: reason.id,
+                evidence: reason.evidence,
                 type: "reason"
             };
         });
@@ -699,7 +791,7 @@ function collectPositiveSignals(assessment) {
         assessment.privacy,
         assessment.network
     ].flatMap(function (result) {
-        return result.positiveSignals || [];
+        return result?.positiveSignals || [];
     });
 
 }
@@ -739,88 +831,6 @@ function getFindingClassName(finding) {
     }
 
     return "is-" + finding.severity;
-
-}
-
-
-function updateAssessmentCard(dimension, level, label) {
-
-    const element = document.getElementById("assessment-" + dimension);
-    const card = document.querySelector(
-        ".assessment-card[data-dimension='" + dimension + "']"
-    );
-
-    element.textContent = label;
-
-    if (!card) {
-        return;
-    }
-
-    card.classList.remove("is-good", "is-observation", "is-moderate", "is-danger");
-    card.classList.add(getAssessmentStatusClass(dimension, level));
-
-}
-
-
-function formatAssessmentLabel(dimension, level) {
-
-    const labels = {
-        security: {
-            "no-major-issues": "No major issues",
-            observations: "Observations",
-            attention: "Attention"
-        },
-        privacy: {
-            "low-activity": "Low",
-            "moderate-activity": "Moderate",
-            "elevated-activity": "Elevated"
-        },
-        network: {
-            "low-third-party-activity": "Low external",
-            "moderate-third-party-activity": "Moderate external",
-            "high-third-party-activity": "High external"
-        }
-    };
-
-    return labels[dimension][level] || "Unavailable";
-
-}
-
-
-function formatDimensionLabel(dimension) {
-
-    const labels = {
-        security: "Security",
-        privacy: "Privacy",
-        network: "Network"
-    };
-
-    return labels[dimension] || dimension;
-
-}
-
-
-function getAssessmentStatusClass(dimension, level) {
-
-    const classes = {
-        security: {
-            "no-major-issues": "is-good",
-            observations: "is-observation",
-            attention: "is-danger"
-        },
-        privacy: {
-            "low-activity": "is-good",
-            "moderate-activity": "is-moderate",
-            "elevated-activity": "is-danger"
-        },
-        network: {
-            "low-third-party-activity": "is-good",
-            "moderate-third-party-activity": "is-moderate",
-            "high-third-party-activity": "is-danger"
-        }
-    };
-
-    return (classes[dimension] && classes[dimension][level]) || "is-observation";
 
 }
 
@@ -1191,7 +1201,7 @@ function updatePageAnalysis(analysis) {
     // Render the page analysis values returned by the content script.
     pageAnalysisFields.forEach(function ([elementId, propertyName]) {
         document.getElementById(elementId).textContent =
-            analysis[propertyName];
+            analysis[propertyName] ?? "—";
     });
 
 }
@@ -1205,17 +1215,16 @@ function updatePageAnalysis(analysis) {
 function updateNetworkActivity(activity) {
 
     currentNetworkActivity = activity;
+    updateQuickInsights();
     showAllThirdPartyDomains = false;
 
     const unavailable = "Unavailable";
     const notObservedYet = "Not observed yet";
     const summaryFields = [
-        ["network-total-requests", "totalRequests"],
         ["network-first-party-requests", "firstPartyRequests"],
         ["network-third-party-requests", "thirdPartyRequests"],
         ["network-third-party-domains", "thirdPartyDomainCount"],
         ["network-same-entity-third-party", "sameEntityThirdPartyRequests"],
-        ["network-external-third-party", "externalThirdPartyRequests"],
         ["network-unknown-third-party", "unknownThirdPartyRequests"]
     ];
 
@@ -1249,7 +1258,7 @@ function updateNetworkActivity(activity) {
 
     summaryFields.forEach(function ([elementId, propertyName]) {
         document.getElementById(elementId).textContent =
-            activity[propertyName];
+            activity[propertyName] ?? "—";
     });
 
     updateText("network-total-requests-detail", activity.totalRequests);
@@ -1309,7 +1318,7 @@ function updateRuntimePrivacy(runtimePrivacy) {
 
     categoryDefinitions.forEach(function ([categoryKey, label]) {
         const category =
-            runtimePrivacy.categories[categoryKey] ||
+            (runtimePrivacy.categories || {})[categoryKey] ||
             createEmptyRuntimeCategory();
 
         list.appendChild(renderRuntimeCategory(label, category));
@@ -1330,7 +1339,7 @@ function updateWebSecurity(webSecurity, pageAnalysis) {
     const observations = document.getElementById("web-security-observations");
     observations.textContent = "";
 
-    if (!webSecurity) {
+    if (!webSecurity || !webSecurity.headers) {
         [
             "web-security-https",
             "web-security-csp",
@@ -1367,7 +1376,7 @@ function updateWebSecurity(webSecurity, pageAnalysis) {
     }
 
     document.getElementById("web-security-https").textContent =
-        webSecurity.https.enabled ? "Enabled" : "Not observed";
+        webSecurity.https?.enabled ? "Enabled" : "Not observed";
 
     document.getElementById("web-security-csp").textContent =
         formatCspStatus(webSecurity.headers.csp);
@@ -1376,16 +1385,16 @@ function updateWebSecurity(webSecurity, pageAnalysis) {
         formatHstsStatus(webSecurity.headers.hsts);
 
     document.getElementById("web-security-content-type").textContent =
-        webSecurity.headers.contentTypeOptions.status;
+        webSecurity.headers.contentTypeOptions?.status ?? "Not collected";
 
     document.getElementById("web-security-referrer").textContent =
-        webSecurity.headers.referrerPolicy.status;
+        webSecurity.headers.referrerPolicy?.status ?? "Not collected";
 
     document.getElementById("web-security-permissions").textContent =
-        formatPermissionsPolicyStatus(webSecurity.headers.permissionsPolicy);
+        webSecurity.headers.permissionsPolicy ? formatPermissionsPolicyStatus(webSecurity.headers.permissionsPolicy) : "Not collected";
 
     document.getElementById("web-security-anti-framing").textContent =
-        webSecurity.headers.antiFraming.status;
+        webSecurity.headers.antiFraming?.status ?? "Not collected";
 
     document.getElementById("web-security-mixed-content").textContent =
         formatMixedContentStatus(webSecurity.mixedContent);
@@ -1464,8 +1473,8 @@ function formatIframeSecurityStatus(pageAnalysis) {
         return "Unavailable";
     }
 
-    return pageAnalysis.thirdPartyIframeCount + " third-party · " +
-        pageAnalysis.sandboxedIframeCount + " sandboxed";
+    return (pageAnalysis.thirdPartyIframeCount ?? "—") + " third-party · " +
+        (pageAnalysis.sandboxedIframeCount ?? "—") + " sandboxed";
 
 }
 
@@ -1475,13 +1484,13 @@ function renderWebSecurityObservations(webSecurity, pageAnalysis) {
     const observations = document.getElementById("web-security-observations");
     const items = [];
 
-    if (webSecurity.headers.csp.observations) {
+    if (webSecurity.headers.csp?.observations) {
         webSecurity.headers.csp.observations.forEach(function (observation) {
             items.push("CSP: " + observation);
         });
     }
 
-    if (webSecurity.headers.hsts.observations) {
+    if (webSecurity.headers.hsts?.observations) {
         webSecurity.headers.hsts.observations.forEach(function (observation) {
             items.push("HSTS: " + observation);
         });
@@ -1639,7 +1648,7 @@ function formatRuntimeObservedDetails(category) {
 
     const details = category.details && category.details.length > 0 ?
         category.details :
-        category.apis;
+        category.apis || [];
 
     return details.map(function (detail) {
         return detail.replace(/:$/, "").replace(":", " · ");
@@ -1658,7 +1667,6 @@ function updateTrackerDetection(activity) {
     showAllTrackerDomains = false;
 
     const summaryFields = [
-        ["tracker-known-count", "trackerDomainCount"],
         ["tracker-domain-count-detail", "trackerDomainCount"],
         ["tracker-request-count", "trackerRequests"]
     ];
@@ -1683,7 +1691,7 @@ function updateTrackerDetection(activity) {
 
     summaryFields.forEach(function ([elementId, propertyName]) {
         document.getElementById(elementId).textContent =
-            activity[propertyName] || 0;
+            activity[propertyName] ?? "—";
     });
 
     renderTrackerDomains(activity.trackerDomains || []);
@@ -1789,7 +1797,7 @@ document.addEventListener("click", function (event) {
 
     const dimension = card.dataset.dimension;
 
-    if (!currentAssessment || !dimension) {
+    if (!dimension) {
         return;
     }
 
@@ -1910,7 +1918,7 @@ function renderTrackerDomains(trackers) {
 
         const hostname = document.createElement("span");
         hostname.className = "network-domain-hostname";
-        hostname.textContent = tracker.matchedDomain;
+        hostname.textContent = tracker.matchedDomain || tracker.hostname || "Domain not recorded";
 
         const details = document.createElement("span");
         details.className = "network-domain-details";
@@ -2032,6 +2040,7 @@ function updateText(elementId, value) {
     }
 
     element.textContent = value;
+    if (elementId === "hostname") element.setAttribute("title", value);
 
 }
 
@@ -2127,10 +2136,11 @@ function focusTechnicalDetailsSection(dimension) {
 
     trigger.setAttribute("aria-expanded", "true");
     content.hidden = false;
+    selectTechnicalTab(dimension, false);
     target.setAttribute("tabindex", "-1");
     target.scrollIntoView({
         block: "start",
-        behavior: "smooth"
+        behavior: "instant"
     });
     target.focus({
         preventScroll: true
