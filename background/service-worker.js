@@ -12,6 +12,7 @@ importScripts(
     "../modules/security/web-security-analyzer.js"
 );
 
+const prova = "prova";
 const tabNetworkStates = new Map();
 const tabRuntimePrivacyStates = new Map();
 const tabWebSecurityStates = new Map();
