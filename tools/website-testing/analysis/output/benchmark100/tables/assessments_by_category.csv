@@ -1,0 +1,301 @@
+population,dimension,category,level,count,denominator,percent
+successful,security,Banche e servizi finanziari,Low,8,9,88.888889
+successful,security,Banche e servizi finanziari,Moderate,1,9,11.111111
+successful,security,Banche e servizi finanziari,High,0,9,0.000000
+successful,security,Banche e servizi finanziari,Unavailable,0,9,0.000000
+successful,security,Banche e servizi finanziari,Missing,0,9,0.000000
+successful,security,E-commerce,Low,7,7,100.000000
+successful,security,E-commerce,Moderate,0,7,0.000000
+successful,security,E-commerce,High,0,7,0.000000
+successful,security,E-commerce,Unavailable,0,7,0.000000
+successful,security,E-commerce,Missing,0,7,0.000000
+successful,security,Informazione e giornali,Low,11,11,100.000000
+successful,security,Informazione e giornali,Moderate,0,11,0.000000
+successful,security,Informazione e giornali,High,0,11,0.000000
+successful,security,Informazione e giornali,Unavailable,0,11,0.000000
+successful,security,Informazione e giornali,Missing,0,11,0.000000
+successful,security,Intrattenimento e streaming,Low,5,5,100.000000
+successful,security,Intrattenimento e streaming,Moderate,0,5,0.000000
+successful,security,Intrattenimento e streaming,High,0,5,0.000000
+successful,security,Intrattenimento e streaming,Unavailable,0,5,0.000000
+successful,security,Intrattenimento e streaming,Missing,0,5,0.000000
+successful,security,Pubblica amministrazione,Low,8,8,100.000000
+successful,security,Pubblica amministrazione,Moderate,0,8,0.000000
+successful,security,Pubblica amministrazione,High,0,8,0.000000
+successful,security,Pubblica amministrazione,Unavailable,0,8,0.000000
+successful,security,Pubblica amministrazione,Missing,0,8,0.000000
+successful,security,Siti tecnici di riferimento,Low,5,5,100.000000
+successful,security,Siti tecnici di riferimento,Moderate,0,5,0.000000
+successful,security,Siti tecnici di riferimento,High,0,5,0.000000
+successful,security,Siti tecnici di riferimento,Unavailable,0,5,0.000000
+successful,security,Siti tecnici di riferimento,Missing,0,5,0.000000
+successful,security,Social network e community,Low,6,6,100.000000
+successful,security,Social network e community,Moderate,0,6,0.000000
+successful,security,Social network e community,High,0,6,0.000000
+successful,security,Social network e community,Unavailable,0,6,0.000000
+successful,security,Social network e community,Missing,0,6,0.000000
+successful,security,Tecnologia e software,Low,14,14,100.000000
+successful,security,Tecnologia e software,Moderate,0,14,0.000000
+successful,security,Tecnologia e software,High,0,14,0.000000
+successful,security,Tecnologia e software,Unavailable,0,14,0.000000
+successful,security,Tecnologia e software,Missing,0,14,0.000000
+successful,security,Università e istruzione,Low,9,9,100.000000
+successful,security,Università e istruzione,Moderate,0,9,0.000000
+successful,security,Università e istruzione,High,0,9,0.000000
+successful,security,Università e istruzione,Unavailable,0,9,0.000000
+successful,security,Università e istruzione,Missing,0,9,0.000000
+successful,security,Viaggi e turismo,Low,3,3,100.000000
+successful,security,Viaggi e turismo,Moderate,0,3,0.000000
+successful,security,Viaggi e turismo,High,0,3,0.000000
+successful,security,Viaggi e turismo,Unavailable,0,3,0.000000
+successful,security,Viaggi e turismo,Missing,0,3,0.000000
+successful,privacy,Banche e servizi finanziari,Low,2,9,22.222222
+successful,privacy,Banche e servizi finanziari,Moderate,5,9,55.555556
+successful,privacy,Banche e servizi finanziari,High,2,9,22.222222
+successful,privacy,Banche e servizi finanziari,Unavailable,0,9,0.000000
+successful,privacy,Banche e servizi finanziari,Missing,0,9,0.000000
+successful,privacy,E-commerce,Low,1,7,14.285714
+successful,privacy,E-commerce,Moderate,3,7,42.857143
+successful,privacy,E-commerce,High,3,7,42.857143
+successful,privacy,E-commerce,Unavailable,0,7,0.000000
+successful,privacy,E-commerce,Missing,0,7,0.000000
+successful,privacy,Informazione e giornali,Low,2,11,18.181818
+successful,privacy,Informazione e giornali,Moderate,2,11,18.181818
+successful,privacy,Informazione e giornali,High,7,11,63.636364
+successful,privacy,Informazione e giornali,Unavailable,0,11,0.000000
+successful,privacy,Informazione e giornali,Missing,0,11,0.000000
+successful,privacy,Intrattenimento e streaming,Low,3,5,60.000000
+successful,privacy,Intrattenimento e streaming,Moderate,2,5,40.000000
+successful,privacy,Intrattenimento e streaming,High,0,5,0.000000
+successful,privacy,Intrattenimento e streaming,Unavailable,0,5,0.000000
+successful,privacy,Intrattenimento e streaming,Missing,0,5,0.000000
+successful,privacy,Pubblica amministrazione,Low,5,8,62.500000
+successful,privacy,Pubblica amministrazione,Moderate,1,8,12.500000
+successful,privacy,Pubblica amministrazione,High,2,8,25.000000
+successful,privacy,Pubblica amministrazione,Unavailable,0,8,0.000000
+successful,privacy,Pubblica amministrazione,Missing,0,8,0.000000
+successful,privacy,Siti tecnici di riferimento,Low,4,5,80.000000
+successful,privacy,Siti tecnici di riferimento,Moderate,1,5,20.000000
+successful,privacy,Siti tecnici di riferimento,High,0,5,0.000000
+successful,privacy,Siti tecnici di riferimento,Unavailable,0,5,0.000000
+successful,privacy,Siti tecnici di riferimento,Missing,0,5,0.000000
+successful,privacy,Social network e community,Low,3,6,50.000000
+successful,privacy,Social network e community,Moderate,1,6,16.666667
+successful,privacy,Social network e community,High,2,6,33.333333
+successful,privacy,Social network e community,Unavailable,0,6,0.000000
+successful,privacy,Social network e community,Missing,0,6,0.000000
+successful,privacy,Tecnologia e software,Low,9,14,64.285714
+successful,privacy,Tecnologia e software,Moderate,4,14,28.571429
+successful,privacy,Tecnologia e software,High,1,14,7.142857
+successful,privacy,Tecnologia e software,Unavailable,0,14,0.000000
+successful,privacy,Tecnologia e software,Missing,0,14,0.000000
+successful,privacy,Università e istruzione,Low,4,9,44.444444
+successful,privacy,Università e istruzione,Moderate,1,9,11.111111
+successful,privacy,Università e istruzione,High,4,9,44.444444
+successful,privacy,Università e istruzione,Unavailable,0,9,0.000000
+successful,privacy,Università e istruzione,Missing,0,9,0.000000
+successful,privacy,Viaggi e turismo,Low,1,3,33.333333
+successful,privacy,Viaggi e turismo,Moderate,1,3,33.333333
+successful,privacy,Viaggi e turismo,High,1,3,33.333333
+successful,privacy,Viaggi e turismo,Unavailable,0,3,0.000000
+successful,privacy,Viaggi e turismo,Missing,0,3,0.000000
+successful,network,Banche e servizi finanziari,Low,2,9,22.222222
+successful,network,Banche e servizi finanziari,Moderate,4,9,44.444444
+successful,network,Banche e servizi finanziari,High,0,9,0.000000
+successful,network,Banche e servizi finanziari,Unavailable,3,9,33.333333
+successful,network,Banche e servizi finanziari,Missing,0,9,0.000000
+successful,network,E-commerce,Low,3,7,42.857143
+successful,network,E-commerce,Moderate,1,7,14.285714
+successful,network,E-commerce,High,2,7,28.571429
+successful,network,E-commerce,Unavailable,1,7,14.285714
+successful,network,E-commerce,Missing,0,7,0.000000
+successful,network,Informazione e giornali,Low,2,11,18.181818
+successful,network,Informazione e giornali,Moderate,2,11,18.181818
+successful,network,Informazione e giornali,High,6,11,54.545455
+successful,network,Informazione e giornali,Unavailable,1,11,9.090909
+successful,network,Informazione e giornali,Missing,0,11,0.000000
+successful,network,Intrattenimento e streaming,Low,2,5,40.000000
+successful,network,Intrattenimento e streaming,Moderate,3,5,60.000000
+successful,network,Intrattenimento e streaming,High,0,5,0.000000
+successful,network,Intrattenimento e streaming,Unavailable,0,5,0.000000
+successful,network,Intrattenimento e streaming,Missing,0,5,0.000000
+successful,network,Pubblica amministrazione,Low,5,8,62.500000
+successful,network,Pubblica amministrazione,Moderate,1,8,12.500000
+successful,network,Pubblica amministrazione,High,0,8,0.000000
+successful,network,Pubblica amministrazione,Unavailable,2,8,25.000000
+successful,network,Pubblica amministrazione,Missing,0,8,0.000000
+successful,network,Siti tecnici di riferimento,Low,2,5,40.000000
+successful,network,Siti tecnici di riferimento,Moderate,1,5,20.000000
+successful,network,Siti tecnici di riferimento,High,0,5,0.000000
+successful,network,Siti tecnici di riferimento,Unavailable,2,5,40.000000
+successful,network,Siti tecnici di riferimento,Missing,0,5,0.000000
+successful,network,Social network e community,Low,3,6,50.000000
+successful,network,Social network e community,Moderate,1,6,16.666667
+successful,network,Social network e community,High,1,6,16.666667
+successful,network,Social network e community,Unavailable,1,6,16.666667
+successful,network,Social network e community,Missing,0,6,0.000000
+successful,network,Tecnologia e software,Low,10,14,71.428571
+successful,network,Tecnologia e software,Moderate,3,14,21.428571
+successful,network,Tecnologia e software,High,0,14,0.000000
+successful,network,Tecnologia e software,Unavailable,1,14,7.142857
+successful,network,Tecnologia e software,Missing,0,14,0.000000
+successful,network,Università e istruzione,Low,1,9,11.111111
+successful,network,Università e istruzione,Moderate,7,9,77.777778
+successful,network,Università e istruzione,High,1,9,11.111111
+successful,network,Università e istruzione,Unavailable,0,9,0.000000
+successful,network,Università e istruzione,Missing,0,9,0.000000
+successful,network,Viaggi e turismo,Low,1,3,33.333333
+successful,network,Viaggi e turismo,Moderate,1,3,33.333333
+successful,network,Viaggi e turismo,High,1,3,33.333333
+successful,network,Viaggi e turismo,Unavailable,0,3,0.000000
+successful,network,Viaggi e turismo,Missing,0,3,0.000000
+all,security,Banche e servizi finanziari,Low,9,10,90.000000
+all,security,Banche e servizi finanziari,Moderate,1,10,10.000000
+all,security,Banche e servizi finanziari,High,0,10,0.000000
+all,security,Banche e servizi finanziari,Unavailable,0,10,0.000000
+all,security,Banche e servizi finanziari,Missing,0,10,0.000000
+all,security,E-commerce,Low,15,15,100.000000
+all,security,E-commerce,Moderate,0,15,0.000000
+all,security,E-commerce,High,0,15,0.000000
+all,security,E-commerce,Unavailable,0,15,0.000000
+all,security,E-commerce,Missing,0,15,0.000000
+all,security,Informazione e giornali,Low,14,15,93.333333
+all,security,Informazione e giornali,Moderate,0,15,0.000000
+all,security,Informazione e giornali,High,0,15,0.000000
+all,security,Informazione e giornali,Unavailable,1,15,6.666667
+all,security,Informazione e giornali,Missing,0,15,0.000000
+all,security,Intrattenimento e streaming,Low,5,5,100.000000
+all,security,Intrattenimento e streaming,Moderate,0,5,0.000000
+all,security,Intrattenimento e streaming,High,0,5,0.000000
+all,security,Intrattenimento e streaming,Unavailable,0,5,0.000000
+all,security,Intrattenimento e streaming,Missing,0,5,0.000000
+all,security,Pubblica amministrazione,Low,10,10,100.000000
+all,security,Pubblica amministrazione,Moderate,0,10,0.000000
+all,security,Pubblica amministrazione,High,0,10,0.000000
+all,security,Pubblica amministrazione,Unavailable,0,10,0.000000
+all,security,Pubblica amministrazione,Missing,0,10,0.000000
+all,security,Siti tecnici di riferimento,Low,5,5,100.000000
+all,security,Siti tecnici di riferimento,Moderate,0,5,0.000000
+all,security,Siti tecnici di riferimento,High,0,5,0.000000
+all,security,Siti tecnici di riferimento,Unavailable,0,5,0.000000
+all,security,Siti tecnici di riferimento,Missing,0,5,0.000000
+all,security,Social network e community,Low,10,10,100.000000
+all,security,Social network e community,Moderate,0,10,0.000000
+all,security,Social network e community,High,0,10,0.000000
+all,security,Social network e community,Unavailable,0,10,0.000000
+all,security,Social network e community,Missing,0,10,0.000000
+all,security,Tecnologia e software,Low,15,15,100.000000
+all,security,Tecnologia e software,Moderate,0,15,0.000000
+all,security,Tecnologia e software,High,0,15,0.000000
+all,security,Tecnologia e software,Unavailable,0,15,0.000000
+all,security,Tecnologia e software,Missing,0,15,0.000000
+all,security,Università e istruzione,Low,10,10,100.000000
+all,security,Università e istruzione,Moderate,0,10,0.000000
+all,security,Università e istruzione,High,0,10,0.000000
+all,security,Università e istruzione,Unavailable,0,10,0.000000
+all,security,Università e istruzione,Missing,0,10,0.000000
+all,security,Viaggi e turismo,Low,5,5,100.000000
+all,security,Viaggi e turismo,Moderate,0,5,0.000000
+all,security,Viaggi e turismo,High,0,5,0.000000
+all,security,Viaggi e turismo,Unavailable,0,5,0.000000
+all,security,Viaggi e turismo,Missing,0,5,0.000000
+all,privacy,Banche e servizi finanziari,Low,3,10,30.000000
+all,privacy,Banche e servizi finanziari,Moderate,5,10,50.000000
+all,privacy,Banche e servizi finanziari,High,2,10,20.000000
+all,privacy,Banche e servizi finanziari,Unavailable,0,10,0.000000
+all,privacy,Banche e servizi finanziari,Missing,0,10,0.000000
+all,privacy,E-commerce,Low,7,15,46.666667
+all,privacy,E-commerce,Moderate,5,15,33.333333
+all,privacy,E-commerce,High,3,15,20.000000
+all,privacy,E-commerce,Unavailable,0,15,0.000000
+all,privacy,E-commerce,Missing,0,15,0.000000
+all,privacy,Informazione e giornali,Low,6,15,40.000000
+all,privacy,Informazione e giornali,Moderate,2,15,13.333333
+all,privacy,Informazione e giornali,High,7,15,46.666667
+all,privacy,Informazione e giornali,Unavailable,0,15,0.000000
+all,privacy,Informazione e giornali,Missing,0,15,0.000000
+all,privacy,Intrattenimento e streaming,Low,3,5,60.000000
+all,privacy,Intrattenimento e streaming,Moderate,2,5,40.000000
+all,privacy,Intrattenimento e streaming,High,0,5,0.000000
+all,privacy,Intrattenimento e streaming,Unavailable,0,5,0.000000
+all,privacy,Intrattenimento e streaming,Missing,0,5,0.000000
+all,privacy,Pubblica amministrazione,Low,7,10,70.000000
+all,privacy,Pubblica amministrazione,Moderate,1,10,10.000000
+all,privacy,Pubblica amministrazione,High,2,10,20.000000
+all,privacy,Pubblica amministrazione,Unavailable,0,10,0.000000
+all,privacy,Pubblica amministrazione,Missing,0,10,0.000000
+all,privacy,Siti tecnici di riferimento,Low,4,5,80.000000
+all,privacy,Siti tecnici di riferimento,Moderate,1,5,20.000000
+all,privacy,Siti tecnici di riferimento,High,0,5,0.000000
+all,privacy,Siti tecnici di riferimento,Unavailable,0,5,0.000000
+all,privacy,Siti tecnici di riferimento,Missing,0,5,0.000000
+all,privacy,Social network e community,Low,7,10,70.000000
+all,privacy,Social network e community,Moderate,1,10,10.000000
+all,privacy,Social network e community,High,2,10,20.000000
+all,privacy,Social network e community,Unavailable,0,10,0.000000
+all,privacy,Social network e community,Missing,0,10,0.000000
+all,privacy,Tecnologia e software,Low,10,15,66.666667
+all,privacy,Tecnologia e software,Moderate,4,15,26.666667
+all,privacy,Tecnologia e software,High,1,15,6.666667
+all,privacy,Tecnologia e software,Unavailable,0,15,0.000000
+all,privacy,Tecnologia e software,Missing,0,15,0.000000
+all,privacy,Università e istruzione,Low,5,10,50.000000
+all,privacy,Università e istruzione,Moderate,1,10,10.000000
+all,privacy,Università e istruzione,High,4,10,40.000000
+all,privacy,Università e istruzione,Unavailable,0,10,0.000000
+all,privacy,Università e istruzione,Missing,0,10,0.000000
+all,privacy,Viaggi e turismo,Low,3,5,60.000000
+all,privacy,Viaggi e turismo,Moderate,1,5,20.000000
+all,privacy,Viaggi e turismo,High,1,5,20.000000
+all,privacy,Viaggi e turismo,Unavailable,0,5,0.000000
+all,privacy,Viaggi e turismo,Missing,0,5,0.000000
+all,network,Banche e servizi finanziari,Low,3,10,30.000000
+all,network,Banche e servizi finanziari,Moderate,4,10,40.000000
+all,network,Banche e servizi finanziari,High,0,10,0.000000
+all,network,Banche e servizi finanziari,Unavailable,3,10,30.000000
+all,network,Banche e servizi finanziari,Missing,0,10,0.000000
+all,network,E-commerce,Low,6,15,40.000000
+all,network,E-commerce,Moderate,4,15,26.666667
+all,network,E-commerce,High,4,15,26.666667
+all,network,E-commerce,Unavailable,1,15,6.666667
+all,network,E-commerce,Missing,0,15,0.000000
+all,network,Informazione e giornali,Low,3,15,20.000000
+all,network,Informazione e giornali,Moderate,4,15,26.666667
+all,network,Informazione e giornali,High,7,15,46.666667
+all,network,Informazione e giornali,Unavailable,1,15,6.666667
+all,network,Informazione e giornali,Missing,0,15,0.000000
+all,network,Intrattenimento e streaming,Low,2,5,40.000000
+all,network,Intrattenimento e streaming,Moderate,3,5,60.000000
+all,network,Intrattenimento e streaming,High,0,5,0.000000
+all,network,Intrattenimento e streaming,Unavailable,0,5,0.000000
+all,network,Intrattenimento e streaming,Missing,0,5,0.000000
+all,network,Pubblica amministrazione,Low,6,10,60.000000
+all,network,Pubblica amministrazione,Moderate,2,10,20.000000
+all,network,Pubblica amministrazione,High,0,10,0.000000
+all,network,Pubblica amministrazione,Unavailable,2,10,20.000000
+all,network,Pubblica amministrazione,Missing,0,10,0.000000
+all,network,Siti tecnici di riferimento,Low,2,5,40.000000
+all,network,Siti tecnici di riferimento,Moderate,1,5,20.000000
+all,network,Siti tecnici di riferimento,High,0,5,0.000000
+all,network,Siti tecnici di riferimento,Unavailable,2,5,40.000000
+all,network,Siti tecnici di riferimento,Missing,0,5,0.000000
+all,network,Social network e community,Low,4,10,40.000000
+all,network,Social network e community,Moderate,3,10,30.000000
+all,network,Social network e community,High,1,10,10.000000
+all,network,Social network e community,Unavailable,2,10,20.000000
+all,network,Social network e community,Missing,0,10,0.000000
+all,network,Tecnologia e software,Low,10,15,66.666667
+all,network,Tecnologia e software,Moderate,3,15,20.000000
+all,network,Tecnologia e software,High,0,15,0.000000
+all,network,Tecnologia e software,Unavailable,2,15,13.333333
+all,network,Tecnologia e software,Missing,0,15,0.000000
+all,network,Università e istruzione,Low,1,10,10.000000
+all,network,Università e istruzione,Moderate,8,10,80.000000
+all,network,Università e istruzione,High,1,10,10.000000
+all,network,Università e istruzione,Unavailable,0,10,0.000000
+all,network,Università e istruzione,Missing,0,10,0.000000
+all,network,Viaggi e turismo,Low,2,5,40.000000
+all,network,Viaggi e turismo,Moderate,1,5,20.000000
+all,network,Viaggi e turismo,High,2,5,40.000000
+all,network,Viaggi e turismo,Unavailable,0,5,0.000000
+all,network,Viaggi e turismo,Missing,0,5,0.000000

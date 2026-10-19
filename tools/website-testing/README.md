@@ -315,3 +315,10 @@ within each detail string; production engine rules remain unchanged. A new
 The original records and phase fingerprints are preserved; reviewed anomalies
 and false positives are reported separately. After this harness change, start
 new execution directories rather than resuming old manifests with a new validator.
+
+## Offline statistics and publication figures
+
+The [Python analysis module](analysis/README.md) reads completed benchmark records
+and existing CDP/review artifacts without browser navigation or network calls.
+It generates six PNG/SVG figure pairs, aggregate CSVs and a self-contained
+GitHub-readable Markdown report; raw records remain local under `runs/`.

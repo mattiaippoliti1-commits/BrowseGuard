@@ -1,0 +1,11 @@
+population,header,population_n,present,absent,not_evaluable,valid_denominator,presence_pct_valid,agreement_n,agreement_pct_valid
+successful,Content-Security-Policy,77,37,38,2,75,49.333333,75,100.000000
+successful,Strict-Transport-Security,77,59,16,2,75,78.666667,75,100.000000
+successful,X-Content-Type-Options,77,47,28,2,75,62.666667,75,100.000000
+successful,Referrer-Policy,77,29,46,2,75,38.666667,75,100.000000
+successful,Permissions-Policy,77,19,56,2,75,25.333333,75,100.000000
+all,Content-Security-Policy,100,47,50,3,97,48.453608,97,100.000000
+all,Strict-Transport-Security,100,69,28,3,97,71.134021,97,100.000000
+all,X-Content-Type-Options,100,57,40,3,97,58.762887,97,100.000000
+all,Referrer-Policy,100,37,60,3,97,38.144330,97,100.000000
+all,Permissions-Policy,100,27,70,3,97,27.835052,97,100.000000
