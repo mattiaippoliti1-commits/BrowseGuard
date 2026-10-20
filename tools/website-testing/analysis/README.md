@@ -7,6 +7,9 @@ revisits websites, calls an AI service, or changes extension/collector code.
 The generated [100-site analysis](output/benchmark100/BENCHMARK_ANALYSIS.md) and its
 PNG/SVG figures and aggregate CSV tables are ready for GitHub. Raw input files
 remain local under the separately ignored `runs/` directory.
+The completed [1,000-site analysis](output/benchmark1000/BENCHMARK_ANALYSIS.md)
+uses the same module; its aggregate artifacts are also versioned. Release checks
+run the offline tests without regenerating either historical analysis directory.
 
 ## Requirements and installation
 

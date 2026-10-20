@@ -17,3 +17,29 @@ The generated dataset uses DuckDuckGo Tracker Radar sources for US tracker domai
 The currently bundled generated dataset contains 948 tracker domains and 38,370 entity-domain mappings, generated on 2026-09-28 from the upstream `main` source reference.
 
 Duck Duck Go, Inc. does not endorse BrowserGuard. BrowserGuard's inclusion of this derived dataset does not change the dataset license; the derived dataset remains subject to CC BY-NC-SA 4.0.
+
+## Wikidata — benchmark corpus only
+
+The 1,000-site benchmark selects 200 HTTPS website values from Wikidata structured
+data (P856, with recorded P31 classes). Wikidata structured data is distributed
+under [CC0](https://www.wikidata.org/wiki/Wikidata:Licensing). This statement does
+not apply the CC0 designation to Wikidata prose in other namespaces.
+BrowserGuard selected, categorized and deduplicated the entries; the corpus
+records the source entity, query and acquisition metadata. Wikidata is not
+contacted by the extension runtime and is not a security ground truth.
+
+## Curlie — benchmark corpus only
+
+The remaining 800 entries were selected from the public Curlie directory export.
+The directory data is licensed under
+[Creative Commons Attribution 3.0 Unported](https://curlie.org/docs/en/license.html).
+BrowserGuard retains selected URLs, titles and category metadata, maps categories
+and deduplicates the corpus; editorial descriptions and the full source export
+are not included. The same attribution applies to copies in the publication bundle.
+
+With content from [Curlie.org](https://curlie.org/) - the largest human-edited directory of the web. Contribute by submitting a website or becoming an editor.
+
+The exact snapshot, source hashes, transformations and per-entry provenance are
+documented in [DATASET_1000.md](tools/website-testing/datasets/DATASET_1000.md).
+These corpus licenses are separate from the MIT source-code license and the
+Tracker Radar license. Inclusion does not imply endorsement or verified safety.

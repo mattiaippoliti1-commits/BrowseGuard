@@ -1,6 +1,62 @@
+# OS and personal editor state
 .DS_Store
+._*
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+*.tmp
+
+# Local dependencies, caches and logs
+node_modules/
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.mpl-cache/
 *.log
-tmp/
-coverage/
-presentation
+*.log.*
+/tmp/
+/coverage/
+
+# Local configuration and generated diagnostics
+.env
+.env.*
+!.env.example
+*.dmp
+*.heapsnapshot
+*.cpuprofile
+
+# LaTeX intermediates; keep .tex, source assets and the final PDF versionable
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.lot
+*.nav
+*.out
+*.run.xml
+*.snm
+*.synctex.gz
+*.toc
+*.vrb
+*.xdv
+*.dvi
+*.idx
+*.ilg
+*.ind
+/presentation/test-results.txt
+
+# Real-site raw records/checkpoints, browser state and full source downloads.
+# Sources, corpus metadata, aggregate analysis/output and publication stay tracked.
+/tools/website-testing/runs/
+/tools/website-testing/profiles/
+/tools/website-testing/browserguard-field-*/
+/tools/website-testing/browserguard-large-*/
+/tools/website-testing/benchmark1000/source-cache/
 

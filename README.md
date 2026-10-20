@@ -10,6 +10,7 @@ selected browser API usage, then presents three independent assessments.
 Analysis runs locally in your browser, using a bundled tracker and entity dataset.
 There is no remote analysis backend. BrowserGuard is an observation tool: it does
 not block requests or content, remove malware, or certify that a website is safe.
+It is not a validated phishing detector.
 
 ## How BrowserGuard Works
 
@@ -526,11 +527,52 @@ browserguard/
 │   └── trackers/                # Domain-bound local tracker matching
 ├── popup/                      # UI, snapshot orchestration, presentation, help
 ├── data/                       # Bundled dataset and generation metadata
-├── docs/images/                # Architecture diagram
+├── docs/                       # Architecture diagram and release documentation
+├── presentation/               # Historical university presentation (.tex/PDF/assets)
 ├── scripts/                    # Dataset updater and Chrome rendering checks
 ├── test-pages/                 # Manual DOM/runtime/security fixtures
-└── tests/                      # Automated tests and historical fixture
+├── tests/                      # Automated tests and historical fixture
+└── tools/website-testing/       # Isolated benchmark framework, corpus and analysis
+    ├── benchmark1000/          # Frozen collection protocol and offline tooling
+    ├── controlled-validation/  # Synthetic local scenarios and historical evidence
+    ├── datasets/               # Licensed public corpus and source provenance
+    ├── analysis/               # Python code and versioned aggregate output
+    ├── publication/benchmark1000/ # Self-contained aggregate publication bundle
+    └── runs/                   # Local raw records/profiles metadata; ignored by Git
 ```
+
+The [university presentation](presentation/README.md) is historical material, not
+the current test report. No separate university dissertation/report is included.
+[Release organization and checks](docs/RELEASE.md) explain what remains local and
+which documents are frozen historical evidence. Design notes remain in
+[assessment calibration](ASSESSMENT_CALIBRATION.md) and
+[popup redesign](POPUP_REDESIGN_V2.md); runtime source is authoritative.
+
+## Final 1,000-site Benchmark
+
+The completed benchmark attempted **1,000 sourced HTTPS URLs**, producing 1,000
+valid records, **999 captured assessments**, **787 ok/partial visits**, 132
+restrictions, 80 navigation errors and one popup collection failure. There were
+30 timeout cases, overlapping those outcomes. An assessment from an error or
+restriction page does not establish that the intended site was observed.
+
+The final audit passed with **239 automated tests**. The production fingerprint
+was `0f2c1f20712aa4e76cdd9eaa6f393aeb28f919abe1d1fa01d8f609942e9f1fbc`.
+This measures operational collection and observed-signal distributions, not
+detector accuracy, phishing detection, or the percentage of safe websites.
+
+- [Benchmark report and limitations](tools/website-testing/BENCHMARK_1000.md)
+- [Descriptive comparison with the earlier 100-site run](tools/website-testing/BENCHMARK_COMPARISON.md)
+- [Statistical report, six PNG/SVG figures and aggregate CSVs](tools/website-testing/analysis/output/benchmark1000/BENCHMARK_ANALYSIS.md)
+- [Self-contained publication bundle](tools/website-testing/publication/benchmark1000/README.md)
+- [Corpus provenance and licenses](tools/website-testing/datasets/DATASET_1000.md)
+- [Frozen protocol, resource limits and resume commands](tools/website-testing/benchmark1000/README.md)
+
+Raw browsing records and checkpoints remain local in the ignored `runs/`
+directory. Some historical report links refer to that local evidence and are not
+available in a fresh clone. Aggregate reports and figures remain versioned.
+The 100-site and 1,000-site versions and samples differ; their comparison is
+descriptive rather than a controlled A/B experiment.
 
 ## Development & Tests
 
@@ -550,6 +592,25 @@ Run all local automated tests with a recent Node.js version supporting `node:tes
 ```bash
 node --test tests/*.test.js
 ```
+
+Run the remaining offline suites from the repository root (Node 22+;
+Python 3.11+ and the analysis dependencies):
+
+```bash
+npm ci --prefix tools/website-testing
+python3 -m venv tools/website-testing/analysis/.venv
+tools/website-testing/analysis/.venv/bin/python -m pip install -r tools/website-testing/analysis/requirements-lock.txt
+node --test tools/website-testing/*.test.cjs
+node --test tools/website-testing/controlled-validation/*.test.cjs
+node --test tools/website-testing/benchmark1000/*.test.cjs
+tools/website-testing/analysis/.venv/bin/python -m unittest discover -s tools/website-testing/analysis -p 'test_*.py'
+python3 -m unittest discover -s tools/website-testing/controlled-validation -p 'test_*.py'
+python3 -m unittest discover -s tools/website-testing/benchmark1000 -p 'test_*.py'
+```
+
+These suites do not revisit the 1,000 websites. Browser installation and live
+collection are separate, explicitly invoked framework operations. Do not run the
+benchmark finalizer merely to check a release: it regenerates derived artifacts.
 
 Check the popup layout and interactions in a locally installed Chrome/Chromium:
 
@@ -581,3 +642,6 @@ The bundled, transformed DuckDuckGo Tracker Radar dataset has a separate
 **CC BY-NC-SA 4.0** license; the source-code license does not replace its terms.
 See [Third-Party Notices](THIRD_PARTY_NOTICES.md) for attribution, transformation
 details, and upstream license references. DuckDuckGo does not endorse BrowserGuard.
+The benchmark corpus separately contains Wikidata structured data (CC0) and
+Curlie directory selections (CC BY 3.0); their attribution and provenance are in
+the same notices and the corpus documentation. They are not runtime detectors.

@@ -1,5 +1,12 @@
 # Presentazione BrowserGuard
 
+> Materiale universitario storico riferito al 14 ottobre 2026. Sorgente e PDF
+> sono preservati e non sono stati ricompilati per la release finale. Le regole,
+> i conteggi dei test e le limitazioni descritti sotto documentano quella versione;
+> per lo stato corrente consultare il [README principale](../README.md) e il
+> [benchmark completato su 1.000 siti](../tools/website-testing/BENCHMARK_1000.md).
+> I log e gli intermedi LaTeX rimangono locali, esclusi da Git.
+
 Presentazione Beamer in italiano: **10 slide, formato 16:9**, design minimalista su fondo bianco, palette BrowserGuard e logo originale del repository. Durata prevista: circa **14 minuti**, inclusa una breve dimostrazione. Le note `\note{...}` nel sorgente contengono la traccia orale, precisazioni sulle regole e tempi indicativi; sono nascoste nel PDF destinato alla proiezione.
 
 ## File

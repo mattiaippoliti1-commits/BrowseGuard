@@ -322,6 +322,22 @@ The [Python analysis module](analysis/README.md) reads completed benchmark recor
 and existing CDP/review artifacts without browser navigation or network calls.
 It generates six PNG/SVG figure pairs, aggregate CSVs and a self-contained
 GitHub-readable Markdown report; raw records remain local under `runs/`.
+
+## Completed 1,000-site benchmark
+
+The [final report](BENCHMARK_1000.md) documents 1,000 valid attempt records, 999
+captured assessments and the completed audit. Read the
+[frozen protocol](benchmark1000/README.md), [corpus provenance](datasets/DATASET_1000.md),
+[statistical analysis](analysis/output/benchmark1000/BENCHMARK_ANALYSIS.md) and
+[portable publication bundle](publication/benchmark1000/README.md).
+Raw real-site JSON, profiles, logs and checkpoints stay under ignored `runs/`;
+aggregate `analysis/output/` and `publication/` are deliberately versionable.
+The controlled-validation outputs contain configured synthetic local scenarios,
+not real-site browsing records. Their existing historical evidence is preserved.
+
+The documented finalizer is an artifact generator, not a read-only release check.
+Do not use it to validate or republish the completed benchmark during release
+maintenance. Run the offline suites and verify existing hashes instead.
 # Controlled local detection validation
 
 The separate [controlled-validation suite](controlled-validation/README.md) provides
