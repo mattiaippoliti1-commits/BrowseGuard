@@ -1,0 +1,10 @@
+category,total,PASS,FAIL,NOT_OBSERVABLE,INCONCLUSIVE,SKIPPED
+DOM,2,2,0,0,0,0
+availability,1,1,0,0,0,0
+forms,2,1,0,0,0,1
+headers,4,0,0,0,0,4
+isolation,1,1,0,0,0,0
+mixed-content,2,0,0,0,0,2
+network,2,2,0,0,0,0
+runtime,3,3,0,0,0,0
+transport,1,1,0,0,0,0

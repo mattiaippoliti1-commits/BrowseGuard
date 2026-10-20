@@ -76,6 +76,7 @@ def generate(benchmark, tables, output):
     dist = tables['assessment_distribution']; dist = dist[dist.population == 'successful']
     active_levels = [lev for lev in LEVELS if lev != 'Missing' or dist[dist.level == lev]['count'].sum()]
     bottom = [0.] * len(DIMENSIONS)
+    small_labels = [[] for _ in DIMENSIONS]
     if n:
         for lev in active_levels:
             counts = [int(dist[(dist.dimension == dim) & (dist.level == lev)]['count'].iloc[0]) for dim in DIMENSIONS]
@@ -87,9 +88,12 @@ def generate(benchmark, tables, output):
                     ax.text(i, bottom[i]+height/2, f'{count}\n{height:.1f}%', ha='center', va='center', color=TEXT, bbox={'facecolor':'white','edgecolor':'none','alpha':.88,'pad':2})
             for i, (height, count) in enumerate(zip(heights, counts)):
                 if 0 < height < 6:
-                    ax.text(i,102,f'{lev}: {count}',ha='center',va='bottom',fontsize=9)
+                    small_labels[i].append(f'{lev}: {count}')
             bottom = [b+h for b, h in zip(bottom, heights)]
-        ax.set_ylim(0, 105); ax.set_ylabel('Share of successful visits (%)'); grid(ax, 'y')
+        for i, labels in enumerate(small_labels):
+            if labels:
+                ax.text(i,102,'\n'.join(labels),ha='center',va='bottom',fontsize=9)
+        ax.set_ylim(0, 105+3*max(map(len,small_labels))); ax.set_ylabel('Share of successful visits (%)'); grid(ax, 'y')
         ax.legend(loc='upper center', bbox_to_anchor=(.5,-.1), ncol=len(active_levels), frameon=False)
     else:
         empty(ax, 'No successful visits: no assessment distribution can be estimated.')

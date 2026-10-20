@@ -334,7 +334,8 @@ function analyzeURL(urlString) {
         // --------------------------------------------------
 
         // Check whether the connection uses HTTPS
-        const usesHTTPS = protocol === "https";
+        const supportedProtocol = protocol === "http" || protocol === "https";
+        const usesHTTPS = supportedProtocol ? protocol === "https" : null;
 
         // Check whether the URL exceeds the selected threshold
         const isLongURL = urlLength > 100;
@@ -377,9 +378,9 @@ function analyzeURL(urlString) {
 
         updateIndicatorChip(
             "https-indicator",
-            usesHTTPS ? "HTTPS" : "HTTP",
+            supportedProtocol ? (usesHTTPS ? "HTTPS" : "HTTP") : "Unavailable",
             usesHTTPS ? "positive" : "warning",
-            true
+            supportedProtocol
         );
 
         updateIndicatorChip("long-url", "Long URL", "warning", isLongURL);
@@ -404,6 +405,7 @@ function analyzeURL(urlString) {
         updateIndicatorChip("punycode", "Punycode", "warning", hasPunycode);
 
         return {
+            available: supportedProtocol,
             protocol: protocol,
             hostname: hostname,
             urlLength: urlLength,
@@ -2002,7 +2004,9 @@ function updateProtocolDisplay(protocol) {
     }
 
     badge.classList.remove("is-https", "is-http");
-    badge.classList.add(protocol === "https" ? "is-https" : "is-http");
+    if (protocol === "https" || protocol === "http") {
+        badge.classList.add(protocol === "https" ? "is-https" : "is-http");
+    }
 
 }
 

@@ -64,7 +64,7 @@ function assessBrowserState(snapshot) {
 function getAvailableSnapshot(snapshot) {
 
     return {
-        urlAnalysis: isSourceAvailable(snapshot.urlAnalysis) ?
+        urlAnalysis: isUrlAnalysisAvailable(snapshot.urlAnalysis) ?
             snapshot.urlAnalysis :
             null,
         pageAnalysis: isSourceAvailable(snapshot.pageAnalysis) ?
@@ -92,8 +92,9 @@ function getMissingSources(snapshot) {
         ["runtimePrivacy", snapshot.runtimePrivacy],
         ["webSecurity", snapshot.webSecurity]
     ]
-        .filter(function ([, value]) {
-            return !isSourceAvailable(value);
+        .filter(function ([name, value]) {
+            return name === "urlAnalysis" ?
+                !isUrlAnalysisAvailable(value) : !isSourceAvailable(value);
         })
         .map(function ([name]) {
             return name;
@@ -109,6 +110,26 @@ function isSourceAvailable(value) {
 
     return value.available !== false;
 
+}
+
+function getAnalysisProtocol(value) {
+    return value && typeof value.protocol === "string" ?
+        value.protocol.trim().toLowerCase().replace(/:$/, "") : "";
+}
+
+function isUrlAnalysisAvailable(value) {
+    if (!isSourceAvailable(value)) return false;
+    const protocol = getAnalysisProtocol(value);
+    // Preserve legacy explicit HTTPS snapshots; false alone cannot identify HTTP.
+    return protocol ? ["http", "https"].includes(protocol) : value.usesHTTPS === true;
+}
+
+function hasHttpPageUrl(web) {
+    try {
+        return Boolean(web && new URL(web.pageUrl).protocol === "http:");
+    } catch (error) {
+        return false;
+    }
 }
 
 function assessSecurity(snapshot, dataStatus) {
@@ -168,14 +189,14 @@ function assessSecurity(snapshot, dataStatus) {
     let strongCount = 0;
     let moderateCount = 0;
 
-    if ((url && url.usesHTTPS === false) || (web && typeof web.pageUrl === "string" && web.pageUrl.startsWith("http:"))) {
+    if (getAnalysisProtocol(url) === "http" || hasHttpPageUrl(web)) {
         strongCount++;
         reasons.push(createReason(
             "main-page-http",
             "high",
             "Main page is not using HTTPS",
             {
-                protocol: url ? url.protocol : "http"
+                protocol: "http"
             }
         ));
     }

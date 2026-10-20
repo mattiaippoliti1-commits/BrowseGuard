@@ -1,0 +1,61 @@
+{
+  "gitCommit": "a5881c488dac62c4386b15b8b5fcb7ae581c0693",
+  "harnessHash": "9be53e8513070079a0355b80484cd83128ad9e08ba133b91ee6815535a17c933",
+  "sourceFiles": {
+    "background/service-worker.js": "3cdfe5f9c22a37a5715f56416fa91f1e409af6d4dda6fb2864e21fec6534cb05",
+    "content/page-analysis.js": "5fb2b2919fc2ff5b12b695490bb723a4b1572f427f6161eb03a01faf35ce6c64",
+    "content/runtime-bridge.js": "6819dfcd4151da80261c9b0339d25302c74525b772cea2815b1ded00a15ab5ce",
+    "content/runtime-monitor.js": "69add851e0d7a5f6dda89197095e140d3a9841855b9054f1bdbe2c4e67b61b8d",
+    "data/tracker-data.js": "c84f7623a0102fdc50db96308c5143d45c596db13d2d67e8b09675034e967f42",
+    "manifest.json": "00ff91bea77140e5c389faa4459622773a9be1ec309d5badfdcd25ab064e5995",
+    "modules/assessment/assessment-engine.js": "239dcdefa0de61dc0f745ff89091d4694cc03f641058835fdb446c7c941c1a23",
+    "modules/network/entity-resolver.js": "eb58e8ec64dfa16c51abf7b6b929f2fce39dece9e1a0a3893ba2e7902c06acdf",
+    "modules/security/web-security-analyzer.js": "8978d9cafa8ad9d919ede3cbc7685e28942c088befbc9b4aaa238dc7fe4f0026",
+    "modules/trackers/tracker-matcher.js": "d5c02c4f76e1c664c24bb14027c83e24916db46569d2768345a28346e002849b",
+    "popup/experience.js": "23a1359f24925ea43ba12bc1d4d7d0a9c49ede59944713b5244379dd1a324df6",
+    "popup/popup.css": "0c513cd2ede04f51b25cae12ea03e09126035404f6b4874f6504ec3792eb69ec",
+    "popup/popup.html": "45de239d04eb1dfb94cf2d5f8ac06663623092e54cabfb7e6b24467d56f65732",
+    "popup/popup.js": "9fc140fd7677439a34df3b5ffd69939127613d25de12ce1832358550a0288237",
+    "popup/presentation.js": "57a6516bfb8985e55c9bcb26b6d75e94413ff0ee7d000b6c49269dc17bbb92c1"
+  },
+  "node": "v25.2.1",
+  "playwright": "1.58.2",
+  "chromium": "Google Chrome for Testing 145.0.7632.6",
+  "platform": "darwin",
+  "arch": "arm64",
+  "physicalRamBytes": 8589934592,
+  "configuration": {
+    "limit": 1000,
+    "concurrency": 1,
+    "navigationTimeoutMs": 25000,
+    "analysisTimeoutMs": 15000,
+    "minObserveMs": 3000,
+    "quietMs": 1000,
+    "maxObserveMs": 10000,
+    "delayMs": 2000,
+    "maxRequests": 5000,
+    "headless": true,
+    "recycleEvery": 25
+  },
+  "resourceLimits": {
+    "minDiskBytes": 5368709120,
+    "maxBrowserProcesses": 100,
+    "processGrowthSamples": 3,
+    "sampleIntervalMs": 15000
+  },
+  "executions": [
+    {
+      "startedAt": "2026-10-19T19:59:35.842Z",
+      "endedAt": "2026-10-19T22:29:32.461Z",
+      "stopped": false,
+      "reason": null
+    }
+  ],
+  "sourceHash": "0f2c1f20712aa4e76cdd9eaa6f393aeb28f919abe1d1fa01d8f609942e9f1fbc",
+  "corpusSha256": "cbb10d594c6c351232490cb6cd65f9fcc5095e9e80596b70fda0bd5fb3d3349d",
+  "completed": 1000,
+  "totalTestsPassed": 239,
+  "productionUnchanged": true,
+  "historicalOutputsUnchanged": true,
+  "resourceSemantics": "RSS, not virtual memory; sum may double-count shared pages. ps CPU percentages can exceed 100 across cores. Chromium includes attributable descendants only; system-wide RAM is not measured by the sum."
+}

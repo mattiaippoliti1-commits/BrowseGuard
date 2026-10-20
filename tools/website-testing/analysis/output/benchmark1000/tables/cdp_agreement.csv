@@ -1,0 +1,7 @@
+population,measurement,eligible,not_evaluable,agree,disagree,agreement_pct,positive_cdp,positive_extension,unit
+successful,protocol,783,4,783,0,100.000000,782.000000,782.000000,document pairs
+successful,mixed_content,783,4,776,7,99.106003,7.000000,0.000000,document pairs
+successful,header_presence,3915,20,3915,0,100.000000,,,header pairs
+all,protocol,920,80,920,0,100.000000,919.000000,919.000000,document pairs
+all,mixed_content,920,80,913,7,99.239130,7.000000,0.000000,document pairs
+all,header_presence,4600,400,4600,0,100.000000,,,header pairs

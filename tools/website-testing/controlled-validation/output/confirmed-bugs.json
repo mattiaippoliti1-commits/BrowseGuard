@@ -1,0 +1,16 @@
+[
+  {
+    "id": "unsupported-protocol-security",
+    "confirmed": true,
+    "status": "fixed",
+    "diagnosis": "about:blank and other non-HTTP schemes generated a main-page-http High finding from usesHTTPS=false.",
+    "correction": "Explicit HTTP evidence only; unsupported URL input unavailable, preserving original scheme and independent findings."
+  },
+  {
+    "id": "password-default-action",
+    "confirmed": true,
+    "status": "fixed",
+    "diagnosis": "Missing/empty password-form action returned early and failed to count the default HTTP destination.",
+    "correction": "Use document URL for absent/empty action; document base URI for explicit relative action."
+  }
+]

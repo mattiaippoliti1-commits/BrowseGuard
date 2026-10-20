@@ -125,6 +125,7 @@ test('incomplete inputs are Unavailable without creating findings or hiding know
     s.pageAnalysis.available = false;
     assert.equal(levels(s)[0], '—');
     s.urlAnalysis.usesHTTPS = false;
+    s.urlAnalysis.protocol = 'http';
     assert.equal(levels(s)[0], 'High');
     assert.deepEqual(levels({}), ['—','—','—']);
 });

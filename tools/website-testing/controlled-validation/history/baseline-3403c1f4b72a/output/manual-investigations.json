@@ -1,0 +1,41 @@
+[
+  {
+    "id": "unsupported-protocol-security",
+    "classification": "potential-issue",
+    "confirmedBug": false,
+    "scenario": "S17",
+    "observed": {
+      "label": "High",
+      "state": "significant"
+    },
+    "inputs": {
+      "urlAnalysis": {
+        "protocol": "about",
+        "hostname": "",
+        "urlLength": 11,
+        "subdomainCount": 0,
+        "isIPAddress": false,
+        "hasPunycode": false,
+        "usesHTTPS": false,
+        "isLongURL": false,
+        "hasManySubdomains": false,
+        "hasAtSymbol": false,
+        "hasURLEncoding": false
+      },
+      "pageAnalysis": null,
+      "networkActivity": null,
+      "runtimePrivacy": null,
+      "webSecurity": null
+    },
+    "reason": {
+      "id": "main-page-http",
+      "severity": "high",
+      "message": "Main page is not using HTTPS",
+      "evidence": {
+        "protocol": "about",
+        "countedForEscalation": true
+      }
+    },
+    "recommendation": "Separately review the Security rule for non-HTTP(S) schemes; require actual HTTP or treat unsupported URL analysis as unavailable. No production fix applied."
+  }
+]

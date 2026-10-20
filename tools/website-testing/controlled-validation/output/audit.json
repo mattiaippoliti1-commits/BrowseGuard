@@ -1,0 +1,260 @@
+{
+  "regressions": {
+    "suites": [
+      {
+        "suite": "extension",
+        "command": "node --test tests/*.test.js",
+        "tests": 109,
+        "passed": 109,
+        "exitCode": 0
+      },
+      {
+        "suite": "framework",
+        "command": "node --test tools/website-testing/*.test.cjs",
+        "tests": 14,
+        "passed": 14,
+        "exitCode": 0
+      },
+      {
+        "suite": "controlled-node",
+        "command": "node --test tools/website-testing/controlled-validation/*.test.cjs",
+        "tests": 77,
+        "passed": 77,
+        "exitCode": 0
+      },
+      {
+        "suite": "analysis-python",
+        "command": "tools/website-testing/analysis/.venv/bin/python -m unittest discover -s tools/website-testing/analysis -p test_*.py -v",
+        "tests": 13,
+        "passed": 13,
+        "exitCode": 0
+      },
+      {
+        "suite": "controlled-python",
+        "command": "python3 -m unittest discover -s tools/website-testing/controlled-validation -p test_*.py -v",
+        "tests": 7,
+        "passed": 7,
+        "exitCode": 0
+      }
+    ],
+    "totalPassed": 220
+  },
+  "coreScenarios": {
+    "implemented": 18,
+    "recorded": 18,
+    "executed": 18,
+    "counts": {
+      "PASS": 17,
+      "FAIL": 0,
+      "NOT_OBSERVABLE": 1,
+      "INCONCLUSIVE": 0,
+      "SKIPPED": 0
+    },
+    "passPercentAll": 94.44444444444444,
+    "passPercentExecuted": 94.44444444444444,
+    "denominators": {
+      "all": 18,
+      "executed": 18,
+      "definition": "Executed includes PASS, FAIL, NOT_OBSERVABLE, INCONCLUSIVE. NOT_OBSERVABLE is never PASS."
+    },
+    "categories": {
+      "headers": {
+        "total": 4,
+        "counts": {
+          "PASS": 4,
+          "FAIL": 0,
+          "NOT_OBSERVABLE": 0,
+          "INCONCLUSIVE": 0,
+          "SKIPPED": 0
+        }
+      },
+      "transport": {
+        "total": 1,
+        "counts": {
+          "PASS": 1,
+          "FAIL": 0,
+          "NOT_OBSERVABLE": 0,
+          "INCONCLUSIVE": 0,
+          "SKIPPED": 0
+        }
+      },
+      "mixed-content": {
+        "total": 2,
+        "counts": {
+          "PASS": 1,
+          "FAIL": 0,
+          "NOT_OBSERVABLE": 1,
+          "INCONCLUSIVE": 0,
+          "SKIPPED": 0
+        }
+      },
+      "forms": {
+        "total": 2,
+        "counts": {
+          "PASS": 2,
+          "FAIL": 0,
+          "NOT_OBSERVABLE": 0,
+          "INCONCLUSIVE": 0,
+          "SKIPPED": 0
+        }
+      },
+      "network": {
+        "total": 2,
+        "counts": {
+          "PASS": 2,
+          "FAIL": 0,
+          "NOT_OBSERVABLE": 0,
+          "INCONCLUSIVE": 0,
+          "SKIPPED": 0
+        }
+      },
+      "DOM": {
+        "total": 2,
+        "counts": {
+          "PASS": 2,
+          "FAIL": 0,
+          "NOT_OBSERVABLE": 0,
+          "INCONCLUSIVE": 0,
+          "SKIPPED": 0
+        }
+      },
+      "runtime": {
+        "total": 3,
+        "counts": {
+          "PASS": 3,
+          "FAIL": 0,
+          "NOT_OBSERVABLE": 0,
+          "INCONCLUSIVE": 0,
+          "SKIPPED": 0
+        }
+      },
+      "availability": {
+        "total": 1,
+        "counts": {
+          "PASS": 1,
+          "FAIL": 0,
+          "NOT_OBSERVABLE": 0,
+          "INCONCLUSIVE": 0,
+          "SKIPPED": 0
+        }
+      },
+      "isolation": {
+        "total": 1,
+        "counts": {
+          "PASS": 1,
+          "FAIL": 0,
+          "NOT_OBSERVABLE": 0,
+          "INCONCLUSIVE": 0,
+          "SKIPPED": 0
+        }
+      }
+    }
+  },
+  "tlsControlsPassed": true,
+  "additionalLivePasswordCasesPassed": true,
+  "productionBeforeFixes": "3403c1f4b72a9d285c2dea014a53a1c106d02cf2c97784dd5640b4b050533811",
+  "productionAfterFixes": "0f2c1f20712aa4e76cdd9eaa6f393aeb28f919abe1d1fa01d8f609942e9f1fbc",
+  "productionUnchangedDuringRun": true,
+  "productionFilesModified": [
+    "content/page-analysis.js",
+    "modules/assessment/assessment-engine.js",
+    "popup/popup.js"
+  ],
+  "thresholdsUnchanged": true,
+  "manifestAndPermissionsUnchanged": true,
+  "historicalHashMismatches": {
+    "controlled": [],
+    "publicBenchmark": [],
+    "publicAnalysis": []
+  },
+  "publicBenchmarkFilesVerified": 121,
+  "publicAnalysisFilesVerified": 25,
+  "orphanProcesses": [],
+  "temporaryProfilesOrCertificatesRemaining": [],
+  "fixturePorts": {
+    "49312": {
+      "closed": true,
+      "errno": 61
+    },
+    "49313": {
+      "closed": true,
+      "errno": 61
+    },
+    "49319": {
+      "closed": true,
+      "errno": 61
+    },
+    "49398": {
+      "closed": true,
+      "errno": 61
+    },
+    "49399": {
+      "closed": true,
+      "errno": 61
+    }
+  },
+  "privateOrSensitiveCertificateFilesInGitChanges": [],
+  "secretOutputFiles": [],
+  "ignoredTemporaryEvidence": [
+    "tools/website-testing/controlled-validation/output-final/results.json",
+    "tools/website-testing/controlled-validation/output-initial/results.json"
+  ],
+  "gitChanges": [
+    "tests/targeted-security-regressions.test.js",
+    "tools/website-testing/controlled-validation/.gitignore",
+    "tools/website-testing/controlled-validation/FINAL_FIXES.md",
+    "tools/website-testing/controlled-validation/PLAN.md",
+    "tools/website-testing/controlled-validation/README.md",
+    "tools/website-testing/controlled-validation/TARGETED_AUDIT.md",
+    "tools/website-testing/controlled-validation/certificates.cjs",
+    "tools/website-testing/controlled-validation/engine-cases.cjs",
+    "tools/website-testing/controlled-validation/engine.test.cjs",
+    "tools/website-testing/controlled-validation/environment.cjs",
+    "tools/website-testing/controlled-validation/evaluate.cjs",
+    "tools/website-testing/controlled-validation/harness.test.cjs",
+    "tools/website-testing/controlled-validation/history/baseline-3403c1f4b72a/integrity.json",
+    "tools/website-testing/controlled-validation/history/baseline-3403c1f4b72a/output/CONTROLLED_VALIDATION.md",
+    "tools/website-testing/controlled-validation/history/baseline-3403c1f4b72a/output/audit.json",
+    "tools/website-testing/controlled-validation/history/baseline-3403c1f4b72a/output/manual-investigations.json",
+    "tools/website-testing/controlled-validation/history/baseline-3403c1f4b72a/output/results.csv",
+    "tools/website-testing/controlled-validation/history/baseline-3403c1f4b72a/output/results.json",
+    "tools/website-testing/controlled-validation/history/baseline-3403c1f4b72a/output/scenario-matrix.csv",
+    "tools/website-testing/controlled-validation/history/baseline-3403c1f4b72a/output/statistics/controlled-statistics.json",
+    "tools/website-testing/controlled-validation/history/baseline-3403c1f4b72a/output/statistics/signal-coverage.csv",
+    "tools/website-testing/controlled-validation/history/baseline-3403c1f4b72a/regressions-before-fix.txt",
+    "tools/website-testing/controlled-validation/output/CONTROLLED_VALIDATION.md",
+    "tools/website-testing/controlled-validation/output/analysis-python-tests.txt",
+    "tools/website-testing/controlled-validation/output/confirmed-bugs.json",
+    "tools/website-testing/controlled-validation/output/controlled-node-tests.txt",
+    "tools/website-testing/controlled-validation/output/controlled-python-tests.txt",
+    "tools/website-testing/controlled-validation/output/extension-tests.txt",
+    "tools/website-testing/controlled-validation/output/framework-tests.txt",
+    "tools/website-testing/controlled-validation/output/manual-investigations.json",
+    "tools/website-testing/controlled-validation/output/password-live.json",
+    "tools/website-testing/controlled-validation/output/regression-checks.json",
+    "tools/website-testing/controlled-validation/output/results.csv",
+    "tools/website-testing/controlled-validation/output/results.json",
+    "tools/website-testing/controlled-validation/output/scenario-matrix.csv",
+    "tools/website-testing/controlled-validation/output/statistics/controlled-statistics.json",
+    "tools/website-testing/controlled-validation/output/statistics/signal-coverage.csv",
+    "tools/website-testing/controlled-validation/password-live.cjs",
+    "tools/website-testing/controlled-validation/profile_trust.py",
+    "tools/website-testing/controlled-validation/report.cjs",
+    "tools/website-testing/controlled-validation/run.cjs",
+    "tools/website-testing/controlled-validation/scenarios.cjs",
+    "tools/website-testing/controlled-validation/summarize.py",
+    "tools/website-testing/controlled-validation/test_profile_trust.py",
+    "tools/website-testing/controlled-validation/test_summarize.py",
+    "tools/website-testing/targeted-protocol.test.cjs",
+    "content/page-analysis.js",
+    "modules/assessment/assessment-engine.js",
+    "popup/popup.js",
+    "tests/assessment-calibration.test.js",
+    "tests/popup-experience.test.js",
+    "tools/website-testing/README.md",
+    "tools/website-testing/package.json",
+    "tools/website-testing/validate.cjs"
+  ],
+  "trustScope": "Disposable Chromium profile only; no macOS Keychain/system trust commands executed",
+  "commitsOrPushesPerformed": false
+}

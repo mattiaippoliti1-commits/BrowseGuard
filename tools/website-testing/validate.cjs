@@ -86,7 +86,7 @@ function validate(record) {
   const reasons = assessment.security?.reasons || [];
   const expectedSecurity = reasons.some(r => r.severity === 'high') ? 'attention' : reasons.some(r => r.severity === 'medium') ? 'observations' : 'no-major-issues';
   if (assessment.security?.level !== expectedSecurity) add('security_rule_contract', { expectedSecurity, actual: assessment.security?.level, reasons }, 'high');
-  if (available(inputs.urlAnalysis) && inputs.urlAnalysis.usesHTTPS === false && assessment.security?.level !== 'attention')
+  if (available(inputs.urlAnalysis) && String(inputs.urlAnalysis.protocol || '').toLowerCase().replace(/:$/, '') === 'http' && assessment.security?.level !== 'attention')
     add('http_security_rule', { usesHTTPS: false, actual: assessment.security?.level }, 'high');
   // Independent declarative Privacy combination check, using only available raw observations.
   const p = thresholds.privacy, nn = available(n) ? n : {}, rr = available(runtime) ? runtime : {};

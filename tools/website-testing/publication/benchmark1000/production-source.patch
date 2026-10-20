@@ -1,0 +1,142 @@
+diff --git a/content/page-analysis.js b/content/page-analysis.js
+index f83da8a..6aae183 100644
+--- a/content/page-analysis.js
++++ b/content/page-analysis.js
+@@ -29,17 +29,14 @@ function analyzeForms() {
+ 
+         const action = form.getAttribute("action");
+ 
+-        // If the form has no explicit action,
+-        // the browser normally submits it to the current page
+-        if (!action) {
+-            return;
+-        }
+-
+         try {
+ 
+-            // Convert the action into an absolute URL
+-            const actionURL =
+-                new URL(action, window.location.href);
++            // Missing/empty action submits to the document URL, even with <base>.
++            // Explicit relative actions resolve against the document's base URI.
++            const actionURL = new URL(
++                action || window.location.href,
++                document.baseURI || window.location.href
++            );
+ 
+             const isExternal =
+                 hasDifferentHostname(actionURL);
+diff --git a/modules/assessment/assessment-engine.js b/modules/assessment/assessment-engine.js
+index 20b6f03..b08d757 100644
+--- a/modules/assessment/assessment-engine.js
++++ b/modules/assessment/assessment-engine.js
+@@ -64,7 +64,7 @@ function assessBrowserState(snapshot) {
+ function getAvailableSnapshot(snapshot) {
+ 
+     return {
+-        urlAnalysis: isSourceAvailable(snapshot.urlAnalysis) ?
++        urlAnalysis: isUrlAnalysisAvailable(snapshot.urlAnalysis) ?
+             snapshot.urlAnalysis :
+             null,
+         pageAnalysis: isSourceAvailable(snapshot.pageAnalysis) ?
+@@ -92,8 +92,9 @@ function getMissingSources(snapshot) {
+         ["runtimePrivacy", snapshot.runtimePrivacy],
+         ["webSecurity", snapshot.webSecurity]
+     ]
+-        .filter(function ([, value]) {
+-            return !isSourceAvailable(value);
++        .filter(function ([name, value]) {
++            return name === "urlAnalysis" ?
++                !isUrlAnalysisAvailable(value) : !isSourceAvailable(value);
+         })
+         .map(function ([name]) {
+             return name;
+@@ -111,6 +112,26 @@ function isSourceAvailable(value) {
+ 
+ }
+ 
++function getAnalysisProtocol(value) {
++    return value && typeof value.protocol === "string" ?
++        value.protocol.trim().toLowerCase().replace(/:$/, "") : "";
++}
++
++function isUrlAnalysisAvailable(value) {
++    if (!isSourceAvailable(value)) return false;
++    const protocol = getAnalysisProtocol(value);
++    // Preserve legacy explicit HTTPS snapshots; false alone cannot identify HTTP.
++    return protocol ? ["http", "https"].includes(protocol) : value.usesHTTPS === true;
++}
++
++function hasHttpPageUrl(web) {
++    try {
++        return Boolean(web && new URL(web.pageUrl).protocol === "http:");
++    } catch (error) {
++        return false;
++    }
++}
++
+ function assessSecurity(snapshot, dataStatus) {
+ 
+     const reasons = [];
+@@ -168,14 +189,14 @@ function assessSecurity(snapshot, dataStatus) {
+     let strongCount = 0;
+     let moderateCount = 0;
+ 
+-    if ((url && url.usesHTTPS === false) || (web && typeof web.pageUrl === "string" && web.pageUrl.startsWith("http:"))) {
++    if (getAnalysisProtocol(url) === "http" || hasHttpPageUrl(web)) {
+         strongCount++;
+         reasons.push(createReason(
+             "main-page-http",
+             "high",
+             "Main page is not using HTTPS",
+             {
+-                protocol: url ? url.protocol : "http"
++                protocol: "http"
+             }
+         ));
+     }
+diff --git a/popup/popup.js b/popup/popup.js
+index d34efd7..70b5cd8 100644
+--- a/popup/popup.js
++++ b/popup/popup.js
+@@ -334,7 +334,8 @@ function analyzeURL(urlString) {
+         // --------------------------------------------------
+ 
+         // Check whether the connection uses HTTPS
+-        const usesHTTPS = protocol === "https";
++        const supportedProtocol = protocol === "http" || protocol === "https";
++        const usesHTTPS = supportedProtocol ? protocol === "https" : null;
+ 
+         // Check whether the URL exceeds the selected threshold
+         const isLongURL = urlLength > 100;
+@@ -377,9 +378,9 @@ function analyzeURL(urlString) {
+ 
+         updateIndicatorChip(
+             "https-indicator",
+-            usesHTTPS ? "HTTPS" : "HTTP",
++            supportedProtocol ? (usesHTTPS ? "HTTPS" : "HTTP") : "Unavailable",
+             usesHTTPS ? "positive" : "warning",
+-            true
++            supportedProtocol
+         );
+ 
+         updateIndicatorChip("long-url", "Long URL", "warning", isLongURL);
+@@ -404,6 +405,7 @@ function analyzeURL(urlString) {
+         updateIndicatorChip("punycode", "Punycode", "warning", hasPunycode);
+ 
+         return {
++            available: supportedProtocol,
+             protocol: protocol,
+             hostname: hostname,
+             urlLength: urlLength,
+@@ -2002,7 +2004,9 @@ function updateProtocolDisplay(protocol) {
+     }
+ 
+     badge.classList.remove("is-https", "is-http");
+-    badge.classList.add(protocol === "https" ? "is-https" : "is-http");
++    if (protocol === "https" || protocol === "http") {
++        badge.classList.add(protocol === "https" ? "is-https" : "is-http");
++    }
+ 
+ }
+ 

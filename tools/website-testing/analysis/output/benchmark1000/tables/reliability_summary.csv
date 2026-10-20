@@ -1,0 +1,20 @@
+metric,value,denominator,percent,unit
+total_urls,1000.000000,1000.000000,100.000000,attempts
+assessments_captured,999.000000,1000.000000,99.900000,attempts
+successful,787.000000,1000.000000,78.700000,attempts
+restricted,132.000000,1000.000000,13.200000,attempts
+navigation_errors,80.000000,1000.000000,8.000000,attempts
+timeouts,30.000000,1000.000000,3.000000,attempts
+collection_failures,1.000000,1000.000000,0.100000,attempts
+partial_assessments,75.000000,1000.000000,7.500000,attempts
+http_error_sites,156.000000,1000.000000,15.600000,attempts
+http_202_sites,2.000000,1000.000000,0.200000,attempts
+anomaly_events_original,515.000000,,,events
+anomalous_sites_original,218.000000,1000.000000,21.800000,attempts
+reviewed_anomaly_events,,,,documented annotations
+verified_validator_false_positives,,,,documented annotations
+documented_extension_bugs,,,,documented annotations
+documented_framework_bugs,,,,documented annotations
+execution_windows_s,8993.833000,,,seconds
+elapsed_including_phase_review_s,8993.833000,,,seconds
+sum_attempt_duration_s,6895.053000,,,seconds

@@ -29,17 +29,14 @@ function analyzeForms() {
 
         const action = form.getAttribute("action");
 
-        // If the form has no explicit action,
-        // the browser normally submits it to the current page
-        if (!action) {
-            return;
-        }
-
         try {
 
-            // Convert the action into an absolute URL
-            const actionURL =
-                new URL(action, window.location.href);
+            // Missing/empty action submits to the document URL, even with <base>.
+            // Explicit relative actions resolve against the document's base URI.
+            const actionURL = new URL(
+                action || window.location.href,
+                document.baseURI || window.location.href
+            );
 
             const isExternal =
                 hasDifferentHostname(actionURL);

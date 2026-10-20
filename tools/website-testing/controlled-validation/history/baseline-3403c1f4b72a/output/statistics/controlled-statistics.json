@@ -1,0 +1,90 @@
+{
+  "counts": {
+    "PASS": 11,
+    "FAIL": 0,
+    "NOT_OBSERVABLE": 0,
+    "INCONCLUSIVE": 0,
+    "SKIPPED": 7
+  },
+  "denominators": {
+    "all_recorded": 18,
+    "executed": 11
+  },
+  "pass_percent_all": 61.111111111111114,
+  "pass_percent_executed": 100.0,
+  "categories": {
+    "DOM": {
+      "total": 2,
+      "PASS": 2,
+      "FAIL": 0,
+      "NOT_OBSERVABLE": 0,
+      "INCONCLUSIVE": 0,
+      "SKIPPED": 0
+    },
+    "availability": {
+      "total": 1,
+      "PASS": 1,
+      "FAIL": 0,
+      "NOT_OBSERVABLE": 0,
+      "INCONCLUSIVE": 0,
+      "SKIPPED": 0
+    },
+    "forms": {
+      "total": 2,
+      "PASS": 1,
+      "FAIL": 0,
+      "NOT_OBSERVABLE": 0,
+      "INCONCLUSIVE": 0,
+      "SKIPPED": 1
+    },
+    "headers": {
+      "total": 4,
+      "PASS": 0,
+      "FAIL": 0,
+      "NOT_OBSERVABLE": 0,
+      "INCONCLUSIVE": 0,
+      "SKIPPED": 4
+    },
+    "isolation": {
+      "total": 1,
+      "PASS": 1,
+      "FAIL": 0,
+      "NOT_OBSERVABLE": 0,
+      "INCONCLUSIVE": 0,
+      "SKIPPED": 0
+    },
+    "mixed-content": {
+      "total": 2,
+      "PASS": 0,
+      "FAIL": 0,
+      "NOT_OBSERVABLE": 0,
+      "INCONCLUSIVE": 0,
+      "SKIPPED": 2
+    },
+    "network": {
+      "total": 2,
+      "PASS": 2,
+      "FAIL": 0,
+      "NOT_OBSERVABLE": 0,
+      "INCONCLUSIVE": 0,
+      "SKIPPED": 0
+    },
+    "runtime": {
+      "total": 3,
+      "PASS": 3,
+      "FAIL": 0,
+      "NOT_OBSERVABLE": 0,
+      "INCONCLUSIVE": 0,
+      "SKIPPED": 0
+    },
+    "transport": {
+      "total": 1,
+      "PASS": 1,
+      "FAIL": 0,
+      "NOT_OBSERVABLE": 0,
+      "INCONCLUSIVE": 0,
+      "SKIPPED": 0
+    }
+  },
+  "interpretation": "Outcome coverage, not detector accuracy. NOT_OBSERVABLE is not PASS; INCONCLUSIVE is not FAIL."
+}

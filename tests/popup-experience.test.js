@@ -97,7 +97,7 @@ test('storage write failure offers a usable close without claiming persistence',
 test('real engine results render evidence and explanations without changing input', () => {
     const { assessBrowserState } = require('../modules/assessment/assessment-engine');
     const h = harness(true);
-    const assessment = assessBrowserState({ urlAnalysis: { usesHTTPS: false }, networkActivity: {
+    const assessment = assessBrowserState({ urlAnalysis: { usesHTTPS: false, protocol: 'http' }, networkActivity: {
         totalRequests: 80, trackerDomainCount: 5, trackerRequests: 40, thirdPartyRequests: 60, thirdPartyDomainCount: 16
     } });
     const context = vm.createContext({ document: h.document, window: { matchMedia: () => ({ matches: true }) }, console,

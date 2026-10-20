@@ -1,0 +1,9 @@
+[
+  {
+    "id": "blocked-mixed-content-api-visibility",
+    "scenario": "S07",
+    "classification": "observation-limit",
+    "confirmedBug": false,
+    "reason": "CDP confirms a mixed-content block before any extension request observation; no server receipt. API observation limit, not a demonstrated detector false negative."
+  }
+]

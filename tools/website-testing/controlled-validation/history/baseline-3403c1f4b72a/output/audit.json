@@ -1,0 +1,31 @@
+{
+  "preExistingTests": {
+    "nodeExtension": {
+      "passed": 68,
+      "command": "node --test tests/*.test.js"
+    },
+    "nodeFramework": {
+      "passed": 12,
+      "command": "node --test tools/website-testing/*.test.cjs"
+    },
+    "pythonAnalysis": {
+      "passed": 13,
+      "command": "analysis/.venv/bin/python -m unittest discover -s analysis -p 'test_*.py' -v"
+    }
+  },
+  "newTests": {
+    "node": 77,
+    "python": 4,
+    "engineFixtures": 71
+  },
+  "productionFingerprintUnchanged": true,
+  "productionGitDiff": [],
+  "controlledOrphanProcesses": [],
+  "temporaryProfilesOrCertificatesRemaining": [],
+  "fixturePortsClosed": {
+    "65406": true,
+    "65407": true
+  },
+  "sensitiveOutputFiles": [],
+  "notes": "Post-run audit. No certificate exceptions or system trust changes. No commit/push."
+}

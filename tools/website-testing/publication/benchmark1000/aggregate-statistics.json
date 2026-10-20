@@ -1,0 +1,912 @@
+{
+  "generatedAt": "2026-10-20T07:12:17.232Z",
+  "sourceHash": "0f2c1f20712aa4e76cdd9eaa6f393aeb28f919abe1d1fa01d8f609942e9f1fbc",
+  "corpusSha256": "cbb10d594c6c351232490cb6cd65f9fcc5095e9e80596b70fda0bd5fb3d3349d",
+  "complete": true,
+  "stats": {
+    "tested": 1000,
+    "captured": 999,
+    "successful": 787,
+    "averageObservedRequests": 83.95495495495496,
+    "averageTrackingAssociatedDomains": 3.824824824824825,
+    "partial": 75,
+    "navigationCompleted": 920,
+    "restricted": 132,
+    "navigationErrors": 80,
+    "timeoutSites": 30,
+    "httpErrorSites": 156,
+    "cdpHTTPErrorResponses": 937,
+    "httpStatuses": {
+      "200": 762,
+      "202": 2,
+      "401": 1,
+      "402": 1,
+      "403": 129,
+      "404": 13,
+      "405": 1,
+      "410": 4,
+      "429": 1,
+      "500": 3,
+      "503": 1,
+      "522": 1,
+      "526": 1,
+      "not-recorded": 80
+    },
+    "frameworkErrorSites": 1,
+    "extensionErrorSites": 72,
+    "averageAttemptMs": 6895.053,
+    "medianAttemptMs": 4829.5,
+    "anomalousSites": 218,
+    "anomalyEvents": 515,
+    "anomalyCodes": {
+      "navigation_failure": 80,
+      "extension_console_errors": 72,
+      "missing_sources": 75,
+      "document_identity_mismatch": 79,
+      "active_tab_mismatch": 75,
+      "access_restriction": 132,
+      "collection_failure": 1,
+      "missing_analysis": 1
+    },
+    "assessments": {
+      "all": {
+        "security": {
+          "Low": 910,
+          "—": 75,
+          "Moderate": 13,
+          "High": 1,
+          "missing": 1
+        },
+        "privacy": {
+          "Low": 443,
+          "Moderate": 238,
+          "High": 318,
+          "missing": 1
+        },
+        "network": {
+          "—": 475,
+          "Low": 326,
+          "Moderate": 88,
+          "High": 110,
+          "missing": 1
+        }
+      },
+      "successful": {
+        "security": {
+          "Low": 773,
+          "Moderate": 13,
+          "High": 1
+        },
+        "privacy": {
+          "Low": 236,
+          "Moderate": 233,
+          "High": 318
+        },
+        "network": {
+          "—": 434,
+          "Moderate": 69,
+          "Low": 177,
+          "High": 107
+        }
+      }
+    }
+  },
+  "operations": {
+    "assessmentCaptured": 999,
+    "partial": 75,
+    "navigationAccepted": 920,
+    "unrestrictedVisit": 762,
+    "http401": 1,
+    "http403": 129,
+    "http429": 1,
+    "http5xx": 6,
+    "restriction": 132,
+    "timeout": 30,
+    "tlsError": 9,
+    "dnsError": 8,
+    "navigationError": 80,
+    "collectionError": 1,
+    "assessmentUnavailable": 1,
+    "intendedPageSemanticVerification": "not performed; neither captured assessment nor 2xx establishes intended-page identity"
+  },
+  "agreement": {
+    "headers": {
+      "pairs": 4600,
+      "equal": 4600,
+      "different": 0
+    },
+    "protocol": {
+      "pairs": 920,
+      "equal": 920
+    },
+    "mixed": {
+      "pairs": 920,
+      "equal": 913,
+      "cdpPositive": 7,
+      "extensionPositive": 0
+    },
+    "note": "Paired observation agreement, not accuracy. CDP windows differ; blocked attempts may be unavailable to extension webRequest. Dataset-derived tracker/entity labels share production data.",
+    "requests": {
+      "pairs": 920,
+      "equal": 157,
+      "different": 763,
+      "meanExtensionMinusCDP": 7.260869565217392,
+      "note": "Identifiable final document and available counts, matching Python request_eligible. Different observation windows; descriptive count differences, not confirmed defects."
+    }
+  },
+  "resources": {
+    "sessions": 1,
+    "samples": 601,
+    "peakNodeRssBytes": 191053824,
+    "peakChromiumRssBytes": 2234613760,
+    "peakAttributableRssSumBytes": 2325692416,
+    "peakBrowserProcesses": 17,
+    "minimumDiskAvailableBytes": 561825177600,
+    "memoryPressureSamples": {
+      "1": 510,
+      "2": 91
+    },
+    "semantics": "RSS, not virtual memory; sum may double-count shared pages. ps CPU percentages can exceed 100 across cores. Chromium includes attributable descendants only; system-wide RAM is not measured by the sum."
+  },
+  "timings": {
+    "collectionWallSeconds": 8996.619,
+    "legacyExecutionWindowSeconds": 8993.833,
+    "meanAttemptSeconds": 6.895053,
+    "medianAttemptSeconds": 4.8295,
+    "p95AttemptSeconds": 12.340799999999986,
+    "percentileMethod": "linear interpolation at (n-1)*p, matching pandas quantile default"
+  },
+  "uniqueFinalResponseHostnames": 914,
+  "finalResponseSamples": 921,
+  "confirmedBrowserGuardBugs": null,
+  "bugReview": "Anomalies remain hypotheses unless separately reproduced; no automatic confirmation.",
+  "categoryStats": [
+    {
+      "category": "news",
+      "label": "Informazione e giornali",
+      "planned": 100,
+      "tested": 100,
+      "captured": 100,
+      "successful": 82,
+      "averageObservedRequests": 128.45,
+      "averageTrackingAssociatedDomains": 6.42,
+      "partial": 1,
+      "navigationCompleted": 99,
+      "restricted": 17,
+      "navigationErrors": 1,
+      "timeoutSites": 0,
+      "httpErrorSites": 18,
+      "cdpHTTPErrorResponses": 109,
+      "httpStatuses": {
+        "200": 81,
+        "401": 1,
+        "403": 16,
+        "404": 1,
+        "not-recorded": 1
+      },
+      "frameworkErrorSites": 0,
+      "extensionErrorSites": 1,
+      "averageAttemptMs": 5732.41,
+      "medianAttemptMs": 4729.5,
+      "anomalousSites": 18,
+      "anomalyEvents": 22,
+      "anomalyCodes": {
+        "access_restriction": 17,
+        "navigation_failure": 1,
+        "extension_console_errors": 1,
+        "missing_sources": 1,
+        "document_identity_mismatch": 1,
+        "active_tab_mismatch": 1
+      },
+      "assessments": {
+        "all": {
+          "security": {
+            "Low": 98,
+            "—": 1,
+            "High": 1
+          },
+          "privacy": {
+            "Low": 32,
+            "High": 57,
+            "Moderate": 11
+          },
+          "network": {
+            "—": 49,
+            "Low": 17,
+            "High": 26,
+            "Moderate": 8
+          }
+        },
+        "successful": {
+          "security": {
+            "Low": 81,
+            "High": 1
+          },
+          "privacy": {
+            "High": 57,
+            "Low": 14,
+            "Moderate": 11
+          },
+          "network": {
+            "—": 42,
+            "High": 26,
+            "Moderate": 6,
+            "Low": 8
+          }
+        }
+      }
+    },
+    {
+      "category": "ecommerce",
+      "label": "E-commerce",
+      "planned": 100,
+      "tested": 100,
+      "captured": 100,
+      "successful": 72,
+      "averageObservedRequests": 151.67,
+      "averageTrackingAssociatedDomains": 3.08,
+      "partial": 6,
+      "navigationCompleted": 94,
+      "restricted": 22,
+      "navigationErrors": 6,
+      "timeoutSites": 0,
+      "httpErrorSites": 26,
+      "cdpHTTPErrorResponses": 278,
+      "httpStatuses": {
+        "200": 67,
+        "202": 1,
+        "403": 22,
+        "405": 1,
+        "410": 3,
+        "not-recorded": 6
+      },
+      "frameworkErrorSites": 0,
+      "extensionErrorSites": 6,
+      "averageAttemptMs": 5829.33,
+      "medianAttemptMs": 4813.5,
+      "anomalousSites": 29,
+      "anomalyEvents": 53,
+      "anomalyCodes": {
+        "navigation_failure": 6,
+        "extension_console_errors": 6,
+        "missing_sources": 6,
+        "document_identity_mismatch": 7,
+        "active_tab_mismatch": 6,
+        "access_restriction": 22
+      },
+      "assessments": {
+        "all": {
+          "security": {
+            "Low": 94,
+            "—": 6
+          },
+          "privacy": {
+            "Moderate": 29,
+            "Low": 39,
+            "High": 32
+          },
+          "network": {
+            "—": 51,
+            "Low": 28,
+            "High": 13,
+            "Moderate": 8
+          }
+        },
+        "successful": {
+          "security": {
+            "Low": 72
+          },
+          "privacy": {
+            "Moderate": 27,
+            "Low": 13,
+            "High": 32
+          },
+          "network": {
+            "—": 43,
+            "Low": 12,
+            "High": 11,
+            "Moderate": 6
+          }
+        }
+      }
+    },
+    {
+      "category": "technology",
+      "label": "Tecnologia e software",
+      "planned": 100,
+      "tested": 100,
+      "captured": 100,
+      "successful": 85,
+      "averageObservedRequests": 51.22,
+      "averageTrackingAssociatedDomains": 1.95,
+      "partial": 6,
+      "navigationCompleted": 94,
+      "restricted": 9,
+      "navigationErrors": 6,
+      "timeoutSites": 1,
+      "httpErrorSites": 10,
+      "cdpHTTPErrorResponses": 54,
+      "httpStatuses": {
+        "200": 84,
+        "403": 8,
+        "404": 1,
+        "429": 1,
+        "not-recorded": 6
+      },
+      "frameworkErrorSites": 0,
+      "extensionErrorSites": 6,
+      "averageAttemptMs": 5363.1,
+      "medianAttemptMs": 4253,
+      "anomalousSites": 17,
+      "anomalyEvents": 41,
+      "anomalyCodes": {
+        "access_restriction": 9,
+        "navigation_failure": 6,
+        "extension_console_errors": 6,
+        "missing_sources": 6,
+        "document_identity_mismatch": 8,
+        "active_tab_mismatch": 6
+      },
+      "assessments": {
+        "all": {
+          "security": {
+            "Low": 93,
+            "—": 6,
+            "Moderate": 1
+          },
+          "privacy": {
+            "Moderate": 20,
+            "Low": 61,
+            "High": 19
+          },
+          "network": {
+            "—": 42,
+            "Low": 49,
+            "Moderate": 7,
+            "High": 2
+          }
+        },
+        "successful": {
+          "security": {
+            "Low": 84,
+            "Moderate": 1
+          },
+          "privacy": {
+            "Moderate": 20,
+            "Low": 46,
+            "High": 19
+          },
+          "network": {
+            "—": 39,
+            "Low": 38,
+            "Moderate": 6,
+            "High": 2
+          }
+        }
+      }
+    },
+    {
+      "category": "education",
+      "label": "Università e istruzione",
+      "planned": 100,
+      "tested": 100,
+      "captured": 100,
+      "successful": 81,
+      "averageObservedRequests": 81.71,
+      "averageTrackingAssociatedDomains": 4.6,
+      "partial": 8,
+      "navigationCompleted": 91,
+      "restricted": 10,
+      "navigationErrors": 9,
+      "timeoutSites": 0,
+      "httpErrorSites": 13,
+      "cdpHTTPErrorResponses": 57,
+      "httpStatuses": {
+        "200": 78,
+        "403": 10,
+        "404": 2,
+        "410": 1,
+        "not-recorded": 9
+      },
+      "frameworkErrorSites": 0,
+      "extensionErrorSites": 8,
+      "averageAttemptMs": 6043.67,
+      "medianAttemptMs": 5453,
+      "anomalousSites": 19,
+      "anomalyEvents": 51,
+      "anomalyCodes": {
+        "navigation_failure": 9,
+        "extension_console_errors": 8,
+        "missing_sources": 8,
+        "document_identity_mismatch": 8,
+        "active_tab_mismatch": 8,
+        "access_restriction": 10
+      },
+      "assessments": {
+        "all": {
+          "security": {
+            "—": 8,
+            "Low": 92
+          },
+          "privacy": {
+            "Low": 34,
+            "High": 41,
+            "Moderate": 25
+          },
+          "network": {
+            "Low": 19,
+            "—": 51,
+            "High": 10,
+            "Moderate": 20
+          }
+        },
+        "successful": {
+          "security": {
+            "Low": 81
+          },
+          "privacy": {
+            "Low": 16,
+            "High": 41,
+            "Moderate": 24
+          },
+          "network": {
+            "—": 48,
+            "Low": 8,
+            "High": 10,
+            "Moderate": 15
+          }
+        }
+      }
+    },
+    {
+      "category": "government",
+      "label": "Pubblica amministrazione",
+      "planned": 100,
+      "tested": 100,
+      "captured": 100,
+      "successful": 69,
+      "averageObservedRequests": 56.58,
+      "averageTrackingAssociatedDomains": 2.15,
+      "partial": 6,
+      "navigationCompleted": 94,
+      "restricted": 25,
+      "navigationErrors": 6,
+      "timeoutSites": 1,
+      "httpErrorSites": 30,
+      "cdpHTTPErrorResponses": 103,
+      "httpStatuses": {
+        "200": 64,
+        "403": 25,
+        "404": 4,
+        "503": 1,
+        "not-recorded": 6
+      },
+      "frameworkErrorSites": 0,
+      "extensionErrorSites": 6,
+      "averageAttemptMs": 6251.23,
+      "medianAttemptMs": 5048.5,
+      "anomalousSites": 31,
+      "anomalyEvents": 55,
+      "anomalyCodes": {
+        "access_restriction": 25,
+        "navigation_failure": 6,
+        "extension_console_errors": 6,
+        "missing_sources": 6,
+        "document_identity_mismatch": 6,
+        "active_tab_mismatch": 6
+      },
+      "assessments": {
+        "all": {
+          "security": {
+            "Low": 93,
+            "—": 6,
+            "Moderate": 1
+          },
+          "privacy": {
+            "Moderate": 32,
+            "Low": 48,
+            "High": 20
+          },
+          "network": {
+            "—": 20,
+            "Low": 42,
+            "Moderate": 18,
+            "High": 20
+          }
+        },
+        "successful": {
+          "security": {
+            "Low": 68,
+            "Moderate": 1
+          },
+          "privacy": {
+            "Moderate": 32,
+            "Low": 17,
+            "High": 20
+          },
+          "network": {
+            "—": 19,
+            "Moderate": 15,
+            "Low": 15,
+            "High": 20
+          }
+        }
+      }
+    },
+    {
+      "category": "finance",
+      "label": "Banche e servizi finanziari",
+      "planned": 100,
+      "tested": 100,
+      "captured": 100,
+      "successful": 84,
+      "averageObservedRequests": 87.54,
+      "averageTrackingAssociatedDomains": 4.63,
+      "partial": 6,
+      "navigationCompleted": 92,
+      "restricted": 8,
+      "navigationErrors": 8,
+      "timeoutSites": 4,
+      "httpErrorSites": 10,
+      "cdpHTTPErrorResponses": 53,
+      "httpStatuses": {
+        "200": 82,
+        "403": 8,
+        "404": 1,
+        "500": 1,
+        "not-recorded": 8
+      },
+      "frameworkErrorSites": 0,
+      "extensionErrorSites": 7,
+      "averageAttemptMs": 9133.22,
+      "medianAttemptMs": 5466.5,
+      "anomalousSites": 17,
+      "anomalyEvents": 45,
+      "anomalyCodes": {
+        "access_restriction": 8,
+        "navigation_failure": 8,
+        "extension_console_errors": 7,
+        "missing_sources": 6,
+        "document_identity_mismatch": 8,
+        "active_tab_mismatch": 8
+      },
+      "assessments": {
+        "all": {
+          "security": {
+            "Low": 85,
+            "—": 6,
+            "Moderate": 9
+          },
+          "privacy": {
+            "High": 42,
+            "Moderate": 28,
+            "Low": 30
+          },
+          "network": {
+            "—": 75,
+            "High": 5,
+            "Low": 19,
+            "Moderate": 1
+          }
+        },
+        "successful": {
+          "security": {
+            "Low": 75,
+            "Moderate": 9
+          },
+          "privacy": {
+            "High": 42,
+            "Moderate": 27,
+            "Low": 15
+          },
+          "network": {
+            "—": 71,
+            "High": 5,
+            "Moderate": 1,
+            "Low": 7
+          }
+        }
+      }
+    },
+    {
+      "category": "social",
+      "label": "Social network e community",
+      "planned": 100,
+      "tested": 100,
+      "captured": 100,
+      "successful": 57,
+      "averageObservedRequests": 39.02,
+      "averageTrackingAssociatedDomains": 1.25,
+      "partial": 24,
+      "navigationCompleted": 74,
+      "restricted": 17,
+      "navigationErrors": 26,
+      "timeoutSites": 19,
+      "httpErrorSites": 17,
+      "cdpHTTPErrorResponses": 57,
+      "httpStatuses": {
+        "200": 56,
+        "202": 1,
+        "403": 16,
+        "526": 1,
+        "not-recorded": 26
+      },
+      "frameworkErrorSites": 0,
+      "extensionErrorSites": 20,
+      "averageAttemptMs": 11636.04,
+      "medianAttemptMs": 4348.5,
+      "anomalousSites": 43,
+      "anomalyEvents": 131,
+      "anomalyCodes": {
+        "access_restriction": 17,
+        "navigation_failure": 26,
+        "extension_console_errors": 20,
+        "missing_sources": 24,
+        "document_identity_mismatch": 22,
+        "active_tab_mismatch": 22
+      },
+      "assessments": {
+        "all": {
+          "security": {
+            "Low": 75,
+            "—": 24,
+            "Moderate": 1
+          },
+          "privacy": {
+            "Low": 72,
+            "High": 10,
+            "Moderate": 18
+          },
+          "network": {
+            "Moderate": 7,
+            "Low": 63,
+            "—": 28,
+            "High": 2
+          }
+        },
+        "successful": {
+          "security": {
+            "Low": 56,
+            "Moderate": 1
+          },
+          "privacy": {
+            "Low": 29,
+            "High": 10,
+            "Moderate": 18
+          },
+          "network": {
+            "Low": 31,
+            "—": 22,
+            "Moderate": 2,
+            "High": 2
+          }
+        }
+      }
+    },
+    {
+      "category": "entertainment",
+      "label": "Intrattenimento e streaming",
+      "planned": 100,
+      "tested": 100,
+      "captured": 100,
+      "successful": 90,
+      "averageObservedRequests": 132.03,
+      "averageTrackingAssociatedDomains": 9.86,
+      "partial": 2,
+      "navigationCompleted": 98,
+      "restricted": 8,
+      "navigationErrors": 2,
+      "timeoutSites": 1,
+      "httpErrorSites": 11,
+      "cdpHTTPErrorResponses": 107,
+      "httpStatuses": {
+        "200": 87,
+        "403": 8,
+        "404": 2,
+        "522": 1,
+        "not-recorded": 2
+      },
+      "frameworkErrorSites": 0,
+      "extensionErrorSites": 2,
+      "averageAttemptMs": 6758.35,
+      "medianAttemptMs": 5551.5,
+      "anomalousSites": 10,
+      "anomalyEvents": 18,
+      "anomalyCodes": {
+        "navigation_failure": 2,
+        "extension_console_errors": 2,
+        "missing_sources": 2,
+        "document_identity_mismatch": 2,
+        "active_tab_mismatch": 2,
+        "access_restriction": 8
+      },
+      "assessments": {
+        "all": {
+          "security": {
+            "Low": 98,
+            "—": 2
+          },
+          "privacy": {
+            "High": 57,
+            "Low": 23,
+            "Moderate": 20
+          },
+          "network": {
+            "—": 50,
+            "Low": 13,
+            "High": 30,
+            "Moderate": 7
+          }
+        },
+        "successful": {
+          "security": {
+            "Low": 90
+          },
+          "privacy": {
+            "High": 57,
+            "Moderate": 19,
+            "Low": 14
+          },
+          "network": {
+            "—": 47,
+            "High": 29,
+            "Low": 7,
+            "Moderate": 7
+          }
+        }
+      }
+    },
+    {
+      "category": "travel",
+      "label": "Viaggi e turismo",
+      "planned": 100,
+      "tested": 100,
+      "captured": 100,
+      "successful": 87,
+      "averageObservedRequests": 80.52,
+      "averageTrackingAssociatedDomains": 3.01,
+      "partial": 7,
+      "navigationCompleted": 93,
+      "restricted": 6,
+      "navigationErrors": 7,
+      "timeoutSites": 0,
+      "httpErrorSites": 9,
+      "cdpHTTPErrorResponses": 62,
+      "httpStatuses": {
+        "200": 84,
+        "402": 1,
+        "403": 6,
+        "500": 2,
+        "not-recorded": 7
+      },
+      "frameworkErrorSites": 0,
+      "extensionErrorSites": 7,
+      "averageAttemptMs": 5521.1,
+      "medianAttemptMs": 4705,
+      "anomalousSites": 13,
+      "anomalyEvents": 41,
+      "anomalyCodes": {
+        "access_restriction": 6,
+        "navigation_failure": 7,
+        "extension_console_errors": 7,
+        "missing_sources": 7,
+        "document_identity_mismatch": 7,
+        "active_tab_mismatch": 7
+      },
+      "assessments": {
+        "all": {
+          "security": {
+            "Low": 92,
+            "—": 7,
+            "Moderate": 1
+          },
+          "privacy": {
+            "Low": 35,
+            "Moderate": 36,
+            "High": 29
+          },
+          "network": {
+            "—": 73,
+            "Low": 23,
+            "Moderate": 3,
+            "High": 1
+          }
+        },
+        "successful": {
+          "security": {
+            "Low": 86,
+            "Moderate": 1
+          },
+          "privacy": {
+            "Low": 22,
+            "Moderate": 36,
+            "High": 29
+          },
+          "network": {
+            "—": 71,
+            "Low": 12,
+            "Moderate": 3,
+            "High": 1
+          }
+        }
+      }
+    },
+    {
+      "category": "technical",
+      "label": "Siti tecnici e documentazione",
+      "planned": 100,
+      "tested": 100,
+      "captured": 99,
+      "successful": 80,
+      "averageObservedRequests": 30.272727272727273,
+      "averageTrackingAssociatedDomains": 1.2727272727272727,
+      "partial": 9,
+      "navigationCompleted": 91,
+      "restricted": 10,
+      "navigationErrors": 9,
+      "timeoutSites": 4,
+      "httpErrorSites": 12,
+      "cdpHTTPErrorResponses": 57,
+      "httpStatuses": {
+        "200": 79,
+        "403": 10,
+        "404": 2,
+        "not-recorded": 9
+      },
+      "frameworkErrorSites": 1,
+      "extensionErrorSites": 9,
+      "averageAttemptMs": 6682.08,
+      "medianAttemptMs": 4145,
+      "anomalousSites": 21,
+      "anomalyEvents": 58,
+      "anomalyCodes": {
+        "navigation_failure": 9,
+        "extension_console_errors": 9,
+        "missing_sources": 9,
+        "document_identity_mismatch": 10,
+        "active_tab_mismatch": 9,
+        "access_restriction": 10,
+        "collection_failure": 1,
+        "missing_analysis": 1
+      },
+      "assessments": {
+        "all": {
+          "security": {
+            "Low": 90,
+            "—": 9,
+            "missing": 1
+          },
+          "privacy": {
+            "Moderate": 19,
+            "Low": 69,
+            "High": 11,
+            "missing": 1
+          },
+          "network": {
+            "Moderate": 9,
+            "—": 36,
+            "Low": 53,
+            "High": 1,
+            "missing": 1
+          }
+        },
+        "successful": {
+          "security": {
+            "Low": 80
+          },
+          "privacy": {
+            "Moderate": 19,
+            "Low": 50,
+            "High": 11
+          },
+          "network": {
+            "Moderate": 8,
+            "—": 32,
+            "Low": 39,
+            "High": 1
+          }
+        }
+      }
+    }
+  ]
+}

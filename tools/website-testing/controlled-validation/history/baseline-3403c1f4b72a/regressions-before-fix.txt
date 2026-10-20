@@ -1,0 +1,359 @@
+✔ parser preserves http (5.083167ms)
+✔ parser preserves https (1.254667ms)
+✖ unsupported parser and engine: about:blank (1.581667ms)
+✖ unsupported parser and engine: about:srcdoc (0.665042ms)
+✖ unsupported parser and engine: chrome://version/ (0.669334ms)
+✖ unsupported parser and engine: chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/popup/popup.html (0.620209ms)
+✖ unsupported parser and engine: data:text/html,fixture (0.549208ms)
+✖ unsupported parser and engine: blob:https://localhost/00000000-0000-4000-8000-000000000000 (0.567ms)
+✖ unsupported parser and engine: file:///controlled.html (0.872583ms)
+✔ missing/unavailable URL does not imply HTTP: undefined (0.485667ms)
+✔ missing/unavailable URL does not imply HTTP: null (0.096667ms)
+✖ missing/unavailable URL does not imply HTTP: {} (4.498708ms)
+✖ missing/unavailable URL does not imply HTTP: {"usesHTTPS":false} (0.222042ms)
+✔ missing/unavailable URL does not imply HTTP: {"available":false,"protocol":"http","usesHTTPS":false} (0.081542ms)
+✔ invalid parser input unavailable (2.240084ms)
+✔ independent HTTP web evidence survives absent URL data (0.105375ms)
+✖ independent password and mixed findings survive unsupported URL (15.798917ms)
+✖ http password action absent (1.261709ms)
+✖ http password action empty (0.4375ms)
+✔ http password action relative (0.385208ms)
+✔ http password action HTTP (0.349333ms)
+✔ http password action HTTPS (0.67225ms)
+✔ https password action absent (0.345208ms)
+✔ https password action empty (0.304958ms)
+✔ https password action relative (0.334625ms)
+✔ https password action HTTP (0.322583ms)
+✔ https password action HTTPS (0.32225ms)
+✔ no-password form action null (0.340375ms)
+✔ no-password form action  (0.302625ms)
+✔ no-password form action /submit (0.288583ms)
+✔ no-password form action http://destination.test/ (0.311917ms)
+✔ no-password form action https://destination.test/ (0.388042ms)
+✔ no-password form action http://[ (0.377541ms)
+✔ no-password form action mailto:fixture@example.test (0.376459ms)
+✔ no-password form action javascript:void(0) (0.323584ms)
+✔ password malformed/non-HTTP action http://[ (0.343417ms)
+✔ password malformed/non-HTTP action mailto:fixture@example.test (0.310792ms)
+✔ password malformed/non-HTTP action javascript:void(0) (0.297667ms)
+✔ non-HTTP document with absent action is not an insecure HTTP target (0.326125ms)
+✖ empty action uses document URL even if base is HTTPS (0.410125ms)
+✖ explicit relative action follows document base URI (0.367291ms)
+ℹ tests 41
+ℹ suites 0
+ℹ pass 27
+ℹ fail 14
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 127.214542
+
+✖ failing tests:
+
+test at tests/targeted-security-regressions.test.js:27:30
+✖ unsupported parser and engine: about:blank (1.581667ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - false
+  
+      at TestContext.<anonymous> (/Users/mattia/Documents/Mattia/Universita/Magistrale/Corsi/Primo anno/Terzo quadrimestre/Sicurezza nelle reti/Progetto/browserguard/tests/targeted-security-regressions.test.js:28:105)
+      at Test.runInAsyncScope (node:async_hooks:213:14)
+      at Test.run (node:internal/test_runner/test:1106:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:788:18)
+      at Test.postRun (node:internal/test_runner/test:1235:19)
+      at Test.run (node:internal/test_runner/test:1163:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/targeted-security-regressions.test.js:27:30
+✖ unsupported parser and engine: about:srcdoc (0.665042ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - false
+  
+      at TestContext.<anonymous> (/Users/mattia/Documents/Mattia/Universita/Magistrale/Corsi/Primo anno/Terzo quadrimestre/Sicurezza nelle reti/Progetto/browserguard/tests/targeted-security-regressions.test.js:28:105)
+      at Test.runInAsyncScope (node:async_hooks:213:14)
+      at Test.run (node:internal/test_runner/test:1106:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:788:18)
+      at Test.postRun (node:internal/test_runner/test:1235:19)
+      at Test.run (node:internal/test_runner/test:1163:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/targeted-security-regressions.test.js:27:30
+✖ unsupported parser and engine: chrome://version/ (0.669334ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - false
+  
+      at TestContext.<anonymous> (/Users/mattia/Documents/Mattia/Universita/Magistrale/Corsi/Primo anno/Terzo quadrimestre/Sicurezza nelle reti/Progetto/browserguard/tests/targeted-security-regressions.test.js:28:105)
+      at Test.runInAsyncScope (node:async_hooks:213:14)
+      at Test.run (node:internal/test_runner/test:1106:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:788:18)
+      at Test.postRun (node:internal/test_runner/test:1235:19)
+      at Test.run (node:internal/test_runner/test:1163:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/targeted-security-regressions.test.js:27:30
+✖ unsupported parser and engine: chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/popup/popup.html (0.620209ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - false
+  
+      at TestContext.<anonymous> (/Users/mattia/Documents/Mattia/Universita/Magistrale/Corsi/Primo anno/Terzo quadrimestre/Sicurezza nelle reti/Progetto/browserguard/tests/targeted-security-regressions.test.js:28:105)
+      at Test.runInAsyncScope (node:async_hooks:213:14)
+      at Test.run (node:internal/test_runner/test:1106:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:788:18)
+      at Test.postRun (node:internal/test_runner/test:1235:19)
+      at Test.run (node:internal/test_runner/test:1163:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/targeted-security-regressions.test.js:27:30
+✖ unsupported parser and engine: data:text/html,fixture (0.549208ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - false
+  
+      at TestContext.<anonymous> (/Users/mattia/Documents/Mattia/Universita/Magistrale/Corsi/Primo anno/Terzo quadrimestre/Sicurezza nelle reti/Progetto/browserguard/tests/targeted-security-regressions.test.js:28:105)
+      at Test.runInAsyncScope (node:async_hooks:213:14)
+      at Test.run (node:internal/test_runner/test:1106:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:788:18)
+      at Test.postRun (node:internal/test_runner/test:1235:19)
+      at Test.run (node:internal/test_runner/test:1163:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/targeted-security-regressions.test.js:27:30
+✖ unsupported parser and engine: blob:https://localhost/00000000-0000-4000-8000-000000000000 (0.567ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - false
+  
+      at TestContext.<anonymous> (/Users/mattia/Documents/Mattia/Universita/Magistrale/Corsi/Primo anno/Terzo quadrimestre/Sicurezza nelle reti/Progetto/browserguard/tests/targeted-security-regressions.test.js:28:105)
+      at Test.runInAsyncScope (node:async_hooks:213:14)
+      at Test.run (node:internal/test_runner/test:1106:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:788:18)
+      at Test.postRun (node:internal/test_runner/test:1235:19)
+      at Test.run (node:internal/test_runner/test:1163:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/targeted-security-regressions.test.js:27:30
+✖ unsupported parser and engine: file:///controlled.html (0.872583ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - false
+  
+      at TestContext.<anonymous> (/Users/mattia/Documents/Mattia/Universita/Magistrale/Corsi/Primo anno/Terzo quadrimestre/Sicurezza nelle reti/Progetto/browserguard/tests/targeted-security-regressions.test.js:28:105)
+      at Test.runInAsyncScope (node:async_hooks:213:14)
+      at Test.run (node:internal/test_runner/test:1106:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:788:18)
+      at Test.postRun (node:internal/test_runner/test:1235:19)
+      at Test.run (node:internal/test_runner/test:1163:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/targeted-security-regressions.test.js:33:110
+✖ missing/unavailable URL does not imply HTTP: {} (4.498708ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(a.missingSources.includes('urlAnalysis'))
+  
+      at TestContext.<anonymous> (/Users/mattia/Documents/Mattia/Universita/Magistrale/Corsi/Primo anno/Terzo quadrimestre/Sicurezza nelle reti/Progetto/browserguard/tests/targeted-security-regressions.test.js:34:57)
+      at Test.runInAsyncScope (node:async_hooks:213:14)
+      at Test.run (node:internal/test_runner/test:1106:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:788:18)
+      at Test.postRun (node:internal/test_runner/test:1235:19)
+      at Test.run (node:internal/test_runner/test:1163:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at tests/targeted-security-regressions.test.js:33:110
+✖ missing/unavailable URL does not imply HTTP: {"usesHTTPS":false} (0.222042ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(a.missingSources.includes('urlAnalysis'))
+  
+      at TestContext.<anonymous> (/Users/mattia/Documents/Mattia/Universita/Magistrale/Corsi/Primo anno/Terzo quadrimestre/Sicurezza nelle reti/Progetto/browserguard/tests/targeted-security-regressions.test.js:34:57)
+      at Test.runInAsyncScope (node:async_hooks:213:14)
+      at Test.run (node:internal/test_runner/test:1106:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:788:18)
+      at Test.postRun (node:internal/test_runner/test:1235:19)
+      at Test.run (node:internal/test_runner/test:1163:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at tests/targeted-security-regressions.test.js:40:1
+✖ independent password and mixed findings survive unsupported URL (15.798917ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (/Users/mattia/Documents/Mattia/Universita/Magistrale/Corsi/Primo anno/Terzo quadrimestre/Sicurezza nelle reti/Progetto/browserguard/tests/targeted-security-regressions.test.js:42:140)
+      at Test.runInAsyncScope (node:async_hooks:213:14)
+      at Test.run (node:internal/test_runner/test:1106:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:788:18)
+      at Test.postRun (node:internal/test_runner/test:1235:19)
+      at Test.run (node:internal/test_runner/test:1163:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/targeted-security-regressions.test.js:45:208
+✖ http password action absent (1.261709ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (/Users/mattia/Documents/Mattia/Universita/Magistrale/Corsi/Primo anno/Terzo quadrimestre/Sicurezza nelle reti/Progetto/browserguard/tests/targeted-security-regressions.test.js:48:9)
+      at Test.runInAsyncScope (node:async_hooks:213:14)
+      at Test.run (node:internal/test_runner/test:1106:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:788:18)
+      at Test.postRun (node:internal/test_runner/test:1235:19)
+      at Test.run (node:internal/test_runner/test:1163:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/targeted-security-regressions.test.js:45:208
+✖ http password action empty (0.4375ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (/Users/mattia/Documents/Mattia/Universita/Magistrale/Corsi/Primo anno/Terzo quadrimestre/Sicurezza nelle reti/Progetto/browserguard/tests/targeted-security-regressions.test.js:48:9)
+      at Test.runInAsyncScope (node:async_hooks:213:14)
+      at Test.run (node:internal/test_runner/test:1106:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:788:18)
+      at Test.postRun (node:internal/test_runner/test:1235:19)
+      at Test.run (node:internal/test_runner/test:1163:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/targeted-security-regressions.test.js:60:1
+✖ empty action uses document URL even if base is HTTPS (0.410125ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (/Users/mattia/Documents/Mattia/Universita/Magistrale/Corsi/Primo anno/Terzo quadrimestre/Sicurezza nelle reti/Progetto/browserguard/tests/targeted-security-regressions.test.js:61:9)
+      at Test.runInAsyncScope (node:async_hooks:213:14)
+      at Test.run (node:internal/test_runner/test:1106:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:788:18)
+      at Test.postRun (node:internal/test_runner/test:1235:19)
+      at Test.run (node:internal/test_runner/test:1163:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/targeted-security-regressions.test.js:63:1
+✖ explicit relative action follows document base URI (0.367291ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/mattia/Documents/Mattia/Universita/Magistrale/Corsi/Primo anno/Terzo quadrimestre/Sicurezza nelle reti/Progetto/browserguard/tests/targeted-security-regressions.test.js:64:104)
+      at Test.runInAsyncScope (node:async_hooks:213:14)
+      at Test.run (node:internal/test_runner/test:1106:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:788:18)
+      at Test.postRun (node:internal/test_runner/test:1235:19)
+      at Test.run (node:internal/test_runner/test:1163:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

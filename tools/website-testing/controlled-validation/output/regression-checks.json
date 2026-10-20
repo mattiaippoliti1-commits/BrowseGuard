@@ -1,0 +1,40 @@
+{
+  "suites": [
+    {
+      "suite": "extension",
+      "command": "node --test tests/*.test.js",
+      "tests": 109,
+      "passed": 109,
+      "exitCode": 0
+    },
+    {
+      "suite": "framework",
+      "command": "node --test tools/website-testing/*.test.cjs",
+      "tests": 14,
+      "passed": 14,
+      "exitCode": 0
+    },
+    {
+      "suite": "controlled-node",
+      "command": "node --test tools/website-testing/controlled-validation/*.test.cjs",
+      "tests": 77,
+      "passed": 77,
+      "exitCode": 0
+    },
+    {
+      "suite": "analysis-python",
+      "command": "tools/website-testing/analysis/.venv/bin/python -m unittest discover -s tools/website-testing/analysis -p test_*.py -v",
+      "tests": 13,
+      "passed": 13,
+      "exitCode": 0
+    },
+    {
+      "suite": "controlled-python",
+      "command": "python3 -m unittest discover -s tools/website-testing/controlled-validation -p test_*.py -v",
+      "tests": 7,
+      "passed": 7,
+      "exitCode": 0
+    }
+  ],
+  "totalPassed": 220
+}

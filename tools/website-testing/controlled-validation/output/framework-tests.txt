@@ -1,0 +1,22 @@
+✔ Privacy rule oracle recognizes API-prefixed sensitive runtime details (2.4525ms)
+✔ coherent snapshot passes without requiring CDP counts to equal extension counts (12.78925ms)
+✔ impossible metrics, request partitions and tracker boundary have evidence (0.51975ms)
+✔ captured engine tampering and rendered/UI divergence are detected (0.679917ms)
+✔ missing analysis and blocked navigation are not labelled confirmed bugs (0.199333ms)
+✔ header comparisons require final same-URL main-document evidence (0.4895ms)
+✔ capture wraps only the original popup engine call and preserves output identity (5.470625ms)
+✔ redaction drops URL credentials, queries, fragments recursively without altering host evidence (0.220541ms)
+✔ 1000 unique URLs accepted, duplicate short corpora refused and unsupported URLs rejected (5.007375ms)
+✔ reports include all records, distributions, failures and escaped hostile evidence (4.059792ms)
+✔ reports retain 1000 unique completed entries and correct success/failure denominators (306.016667ms)
+✔ AI CLI refuses a remote endpoint without explicit authorization before reading a packet (36.508833ms)
+✔ independent HTTP oracle does not mistake unsupported usesHTTPS=false for HTTP (2.370791ms)
+✔ independent HTTP oracle still catches a lost explicit HTTP finding (0.708167ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 430.971

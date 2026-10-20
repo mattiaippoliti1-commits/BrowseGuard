@@ -1,0 +1,9 @@
+code,original_events,reviewed_events,verified_false_positives
+access_restriction,132,,
+active_tab_mismatch,75,,
+collection_failure,1,,
+document_identity_mismatch,79,,
+extension_console_errors,72,,
+missing_analysis,1,,
+missing_sources,75,,
+navigation_failure,80,,

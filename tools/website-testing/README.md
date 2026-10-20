@@ -322,3 +322,11 @@ The [Python analysis module](analysis/README.md) reads completed benchmark recor
 and existing CDP/review artifacts without browser navigation or network calls.
 It generates six PNG/SVG figure pairs, aggregate CSVs and a self-contained
 GitHub-readable Markdown report; raw records remain local under `runs/`.
+# Controlled local detection validation
+
+The separate [controlled-validation suite](controlled-validation/README.md) provides
+18 configured local scenarios, real popup input capture, independent server/CDP
+evidence, synthetic Assessment Engine boundary tests and an offline Python adapter.
+Run `npm run test:controlled` from this directory. HTTPS prerequisites and skipped
+coverage are explicit; browser TLS and mixed-content protections remain enabled.
+See [the generated report](controlled-validation/output/CONTROLLED_VALIDATION.md).
